@@ -17,4 +17,5 @@
  * @filesource
  */
 
-$GLOBALS['TL_HOOKS']['replaceDynamicScriptTags'][] = ['erdmannfreunde.theme_utils.listener.disable_css_caching', 'onReplaceDynamicScriptTags'];
+$GLOBALS['TL_HOOKS']['replaceDynamicScriptTags'][] =
+    ['erdmannfreunde.theme_utils.listener.disable_css_caching', 'onReplaceDynamicScriptTags'];

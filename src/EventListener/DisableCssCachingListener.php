@@ -32,11 +32,13 @@ class DisableCssCachingListener
      * @param string $buffer The string with the tags to be replaced.
      *
      * @return string
+     *
+     * @SuppressWarnings(PHPMD.Superglobals)
+     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
     public function onReplaceDynamicScriptTags(string $buffer): string
     {
         if (!empty($GLOBALS['TL_USER_CSS']) && \is_array($GLOBALS['TL_USER_CSS'])) {
-
             $time = time();
             foreach (array_unique($GLOBALS['TL_USER_CSS']) as $i => $stylesheet) {
                 // Add version (mtime) flag. Ignore if one is already present, last flag wins.

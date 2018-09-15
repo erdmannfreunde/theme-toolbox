@@ -60,7 +60,7 @@ class ErdmannFreundeThemeUtilsBundleTest extends TestCase
         $this->assertInstanceOf(ComposerResource::class, $container->getResources()[0]);
         $this->assertInstanceOf(FileResource::class, $container->getResources()[1]);
         $this->assertSame(
-            \dirname(__DIR__, 2) . '/src/Resources/config/services.yml',
+            \dirname(__DIR__) . '/src/Resources/config/services.yml',
             $container->getResources()[1]->getResource()
         );
     }
