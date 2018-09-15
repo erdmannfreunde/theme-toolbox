@@ -1,0 +1,4 @@
+services:
+  erdmannfreunde.theme_utils.listener.disable_css_caching:
+    class: ErdmannFreunde\ThemeUtilsBundle\EventListener\DisableCssCachingListener
+    public: true
