@@ -17,7 +17,4 @@
  * @filesource
  */
 
-$GLOBALS['TL_HOOKS']['replaceDynamicScriptTags'][] =
-    ['erdmannfreunde.theme_utils.listener.disable_css_caching', 'onReplaceDynamicScriptTags'];
-
-$GLOBALS['TL_MAINTENANCE'][] = \ErdmannFreunde\ThemeUtilsBundle\Backend\Maintenance\BypassScriptCache::class;
+$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheMode'] = 'Bypass Script Cache (production)';

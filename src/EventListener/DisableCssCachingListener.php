@@ -19,6 +19,9 @@
 
 namespace ErdmannFreunde\ThemeUtilsBundle\EventListener;
 
+use Contao\Automator;
+use Contao\Config;
+
 /**
  * Class DisableCssCachingListener
  *
@@ -27,7 +30,7 @@ namespace ErdmannFreunde\ThemeUtilsBundle\EventListener;
 class DisableCssCachingListener
 {
     /**
-     * Manipulate the version (mtime) flag of the external css files. This will invalidate the css caches each time.
+     * Purge the script (css) cache each time.
      *
      * @param string $buffer The string with the tags to be replaced.
      *
@@ -38,12 +41,14 @@ class DisableCssCachingListener
      */
     public function onReplaceDynamicScriptTags(string $buffer): string
     {
-        if (!empty($GLOBALS['TL_USER_CSS']) && \is_array($GLOBALS['TL_USER_CSS'])) {
-            $time = time();
-            foreach (array_unique($GLOBALS['TL_USER_CSS']) as $i => $stylesheet) {
-                // Add version (mtime) flag. Ignore if one is already present, last flag wins.
-                $GLOBALS['TL_USER_CSS'][$i] = $stylesheet . '|' . $time;
-            }
+        // Do not bypass in debug mode, in debug mode the css files are generated on the fly nonetheless.
+        if (\is_array($GLOBALS['TL_USER_CSS'])
+            && !empty($GLOBALS['TL_USER_CSS'])
+            && Config::get('bypassScriptCache')
+            && !Config::get('debugMode')) {
+            // Purging script cache is the only way to be compatible with Contao versions 4.4 to 4.6
+            $automator = new Automator();
+            $automator->purgeScriptCache();
         }
 
         return $buffer;
