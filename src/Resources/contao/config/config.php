@@ -22,4 +22,7 @@ $GLOBALS['TL_HOOKS']['replaceDynamicScriptTags'][] =
 $GLOBALS['TL_HOOKS']['getSystemMessages'][]        =
     ['erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message', 'onGetSystemMessages'];
 
-$GLOBALS['TL_MAINTENANCE'][] = \ErdmannFreunde\ThemeToolboxBundle\Backend\Maintenance\BypassScriptCache::class;
+array_unshift(
+    $GLOBALS['TL_MAINTENANCE'],
+    \ErdmannFreunde\ThemeToolboxBundle\Backend\Maintenance\BypassScriptCache::class
+);
