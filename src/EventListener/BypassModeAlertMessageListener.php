@@ -19,29 +19,12 @@
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
+use Contao\Backend;
 use Contao\BackendUser;
 use Contao\Config;
-use Contao\CoreBundle\Framework\ContaoFramework;
 
 class BypassModeAlertMessageListener
 {
-
-    /**
-     * The Contao framework.
-     *
-     * @var ContaoFramework
-     */
-    private $framework;
-
-    /**
-     * BypassModeAlertMessageListener constructor.
-     *
-     * @param ContaoFramework $framework The Contao framework.
-     */
-    public function __construct(ContaoFramework $framework)
-    {
-        $this->framework = $framework;
-    }
 
     /**
      * Add an error message when the bypass script mode is active.
@@ -50,9 +33,7 @@ class BypassModeAlertMessageListener
      */
     public function onGetSystemMessages()
     {
-        /** @var BackendUser $user */
-        $user = $this->framework->getAdapter(BackendUser::class);
-
+        $user = BackendUser::getInstance();
         if (!$user->hasAccess('maintenance', 'modules')) {
             return '';
         }

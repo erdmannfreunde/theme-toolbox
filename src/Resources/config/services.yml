@@ -5,5 +5,4 @@ services:
 
   erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message:
     class: ErdmannFreunde\ThemeToolboxBundle\EventListener\BypassModeAlertMessageListener
-    arguments: ['@contao.framework']
     public: true
