@@ -1,9 +1,9 @@
 services:
-  erdmannfreunde.theme_utils.listener.disable_css_caching:
-    class: ErdmannFreunde\ThemeUtilsBundle\EventListener\DisableCssCachingListener
+  erdmannfreunde.theme_toolbox.listener.disable_css_caching:
+    class: ErdmannFreunde\ThemeToolboxBundle\EventListener\DisableCssCachingListener
     public: true
 
-  erdmannfreunde.theme_utils.listener.bypass_mode_alert_message:
-    class: ErdmannFreunde\ThemeUtilsBundle\EventListener\BypassModeAlertMessageListener
+  erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message:
+    class: ErdmannFreunde\ThemeToolboxBundle\EventListener\BypassModeAlertMessageListener
     arguments: ['@contao.framework']
     public: true

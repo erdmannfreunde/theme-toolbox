@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of erdmannfreunde/theme-utils.
+ * This file is part of erdmannfreunde/theme-toolbox.
  *
  * (c) 2018-2018 Erdmann & Freunde.
  *
@@ -10,20 +10,20 @@
  *
  * This project is provided in good faith and hope to be usable by anyone.
  *
- * @package    erdmannfreunde/theme-utils
+ * @package    erdmannfreunde/theme-toolbox
  * @author     Richard Henkenjohann <richardhenkenjohann@googlemail.com>
  * @copyright  2018-2018 Erdmann & Freunde.
- * @license    https://github.com/erdmannfreunde/theme-utils/blob/master/LICENSE LGPL-3.0-or-later
+ * @license    https://github.com/erdmannfreunde/theme-toolbox/blob/master/LICENSE LGPL-3.0-or-later
  * @filesource
  */
 
-namespace ErdmannFreunde\ThemeUtilsBundle\Test\ContaoManager;
+namespace ErdmannFreunde\ThemeToolboxBundle\Test\ContaoManager;
 
 use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
-use ErdmannFreunde\ThemeUtilsBundle\ContaoManager\Plugin;
-use ErdmannFreunde\ThemeUtilsBundle\ErdmannFreundeThemeUtilsBundle;
+use ErdmannFreunde\ThemeToolboxBundle\ContaoManager\Plugin;
+use ErdmannFreunde\ThemeToolboxBundle\ErdmannFreundeThemeToolboxBundle;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -41,7 +41,7 @@ class PluginTest extends TestCase
         $plugin = new Plugin();
         $parser = $this->getMockBuilder(ParserInterface::class)->getMock();
 
-        $bundleConfig1 = BundleConfig::create(ErdmannFreundeThemeUtilsBundle::class)
+        $bundleConfig1 = BundleConfig::create(ErdmannFreundeThemeToolboxBundle::class)
             ->setLoadAfter(
                 [
                     ContaoCoreBundle::class

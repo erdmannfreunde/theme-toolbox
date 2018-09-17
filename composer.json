@@ -1,5 +1,5 @@
 {
-    "name": "erdmannfreunde/theme-utils",
+    "name": "erdmannfreunde/theme-toolbox",
     "description": "Erdmann & Freunde Theme Utilities",
     "keywords": [
         "contao",
@@ -10,8 +10,8 @@
     "license": "LGPL-3.0-or-later",
     "support": {
         "email": "moin@erdmannfreunde.de",
-        "issues": "https://github.com/erdmannfreunde/theme-utils/issues",
-        "source": "https://github.com/erdmannfreunde/theme-utils"
+        "issues": "https://github.com/erdmannfreunde/theme-toolbox/issues",
+        "source": "https://github.com/erdmannfreunde/theme-toolbox"
     },
     "require": {
         "php": "^5.6 || ^7.0",
@@ -26,16 +26,16 @@
     },
     "autoload": {
         "psr-4": {
-            "ErdmannFreunde\\ThemeUtilsBundle\\": "src"
+            "ErdmannFreunde\\ThemeToolboxBundle\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ErdmannFreunde\\ThemeUtilsBundle\\Test\\": "tests"
+            "ErdmannFreunde\\ThemeToolboxBundle\\Test\\": "tests"
         }
     },
     "extra": {
-        "contao-manager-plugin": "ErdmannFreunde\\ThemeUtilsBundle\\ContaoManager\\Plugin",
+        "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin",
         "branch-alias": {
             "dev-master": "1.0.x-dev",
             "dev-develop": "1.1.x-dev"
