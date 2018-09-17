@@ -2,3 +2,8 @@ services:
   erdmannfreunde.theme_utils.listener.disable_css_caching:
     class: ErdmannFreunde\ThemeUtilsBundle\EventListener\DisableCssCachingListener
     public: true
+
+  erdmannfreunde.theme_utils.listener.bypass_mode_alert_message:
+    class: ErdmannFreunde\ThemeUtilsBundle\EventListener\BypassModeAlertMessageListener
+    arguments: ['@contao.framework']
+    public: true

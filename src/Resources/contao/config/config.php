@@ -19,5 +19,7 @@
 
 $GLOBALS['TL_HOOKS']['replaceDynamicScriptTags'][] =
     ['erdmannfreunde.theme_utils.listener.disable_css_caching', 'onReplaceDynamicScriptTags'];
+$GLOBALS['TL_HOOKS']['getSystemMessages'][]        =
+    ['erdmannfreunde.theme_utils.listener.bypass_mode_alert_message', 'onGetSystemMessages'];
 
 $GLOBALS['TL_MAINTENANCE'][] = \ErdmannFreunde\ThemeUtilsBundle\Backend\Maintenance\BypassScriptCache::class;
