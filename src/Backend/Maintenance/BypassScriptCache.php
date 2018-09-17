@@ -68,10 +68,10 @@ class BypassScriptCache extends Backend implements \executable
         if (Config::get('bypassScriptCache')) {
             $template->class   = 'tl_error';
             $template->explain = $GLOBALS['TL_LANG']['MSC']['bypassScriptCacheEnabled'];
-            $template->submit  = $GLOBALS['TL_LANG']['MSC']['disable'];
+            $template->submit  = $GLOBALS['TL_LANG']['tl_maintenance']['maintenanceDisable'];
         } else {
             $template->class  = 'tl_info';
-            $template->submit = $GLOBALS['TL_LANG']['MSC']['enable'];
+            $template->submit = $GLOBALS['TL_LANG']['tl_maintenance']['maintenanceEnable'];
         }
 
         return $template->parse();
