@@ -49,6 +49,12 @@ class DisableCssCachingListener
             // Purging script cache is the only way to be compatible with Contao versions 4.4 to 4.6
             $automator = new Automator();
             $automator->purgeScriptCache();
+
+            $time = time();
+            foreach (array_unique($GLOBALS['TL_USER_CSS']) as $i => $stylesheet) {
+                // Add version (mtime) flag. Ignore if one is already present, last flag wins.
+                $GLOBALS['TL_USER_CSS'][$i] = $stylesheet . '|' . $time;
+            }
         }
 
         return $buffer;
