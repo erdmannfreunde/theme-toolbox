@@ -17,6 +17,10 @@ themes will come with a "server edition" that allows you to let Contao compile y
 When enabling "Bypass script cache" in the Contao Maintenance settings, the SCSS files do not get cached in production
 mode.
 
+CAUTION:
+-----------------
+**Please make sure to disable bypassing script cache after you finished your work on SCSS-files, as disabling the script cache can cause big performance issues!**
+
 -------
 
 [1]: https://erdmann-freunde.de/produkte/contao-themes/
