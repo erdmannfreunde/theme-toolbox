@@ -17,6 +17,6 @@
  * @filesource
  */
 
-$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheMode']    = 'Bypass Script Cache (in production mode)';
-$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheDisable'] = 'Disable';
-$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheEnable']  = 'Enable';
+$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheMode']    = 'Skript Cache umgehen (im Produktivbetrieb)';
+$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheDisable'] = 'Deaktivieren';
+$GLOBALS['TL_LANG']['tl_maintenance']['bypassScriptCacheEnable']  = 'Aktivieren';
