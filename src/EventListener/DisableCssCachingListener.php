@@ -39,7 +39,7 @@ class DisableCssCachingListener
      * @SuppressWarnings(PHPMD.Superglobals)
      * @SuppressWarnings(PHPMD.CamelCaseVariableName)
      */
-    public function onReplaceDynamicScriptTags(string $buffer)
+    public function onReplaceDynamicScriptTags($buffer)
     {
         // Do not bypass in debug mode, in debug mode the css files are generated on the fly nonetheless.
         if (\is_array($GLOBALS['TL_USER_CSS'])
