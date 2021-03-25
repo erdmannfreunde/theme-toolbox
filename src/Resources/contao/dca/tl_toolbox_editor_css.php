@@ -3,196 +3,159 @@
 /**
  * Table tl_toolbox_editor_css
  */
-$GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = array(
+$GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
     // Config
-    'config'   => array(
-        'dataContainer'               => 'Table',
-        'ptable'                      => 'tl_toolbox_editor',
-        'switchToEdit'                => true,
-        'enableVersioning'            => true,
-        'sql' => array(
-            'keys' => array(
-                'id' => 'primary',
+    'config'   => [
+        'dataContainer'    => 'Table',
+        'ptable'           => 'tl_toolbox_editor',
+        'switchToEdit'     => true,
+        'enableVersioning' => true,
+        'sql'              => [
+            'keys' => [
+                'id'  => 'primary',
                 'pid' => 'index'
-            )
-        )
-    ),
+            ]
+        ]
+    ],
     // List
-    'list' => array(
-        'sorting' => array(
-            'mode'                    => 4,
-            'fields'                  => array('sorting'),
-            'panelLayout'             => 'filter;sort,search,limit',
-            'headerFields'            => ['title'],
-            'child_record_callback'   => ['tl_toolbox_editor_css', 'listItems'],
-        ),
-        'label' => array(
-            'fields'                  => array('title'),
-            'format'                  => '%s'
-        ),
-        'global_operations' => array(
-            'all' => array(
-                'label'               => &$GLOBALS['TL_LANG']['MSC']['all'],
-                'href'                => 'act=select',
-                'class'               => 'header_edit_all',
-                'attributes'          => 'onclick="Backend.getScrollOffset()" accesskey="e"'
-            )
-        ),
-        'operations' => array(
-            'edit' => array(
-                'label'               => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['edit'],
-                'href'                => 'act=edit',
-                'icon'                => 'edit.gif'
-            ),
-            'copy'   => array(
-                'label'               => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['copy'],
-                'href'                => 'act=copy',
-                'icon'                => 'copy.gif',
-            ),
-            'delete' => array(
-                'label'               => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['delete'],
-                'href'                => 'act=delete',
-                'icon'                => 'delete.gif',
-                'attributes'          => 'onclick="if(!confirm(\'' . $GLOBALS['TL_LANG']['MSC']['deleteConfirm'] . '\'))return false;Backend.getScrollOffset()"'
-            ),
-            'show' => array(
-                'label'               => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['show'],
-                'href'                => 'act=show',
-                'icon'                => 'show.gif'
-            )
-        )
-    ),
+    'list'     => [
+        'sorting'           => [
+            'mode'                  => 4,
+            'fields'                => ['sorting'],
+            'panelLayout'           => 'filter;sort,search,limit',
+            'headerFields'          => ['title'],
+            'child_record_callback' => function () {
+                return sprintf(
+                    '<div class="tl_content_left">%s <span style="color:#999;padding-left:3px">[%s]</span></div>',
+                    $arrRow['title'],
+                    implode(', ', array_column(StringUtil::deserialize($arrRow['classes'], true), 'key'))
+                );
+            },
+        ],
+        'label'             => [
+            'fields' => ['title'],
+            'format' => '%s'
+        ],
+        'global_operations' => [
+            'all' => [
+                'label'      => &$GLOBALS['TL_LANG']['MSC']['all'],
+                'href'       => 'act=select',
+                'class'      => 'header_edit_all',
+                'attributes' => 'onclick="Backend.getScrollOffset()" accesskey="e"'
+            ]
+        ],
+        'operations'        => [
+            'edit'   => [
+                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['edit'],
+                'href'  => 'act=edit',
+                'icon'  => 'edit.gif'
+            ],
+            'copy'   => [
+                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['copy'],
+                'href'  => 'act=copy',
+                'icon'  => 'copy.gif',
+            ],
+            'delete' => [
+                'label'      => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['delete'],
+                'href'       => 'act=delete',
+                'icon'       => 'delete.gif',
+                'attributes' => sprintf(
+                    "onclick=\"if(!confirm('%s'))return false;Backend.getScrollOffset()\"",
+                    $GLOBALS['TL_LANG']['MSC']['deleteConfirm']
+                )
+            ],
+            'show'   => [
+                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['show'],
+                'href'  => 'act=show',
+                'icon'  => 'show.gif'
+            ]
+        ]
+    ],
     // Palettes
-    'palettes' => array(
+    'palettes' => [
         'default' => '{title_legend},title,classes;{elements_legend},elements;{fields_legend},fields;{modules_legend},modules;'
-    ),
+    ],
     // Fields
-    'fields'   => array(
-        'id' => array(
-            'sql'                     => "int(10) unsigned NOT NULL auto_increment"
-        ),
-        'pid' => array(
-            'foreignKey'              => 'tl_toolbox_editor.title',
-            'sql'                     => "int(10) unsigned NOT NULL default 0",
-            'relation'                => array('type'=>'belongsTo', 'load'=>'lazy')
-        ),
-        'tstamp' => array(
-            'sql'                     => "int(10) unsigned NOT NULL default '0'"
-        ),
-        'sorting'       => array(
-            'sql'                     => "int(10) unsigned NOT NULL default '0'",
-        ),
-        'title' => array(
-            'label'                   => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['title'],
-            'exclude'                 => true,
-            'search'                  => true,
-            'inputType'               => 'text',
-            'eval'                    => array('mandatory' => true, 'maxlength' => 255, 'tl_class' => 'w50'),
-            'sql'                     => "varchar(255) NOT NULL default ''"
-        ),
-        'classes' => array(
-            'label'                   => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['class'],
-            'exclude'                 => true,
-            'search'                  => true,
-            'inputType'               => 'keyValueWizard',
-            'eval'                    => array('mandatory' => true, 'maxlength' => 255, 'tl_class' => 'w100 clr'),
-            'sql'                     => "text NULL"
-        ),
-        'elements' => array(
-            'label'                   => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['elements'],
-            'exclude'                 => true,
-            'filter'                  => true,
-            'inputType'               => 'checkbox',
-            'options_callback'        => array('tl_toolbox_editor_css', 'getContentElements'),
-            'reference'               => &$GLOBALS['TL_LANG']['CTE'],
-            'eval'                    => array('multiple'=>true, 'helpwizard'=>true),
-            'sql'                     => "blob NULL"
-        ),
-        'fields' => array(
-            'label'                   => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['fields'],
-            'exclude'                 => true,
-            'filter'                  => true,
-            'inputType'               => 'checkbox',
-            'options'                 => array_keys($GLOBALS['TL_FFL']),
-            'reference'               => &$GLOBALS['TL_LANG']['FFL'],
-            'eval'                    => array('multiple'=>true, 'helpwizard'=>true),
-            'sql'                     => "blob NULL"
-        ),
-        'modules' => array(
-            'label'                   => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['modules'],
-            'exclude'                 => true,
-            'filter'                  => true,
-            'inputType'               => 'checkbox',
-            'options_callback'        => array('tl_toolbox_editor_css', 'getModules'),
-            'reference'               => &$GLOBALS['TL_LANG']['MOD'],
-            'eval'                    => array('multiple'=>true, 'helpwizard'=>true),
-            'sql'                     => "blob NULL"
-        ),
-    )
-);
+    'fields'   => [
+        'id'       => [
+            'sql' => "int(10) unsigned NOT NULL auto_increment"
+        ],
+        'pid'      => [
+            'foreignKey' => 'tl_toolbox_editor.title',
+            'sql'        => "int(10) unsigned NOT NULL default 0",
+            'relation'   => ['type' => 'belongsTo', 'load' => 'lazy']
+        ],
+        'tstamp'   => [
+            'sql' => "int(10) unsigned NOT NULL default '0'"
+        ],
+        'sorting'  => [
+            'sql' => "int(10) unsigned NOT NULL default '0'",
+        ],
+        'title'    => [
+            'label'     => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['title'],
+            'exclude'   => true,
+            'search'    => true,
+            'inputType' => 'text',
+            'eval'      => ['mandatory' => true, 'maxlength' => 255, 'tl_class' => 'w50'],
+            'sql'       => "varchar(255) NOT NULL default ''"
+        ],
+        'classes'  => [
+            'label'     => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['class'],
+            'exclude'   => true,
+            'search'    => true,
+            'inputType' => 'keyValueWizard',
+            'eval'      => ['mandatory' => true, 'maxlength' => 255, 'tl_class' => 'w100 clr'],
+            'sql'       => "text NULL"
+        ],
+        'elements' => [
+            'label'            => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['elements'],
+            'exclude'          => true,
+            'filter'           => true,
+            'inputType'        => 'checkbox',
+            'options_callback' => function () {
+                return array_map('array_keys', $GLOBALS['TL_CTE']);
+            },
+            'reference'        => &$GLOBALS['TL_LANG']['CTE'],
+            'eval'             => ['multiple' => true, 'helpwizard' => true],
+            'sql'              => "blob NULL"
+        ],
+        'fields'   => [
+            'label'     => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['fields'],
+            'exclude'   => true,
+            'filter'    => true,
+            'inputType' => 'checkbox',
+            'options'   => array_keys($GLOBALS['TL_FFL']),
+            'reference' => &$GLOBALS['TL_LANG']['FFL'],
+            'eval'      => ['multiple' => true, 'helpwizard' => true],
+            'sql'       => "blob NULL"
+        ],
+        'modules'  => [
+            'label'            => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['modules'],
+            'exclude'          => true,
+            'filter'           => true,
+            'inputType'        => 'checkbox',
+            'options_callback' => function () {
+                $arrModules = [];
 
-/**
- * Provide miscellaneous methods that are used by the data configuration array.
- *
- */
-class tl_toolbox_editor_css extends Backend
-{
+                foreach ($GLOBALS['BE_MOD'] as $k => $v) {
+                    if (empty($v)) {
+                        continue;
+                    }
 
-    /**
-     * Return all content elements
-     *
-     * @return array
-     */
-    public function getContentElements()
-    {
-        return array_map('array_keys', $GLOBALS['TL_CTE']);
-    }
+                    foreach ($v as $kk => $vv) {
+                        if (isset($vv['disablePermissionChecks']) && $vv['disablePermissionChecks'] === true) {
+                            unset($v[$kk]);
+                        }
+                    }
 
-    /**
-     * Return all modules except profile modules
-     *
-     * @param Contao\DataContainer $dc
-     *
-     * @return array
-     */
-    public function getModules(Contao\DataContainer $dc)
-    {
-        $arrModules = array();
-
-        foreach ($GLOBALS['BE_MOD'] as $k=>$v) {
-            if (empty($v)) {
-                continue;
-            }
-
-            foreach ($v as $kk=>$vv) {
-                if (isset($vv['disablePermissionChecks']) && $vv['disablePermissionChecks'] === true) {
-                    unset($v[$kk]);
+                    $arrModules[$k] = array_keys($v);
                 }
-            }
 
-            $arrModules[$k] = array_keys($v);
-        }
-
-        return $arrModules['content'];
-    }
-
-    /**
-     * Add the type of input field.
-     *
-     * @param array $arrRow
-     *
-     * @return string
-     */
-    public function listItems($arrRow): string
-    {
-        $classes = array();
-
-        if (!empty($arrRow['classes']) && \is_array(($tmp = StringUtil::deserialize($arrRow['classes'])))) {
-            foreach ($tmp as $v) {
-                $classes[] = $v['value'];
-            }
-        }
-
-        return '<div class="tl_content_left">' .$arrRow['title'] .' <span style="color:#999;padding-left:3px">[' . implode(', ', $classes) .']</span></div>';
-    }
-}
+                return $arrModules['content'];
+            },
+            'reference'        => &$GLOBALS['TL_LANG']['MOD'],
+            'eval'             => ['multiple' => true, 'helpwizard' => true],
+            'sql'              => "blob NULL"
+        ],
+    ]
+];
