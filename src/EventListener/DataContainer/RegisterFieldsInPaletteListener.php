@@ -61,8 +61,12 @@ final class RegisterFieldsInPaletteListener
                 continue;
             }
 
+            if (!isset($options[$config['id']])) {
+                continue;
+            }
+
             $GLOBALS['TL_DCA']['tl_content']['fields']['toolbox_css' . $config['id']] = [
-                'label'         => [$config['title'], $config['label']],
+                'label'         => [$config['label'] ?: $config['title'], 'Sie können CSS-Klassen für die Kategorie auswählen.'],
                 'search'        => true,
                 'inputType'     => 'select',
                 'options'       => $options[$config['id']],
