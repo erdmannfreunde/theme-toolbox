@@ -25,7 +25,12 @@ final class SaveClasses
             self::$classes[$id] = [];
         }
 
-        self::$classes[$id] = array_unique(array_merge(self::$classes[$id], StringUtil::deserialize($value, true)));
+        $mergedClasses = array_merge(self::$classes[$id], StringUtil::deserialize($value, true));
+        if (count($mergedClasses) > count(array_unique($mergedClasses))) {
+            throw new \Exception('CSS-Klassen doppelt vorhanden! Wird nicht gespeichert.');
+        }
+
+        self::$classes[$id] = $mergedClasses;
 
         $this->connection->update(
             $dc->table,
