@@ -24,11 +24,11 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'fields'                => ['sorting'],
             'panelLayout'           => 'filter;sort,search,limit',
             'headerFields'          => ['title'],
-            'child_record_callback' => function () {
+            'child_record_callback' => function (array $row) {
                 return sprintf(
                     '<div class="tl_content_left">%s <span style="color:#999;padding-left:3px">[%s]</span></div>',
-                    $arrRow['title'],
-                    implode(', ', array_column(StringUtil::deserialize($arrRow['classes'], true), 'key'))
+                    $row['title'] ?? '',
+                    implode(', ', array_column(StringUtil::deserialize($row['classes'] ?? '', true), 'key'))
                 );
             },
         ],

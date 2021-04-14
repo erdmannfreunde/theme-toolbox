@@ -19,6 +19,7 @@
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
+use Contao\FrontendTemplate;
 use Contao\Template;
 
 class ParseTemplateListener

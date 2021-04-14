@@ -20,16 +20,21 @@ final class SaveClasses
 
     public function onSaveCallback($value, $dc)
     {
-        if (!isset(self::$classes[$dc->table . $dc->id])) {
-            self::$classes[$dc->table . $dc->id] = explode(' ', $dc->activeRecord->toolbox_classes);
+        $id = $dc->table . $dc->id;
+        if (!isset(self::$classes[$id])) {
+            self::$classes[$id] = [];
         }
 
-        self::$classes[$dc->table . $dc->id] =
-            array_unique(array_merge(self::$classes[$dc->table . $dc->id], StringUtil::deserialize($value, true)));
+        $mergedClasses = array_merge(self::$classes[$id], StringUtil::deserialize($value, true));
+        if (count($mergedClasses) > count(array_unique($mergedClasses))) {
+            throw new \Exception('CSS-Klassen doppelt vorhanden! Wird nicht gespeichert.');
+        }
+
+        self::$classes[$id] = $mergedClasses;
 
         $this->connection->update(
-            'tl_content',
-            ['toolbox_classes' => implode(' ', self::$classes[$dc->table . $dc->id])],
+            $dc->table,
+            ['toolbox_classes' => implode(' ', self::$classes[$id])],
             ['id' => $dc->id]
         );
 
@@ -39,9 +44,9 @@ final class SaveClasses
     public function onLoadCallback($value, $dc)
     {
         $configs = $this->connection->createQueryBuilder()
-            ->select('e.id', 'c.classes', 'c.elements')
+            ->select('e.id', 'c.classes')
             ->from('tl_toolbox_editor', 'e')
-            ->innerJoin('e', 'tl_toolbox_editor_css', 'c', 'e.id=c.pid')
+            ->innerJoin('e', 'tl_toolbox_editor_css', 'c', 'e.id = c.pid')
             ->addOrderBy('e.id')
             ->addOrderBy('c.sorting')
             ->execute()

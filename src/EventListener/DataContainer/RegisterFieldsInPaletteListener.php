@@ -23,18 +23,33 @@ final class RegisterFieldsInPaletteListener
             return;
         }
 
-        $configs = $this->connection->createQueryBuilder()
-            ->select('e.id', 'e.title', 'e.label', 'c.title as optgroup', 'c.classes', 'c.elements')
+        $table = $dataContainer->table;
+
+        $qb = $this->connection->createQueryBuilder()
+            ->select('e.id', 'e.title', 'e.label', 'c.title as optgroup', 'c.classes', 'c.elements', 'c.fields')
             ->from('tl_toolbox_editor', 'e')
-            ->innerJoin('e', 'tl_toolbox_editor_css', 'c', 'e.id=c.pid')
+            ->innerJoin('e', 'tl_toolbox_editor_css', 'c', 'e.id = c.pid')
             ->addOrderBy('e.id')
             ->addOrderBy('c.sorting')
-            ->execute()
-            ->fetchAll()
-        ;
+            ;
+
+        if ('tl_content' === $table){
+            $qb->addSelect('c.elements AS allowedTypes');
+        }
+
+        if ('tl_form_field' === $table){
+            $qb->addSelect('c.fields AS allowedTypes');
+        }
+
+        $configs = $qb->execute()->fetchAll();
 
         $type = $this->connection
-            ->executeQuery('SELECT `type` FROM tl_content WHERE id=:id', ['id' => $dataContainer->id])
+            ->createQueryBuilder()
+            ->select('type')
+            ->from($table)
+            ->where('id = :id')
+            ->setParameter('id', $dataContainer->id)
+            ->execute()
             ->fetchColumn()
         ;
 
@@ -46,9 +61,9 @@ final class RegisterFieldsInPaletteListener
 
         foreach ($configs as $config) {
             $cssClasses = StringUtil::deserialize($config['classes'], true);
-            $elements = StringUtil::deserialize($config['elements'], true);
+            $allowedTypes = StringUtil::deserialize($config['allowedTypes'], true);
 
-            if (!in_array($type, $elements, true)) {
+            if (!in_array($type, $allowedTypes, true)) {
                 continue;
             }
 
@@ -57,12 +72,16 @@ final class RegisterFieldsInPaletteListener
         }
 
         foreach ($configs as $config) {
-            if (isset($GLOBALS['TL_DCA']['tl_content']['fields']['toolbox_css' . $config['id']])) {
+            if (isset($GLOBALS['TL_DCA'][$table]['fields']['toolbox_css' . $config['id']])) {
                 continue;
             }
 
-            $GLOBALS['TL_DCA']['tl_content']['fields']['toolbox_css' . $config['id']] = [
-                'label'         => [$config['title'], $config['label']],
+            if (!isset($options[$config['id']])) {
+                continue;
+            }
+
+            $GLOBALS['TL_DCA'][$table]['fields']['toolbox_css' . $config['id']] = [
+                'label'         => [$config['label'] ?: $config['title'], 'Sie können CSS-Klassen für die Kategorie auswählen.'],
                 'search'        => true,
                 'inputType'     => 'select',
                 'options'       => $options[$config['id']],
@@ -78,19 +97,15 @@ final class RegisterFieldsInPaletteListener
                 ],
             ];
 
-            $paletteManipulator->addField(
-                'toolbox_css' . $config['id'],
-                'toolbox_legend',
-                PaletteManipulator::POSITION_APPEND
-            );
+            $paletteManipulator->addField('toolbox_css' . $config['id'], 'toolbox_legend', PaletteManipulator::POSITION_APPEND);
         }
 
-        foreach ($GLOBALS['TL_DCA']['tl_content']['palettes'] as $k => $palette) {
+        foreach ($GLOBALS['TL_DCA'][$table]['palettes'] as $k => $palette) {
             if ('__selector__' === $k || false === strpos($palette, 'cssID')) {
                 continue;
             }
 
-            $paletteManipulator->applyToPalette($k, 'tl_content');
+            $paletteManipulator->applyToPalette($k, $table);
         }
     }
 }
