@@ -21,6 +21,7 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
 use Contao\FrontendTemplate;
 use Contao\Template;
+use Contao\Widget;
 
 class ParseTemplateListener
 {
@@ -36,5 +37,14 @@ class ParseTemplateListener
         }
 
         $template->class .= ' ' . $template->toolbox_classes;
+    }
+
+    public function onParseWidget(string $buffer, Widget $widget): string
+    {
+        if (!$widget->toolbox_classes) {
+            return $buffer;
+        }
+
+        return preg_replace('/class="(.+?)"/', sprintf('class="$1 %s"', $widget->toolbox_classes), $buffer, 1);
     }
 }

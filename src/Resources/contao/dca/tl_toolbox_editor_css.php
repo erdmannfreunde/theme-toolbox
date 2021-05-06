@@ -73,7 +73,7 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
     ],
     // Palettes
     'palettes' => [
-        'default' => '{title_legend},title,classes;{elements_legend},elements;{fields_legend},fields;{modules_legend},modules;'
+        'default' => '{title_legend},title,classes;{elements_legend},elements;{fields_legend},fields;{modules_legend},articles;'
     ],
     // Fields
     'fields'   => [
@@ -129,33 +129,12 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'eval'      => ['multiple' => true, 'helpwizard' => true],
             'sql'       => "blob NULL"
         ],
-        'modules'  => [
-            'label'            => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['modules'],
+        'articles'  => [
             'exclude'          => true,
             'filter'           => true,
             'inputType'        => 'checkbox',
-            'options_callback' => function () {
-                $arrModules = [];
-
-                foreach ($GLOBALS['BE_MOD'] as $k => $v) {
-                    if (empty($v)) {
-                        continue;
-                    }
-
-                    foreach ($v as $kk => $vv) {
-                        if (isset($vv['disablePermissionChecks']) && $vv['disablePermissionChecks'] === true) {
-                            unset($v[$kk]);
-                        }
-                    }
-
-                    $arrModules[$k] = array_keys($v);
-                }
-
-                return $arrModules['content'];
-            },
-            'reference'        => &$GLOBALS['TL_LANG']['MOD'],
-            'eval'             => ['multiple' => true, 'helpwizard' => true],
-            'sql'              => "blob NULL"
+            'eval'             => [],
+            'sql'              => "char(1) NOT NULL default ''"
         ],
     ]
 ];

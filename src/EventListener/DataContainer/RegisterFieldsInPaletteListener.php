@@ -41,29 +41,36 @@ final class RegisterFieldsInPaletteListener
             $qb->addSelect('c.fields AS allowedTypes');
         }
 
+        if ('tl_article' === $table){
+            $qb->andWhere('c.articles = 1');
+        }
+
         $configs = $qb->execute()->fetchAll();
 
-        $type = $this->connection
-            ->createQueryBuilder()
-            ->select('type')
-            ->from($table)
-            ->where('id = :id')
-            ->setParameter('id', $dataContainer->id)
-            ->execute()
-            ->fetchColumn()
-        ;
+        if ('tl_article' !== $table) {
+            $type = $this->connection
+                ->createQueryBuilder()
+                ->select('type')
+                ->from($table)
+                ->where('id = :id')
+                ->setParameter('id', $dataContainer->id)
+                ->execute()
+                ->fetchColumn()
+            ;
+        }
 
         $options = [];
 
         $paletteManipulator = PaletteManipulator::create()
-            ->addLegend('toolbox_legend', 'expert_legend', PaletteManipulator::POSITION_BEFORE)
+            ->addLegend('toolbox_legend', 'expert_legend', PaletteManipulator::POSITION_AFTER)
         ;
 
         foreach ($configs as $config) {
             $cssClasses = StringUtil::deserialize($config['classes'], true);
-            $allowedTypes = StringUtil::deserialize($config['allowedTypes'], true);
 
-            if (!in_array($type, $allowedTypes, true)) {
+            if (($type = ($type ?? null))
+                && ($allowedTypes = StringUtil::deserialize($config['allowedTypes'], true))
+                && !in_array($type, $allowedTypes, true)) {
                 continue;
             }
 
@@ -101,7 +108,7 @@ final class RegisterFieldsInPaletteListener
         }
 
         foreach ($GLOBALS['TL_DCA'][$table]['palettes'] as $k => $palette) {
-            if ('__selector__' === $k || false === strpos($palette, 'cssID')) {
+            if ('__selector__' === $k) {
                 continue;
             }
 
