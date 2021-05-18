@@ -26,6 +26,8 @@ $GLOBALS['TL_HOOKS']['getSystemMessages'][]        =
     ['erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message', 'onGetSystemMessages'];
 $GLOBALS['TL_HOOKS']['parseTemplate'][]        =
     [\ErdmannFreunde\ThemeToolboxBundle\EventListener\ParseTemplateListener::class, 'onParseTemplate'];
+$GLOBALS['TL_HOOKS']['parseWidget'][]        =
+    [\ErdmannFreunde\ThemeToolboxBundle\EventListener\ParseTemplateListener::class, 'onParseWidget'];
 
 array_unshift(
     $GLOBALS['TL_MAINTENANCE'],
