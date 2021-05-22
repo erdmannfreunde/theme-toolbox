@@ -100,7 +100,7 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'sql'       => "varchar(255) NOT NULL default ''"
         ],
         'classes'  => [
-            'label'     => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['class'],
+            'label'     => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['classes'],
             'exclude'   => true,
             'search'    => true,
             'inputType' => 'keyValueWizard',
