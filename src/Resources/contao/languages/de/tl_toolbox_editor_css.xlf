@@ -1,0 +1,58 @@
+<?xml version="1.0" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_toolbox_editor_css.php" source-language="en" target-language="de">
+    <body>
+      <trans-unit id="tl_toolbox_editor_css.title_legend">
+        <source>CSS-Classes</source>
+        <target>CSS-Klassen</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.title.0">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.title.1">
+        <source>Please enter the group title.</source>
+        <target>Bitte geben Sie den Titel der CSS-Untergruppe ein. Dieser Titel wird für die Gruppierung der Klassen innerhalb der Auswahl verwendet.</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.classes.0">
+        <source>Classes</source>
+        <target>Klassen</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.classes.1">
+        <source>Please enter classes and translations</source>
+        <target>Bitte geben Sie die CSS-Klassen und ihre Übersetzung ein.</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.elements_legend">
+        <source>Content Elements</source>
+        <target>Inhaltselemente</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.elements.0">
+        <source>Elements</source>
+        <target>Elemente</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.elements.1">
+        <source>Please choose the content elements that should have this css classes.</source>
+        <target>Bitte wählen Sie die Inhaltselemente aus, für die die CSS-Klassen angezeigt werden sollen.</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.fields_legend">
+        <source>Form Fields</source>
+        <target>Formularfelder</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.fields.0">
+        <source>Fields</source>
+        <target>Felder</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.fields.1">
+        <source>Please choose the form fields that should have this css classes.</source>
+        <target>Bitte wählen Sie die Formularfelder aus, für die die CSS-Klassen angezeigt werden sollen.</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.modules_legend">
+        <source>Modules</source>
+        <target>Module</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.articles.0">
+        <source>articles</source>
+        <target>Artikel</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

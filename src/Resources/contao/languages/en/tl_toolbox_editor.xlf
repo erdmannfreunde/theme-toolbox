@@ -1,0 +1,18 @@
+<?xml version="1.0" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_toolbox_editor.php" source-language="en">
+    <body>
+      <trans-unit id="tl_toolbox_editor.title.0">
+        <source>Title</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor.title.1">
+        <source>Please enter the category title.</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor.label.0">
+        <source>Label</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor.label.1">
+        <source>Please enter a label name.</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

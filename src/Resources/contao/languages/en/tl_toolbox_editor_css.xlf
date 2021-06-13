@@ -1,0 +1,45 @@
+<?xml version="1.0" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_toolbox_editor_css.php" source-language="en">
+    <body>
+      <trans-unit id="tl_toolbox_editor_css.title_legend">
+        <source>CSS-Classes</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.title.0">
+        <source>Title</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.title.1">
+        <source>Please enter the group title.</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.classes.0">
+        <source>Classes</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.classes.1">
+        <source>Please enter classes and translations</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.elements_legend">
+        <source>Content Elements</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.elements.0">
+        <source>Elements</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.elements.1">
+        <source>Please choose the content elements that should have this css classes.</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.fields_legend">
+        <source>Form Fields</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.fields.0">
+        <source>Fields</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.fields.1">
+        <source>Please choose the form fields that should have this css classes.</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.modules_legend">
+        <source>Modules</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.articles.0">
+        <source>articles</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

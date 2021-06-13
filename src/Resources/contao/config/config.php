@@ -17,10 +17,17 @@
  * @filesource
  */
 
+// Back end modules
+$GLOBALS['BE_MOD']['design']['toolboxEditor'] = array('tables' => array('tl_toolbox_editor', 'tl_toolbox_editor_css'));
+
 $GLOBALS['TL_HOOKS']['replaceDynamicScriptTags'][] =
     ['erdmannfreunde.theme_toolbox.listener.disable_css_caching', 'onReplaceDynamicScriptTags'];
 $GLOBALS['TL_HOOKS']['getSystemMessages'][]        =
     ['erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message', 'onGetSystemMessages'];
+$GLOBALS['TL_HOOKS']['parseTemplate'][]        =
+    [\ErdmannFreunde\ThemeToolboxBundle\EventListener\ParseTemplateListener::class, 'onParseTemplate'];
+$GLOBALS['TL_HOOKS']['parseWidget'][]        =
+    [\ErdmannFreunde\ThemeToolboxBundle\EventListener\ParseTemplateListener::class, 'onParseWidget'];
 
 array_unshift(
     $GLOBALS['TL_MAINTENANCE'],

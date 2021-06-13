@@ -6,3 +6,14 @@ services:
   erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message:
     class: ErdmannFreunde\ThemeToolboxBundle\EventListener\BypassModeAlertMessageListener
     public: true
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\RegisterFieldsInPaletteListener:
+    arguments: ['@database_connection']
+    public: true
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\SaveClasses:
+    arguments: ['@database_connection']
+    public: true
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\ParseTemplateListener:
+    public: true
