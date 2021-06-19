@@ -7,6 +7,7 @@ use Contao\DataContainer;
 use Contao\Input;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
+use function Doctrine\DBAL\Query\QueryBuilder;
 
 final class RegisterFieldsInPaletteListener
 {
@@ -34,11 +35,17 @@ final class RegisterFieldsInPaletteListener
             ;
 
         if ('tl_content' === $table){
-            $qb->addSelect('c.elements AS allowedTypes');
+            $qb
+                ->addSelect('c.elements AS allowedTypes')
+                ->andWhere($qb->expr()->or('c.articles <> 1', 'c.elements'))
+            ;
         }
 
         if ('tl_form_field' === $table){
-            $qb->addSelect('c.fields AS allowedTypes');
+            $qb
+                ->addSelect('c.fields AS allowedTypes')
+                ->andWhere($qb->expr()->or('c.articles <> 1', 'c.fields'))
+            ;
         }
 
         if ('tl_article' === $table){
