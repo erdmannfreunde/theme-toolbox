@@ -9,9 +9,9 @@ use Doctrine\DBAL\Connection;
 
 final class SaveClasses
 {
-    private Connection $connection;
+    private $connection;
 
-    private static array $classes = [];
+    private static $classes = [];
 
     public function __construct(Connection $connection)
     {

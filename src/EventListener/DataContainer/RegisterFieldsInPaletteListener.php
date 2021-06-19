@@ -7,11 +7,10 @@ use Contao\DataContainer;
 use Contao\Input;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
-use function Doctrine\DBAL\Query\QueryBuilder;
 
 final class RegisterFieldsInPaletteListener
 {
-    private Connection $connection;
+    private $connection;
 
     public function __construct(Connection $connection)
     {
