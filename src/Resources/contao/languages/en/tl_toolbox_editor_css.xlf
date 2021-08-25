@@ -16,8 +16,8 @@
       <trans-unit id="tl_toolbox_editor_css.classes.1">
         <source>Please enter classes and translations</source>
       </trans-unit>
-      <trans-unit id="tl_toolbox_editor_css.elements_legend">
-        <source>Content Elements</source>
+      <trans-unit id="tl_toolbox_editor_css.scope_legend">
+        <source>Scope</source>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.elements.0">
         <source>Elements</source>
@@ -25,20 +25,20 @@
       <trans-unit id="tl_toolbox_editor_css.elements.1">
         <source>Please choose the content elements that should have this css classes.</source>
       </trans-unit>
-      <trans-unit id="tl_toolbox_editor_css.fields_legend">
-        <source>Form Fields</source>
-      </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.fields.0">
         <source>Fields</source>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.fields.1">
         <source>Please choose the form fields that should have this css classes.</source>
       </trans-unit>
-      <trans-unit id="tl_toolbox_editor_css.modules_legend">
-        <source>Modules</source>
-      </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.articles.0">
         <source>articles</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.use_ce.0">
+        <source>Content elements</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.use_ffl.0">
+        <source>Form fields</source>
       </trans-unit>
     </body>
   </file>

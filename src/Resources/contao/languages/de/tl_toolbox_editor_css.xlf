@@ -21,9 +21,9 @@
         <source>Please enter classes and translations</source>
         <target>Bitte geben Sie die CSS-Klassen und ihre Übersetzung ein.</target>
       </trans-unit>
-      <trans-unit id="tl_toolbox_editor_css.elements_legend">
-        <source>Content Elements</source>
-        <target>Inhaltselemente</target>
+      <trans-unit id="tl_toolbox_editor_css.scope_legend">
+        <source>Scope</source>
+        <target>Anwendungsbereich</target>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.elements.0">
         <source>Elements</source>
@@ -33,10 +33,6 @@
         <source>Please choose the content elements that should have this css classes.</source>
         <target>Bitte wählen Sie die Inhaltselemente aus, für die die CSS-Klassen angezeigt werden sollen.</target>
       </trans-unit>
-      <trans-unit id="tl_toolbox_editor_css.fields_legend">
-        <source>Form Fields</source>
-        <target>Formularfelder</target>
-      </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.fields.0">
         <source>Fields</source>
         <target>Felder</target>
@@ -45,13 +41,17 @@
         <source>Please choose the form fields that should have this css classes.</source>
         <target>Bitte wählen Sie die Formularfelder aus, für die die CSS-Klassen angezeigt werden sollen.</target>
       </trans-unit>
-      <trans-unit id="tl_toolbox_editor_css.modules_legend">
-        <source>Modules</source>
-        <target>Module</target>
-      </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.articles.0">
         <source>articles</source>
         <target>Artikel</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.use_ce.0">
+        <source>Content elements</source>
+        <target>Inhaltselemente</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.use_ffl.0">
+        <source>Form fields</source>
+        <target>Formularfelder</target>
       </trans-unit>
     </body>
   </file>

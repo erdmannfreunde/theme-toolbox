@@ -31,23 +31,19 @@ final class RegisterFieldsInPaletteListener
             ->innerJoin('e', 'tl_toolbox_editor_css', 'c', 'e.id = c.pid')
             ->addOrderBy('e.id')
             ->addOrderBy('c.sorting')
-            ;
+        ;
 
-        if ('tl_content' === $table){
-            $qb
-                ->addSelect('c.elements AS allowedTypes')
-                ->andWhere($qb->expr()->or('c.articles <> 1', 'c.elements'))
-            ;
+        if ('tl_content' === $table) {
+            $qb->andWhere('c.use_ce = 1');
+            $qb->addSelect('c.elements AS allowedTypes');
         }
 
-        if ('tl_form_field' === $table){
-            $qb
-                ->addSelect('c.fields AS allowedTypes')
-                ->andWhere($qb->expr()->or('c.articles <> 1', 'c.fields'))
-            ;
+        if ('tl_form_field' === $table) {
+            $qb->andWhere('c.use_ffl = 1');
+            $qb->addSelect('c.fields AS allowedTypes');
         }
 
-        if ('tl_article' === $table){
+        if ('tl_article' === $table) {
             $qb->andWhere('c.articles = 1');
         }
 

@@ -73,7 +73,13 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
     ],
     // Palettes
     'palettes' => [
-        'default' => '{title_legend},title,classes;{elements_legend},elements;{fields_legend},fields;{modules_legend},articles;'
+        '__selector__' => ['use_ce', 'use_ffl'],
+        'default' => '{title_legend},title,classes;{scope_legend},use_ce,use_ffl,articles;'
+    ],
+    // Subpalettes
+    'subpalettes' => [
+        'use_ce' => 'elements',
+        'use_ffl' => 'fields',
     ],
     // Fields
     'fields'   => [
@@ -107,6 +113,15 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'eval'      => ['mandatory' => true, 'maxlength' => 255, 'tl_class' => 'w100 clr'],
             'sql'       => "text NULL"
         ],
+        'use_ce'  => [
+            'exclude'          => true,
+            'filter'           => true,
+            'inputType'        => 'checkbox',
+            'eval'             => [
+                'submitOnChange' => true,
+            ],
+            'sql'              => "char(1) NOT NULL default ''"
+        ],
         'elements' => [
             'label'            => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['elements'],
             'exclude'          => true,
@@ -118,6 +133,15 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'reference'        => &$GLOBALS['TL_LANG']['CTE'],
             'eval'             => ['multiple' => true, 'helpwizard' => true],
             'sql'              => "blob NULL"
+        ],
+        'use_ffl'  => [
+            'exclude'          => true,
+            'filter'           => true,
+            'inputType'        => 'checkbox',
+            'eval'             => [
+                'submitOnChange' => true,
+            ],
+            'sql'              => "char(1) NOT NULL default ''"
         ],
         'fields'   => [
             'label'     => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['fields'],
