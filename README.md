@@ -3,13 +3,17 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/erdmannfreunde/theme-toolbox.svg)](https://packagist.org/packages/https://github.com/erdmannfreunde/theme-toolbox/tags)
 [![Installations via composer per month](https://img.shields.io/packagist/dm/erdmannfreunde/theme-toolbox.svg)](https://packagist.org/packages/erdmannfreunde/theme-toolbox)
 
-Theme Toolbox
-===============
+# Theme Toolbox
 
 This package holds helpful tools to work with the [Contao Themes][1] by [Erdmann & Freunde][2].
 
-Bypass SCSS cache 
------------------
+## 1. CSS Class Picker
+
+If you don't want to give your clients a list of class names, that can be used for variants and specific styles, 
+you can use the theme toolbox to add human readable styles to elements, modules and articles. In toolbox editor you
+can add css classes and it's translations and chose where this styles will be visible. 
+
+## 2. Bypass SCSS cache 
 
 While we encourage you to do frontend theme development on your local machine (there are so many advantages!), our 
 themes will come with a "server edition" that allows you to let Contao compile your SCSS-files on your server.
