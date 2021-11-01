@@ -20,6 +20,7 @@
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
 use Contao\FrontendTemplate;
+use Contao\StringUtil;
 use Contao\Template;
 use Contao\Widget;
 
@@ -36,7 +37,7 @@ class ParseTemplateListener
             return;
         }
 
-        $template->class .= ' ' . $template->toolbox_classes;
+        $template->class .= ' ' . $this->uniqueClasses($template->toolbox_classes);
     }
 
     public function onParseWidget(string $buffer, Widget $widget): string
@@ -45,6 +46,12 @@ class ParseTemplateListener
             return $buffer;
         }
 
-        return preg_replace('/class="(.+?)"/', sprintf('class="$1 %s"', $widget->toolbox_classes), $buffer, 1);
+        return preg_replace('/class="(.+?)"/',
+            sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)), $buffer, 1);
+    }
+
+    private function uniqueClasses(string $classes): string
+    {
+        return implode(' ', array_unique(StringUtil::trimsplit(' ', $classes)));
     }
 }
