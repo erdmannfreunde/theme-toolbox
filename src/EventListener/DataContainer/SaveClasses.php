@@ -53,6 +53,7 @@ final class SaveClasses
             ->fetchAll()
         ;
 
+        $options = [];
         foreach ($configs as $config) {
             if ('toolbox_css' . $config['id'] !== $dc->field){
                 continue;
@@ -65,6 +66,8 @@ final class SaveClasses
 
         $options = array_unique(array_merge(...$options));
 
-        return array_intersect(explode(' ', $dc->activeRecord->toolbox_classes), $options);
+        return array_filter($options, function ($option) use ($dc) {
+            return preg_match(sprintf('/^|\s%s\s|$/', preg_quote($option)), $dc->activeRecord->toolbox_classes);
+        });
     }
 }
