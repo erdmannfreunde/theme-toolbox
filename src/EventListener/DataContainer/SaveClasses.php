@@ -2,8 +2,6 @@
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 
-use Contao\CoreBundle\DataContainer\PaletteManipulator;
-use Contao\DataContainer;
 use Contao\StringUtil;
 use Doctrine\DBAL\Connection;
 
@@ -66,8 +64,8 @@ final class SaveClasses
 
         $options = array_unique(array_merge(...$options));
 
-        return array_filter($options, function ($option) use ($dc) {
-            return preg_match(sprintf('/^|\s%s\s|$/', preg_quote($option)), $dc->activeRecord->toolbox_classes);
-        });
+        return array_values(array_filter($options, function ($option) use ($dc) {
+            return 1 === preg_match(sprintf('/(^|\s)(%s)(\s|$)/', preg_quote($option)), $dc->activeRecord->toolbox_classes);
+        }));
     }
 }
