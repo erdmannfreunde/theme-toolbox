@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.classes.1">
         <source>Please enter classes and translations</source>
-        <target>Bitte geben Sie die CSS-Klassen und ihre Übersetzung ein.</target>
+        <target>Bitte geben Sie die CSS-Klassen und ihre Übersetzung ein. Schlüssel ist die CSS-Klasse, Wert ist die Bezeichung im Backend.Sie können auch mehre Klassen eingeben, zum Beispiel btn btn--primary.</target>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.scope_legend">
         <source>Scope</source>

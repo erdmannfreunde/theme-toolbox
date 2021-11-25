@@ -29,7 +29,7 @@
         <source>Fields</source>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.fields.1">
-        <source>Please choose the form fields that should have this css classes.</source>
+        <source>Please choose the form fields that should have this css classes. Key means CSS class, Value means description in backend. You can also use multiple classes for example btn btn--primary.</source>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.articles.0">
         <source>articles</source>
