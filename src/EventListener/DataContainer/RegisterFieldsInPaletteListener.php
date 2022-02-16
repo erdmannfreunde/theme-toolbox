@@ -47,7 +47,7 @@ final class RegisterFieldsInPaletteListener
             $qb->andWhere('c.articles = 1');
         }
 
-        $configs = $qb->execute()->fetchAll();
+        $configs = $qb->execute()->fetchAllAssociative();
 
         if ('tl_article' !== $table) {
             $type = $this->connection
@@ -57,7 +57,7 @@ final class RegisterFieldsInPaletteListener
                 ->where('id = :id')
                 ->setParameter('id', $dataContainer->id)
                 ->execute()
-                ->fetchColumn()
+                ->fetchAllAssociative()
             ;
         }
 

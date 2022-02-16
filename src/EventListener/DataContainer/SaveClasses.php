@@ -48,7 +48,7 @@ final class SaveClasses
             ->addOrderBy('e.id')
             ->addOrderBy('c.sorting')
             ->execute()
-            ->fetchAll()
+            ->fetchAllAssociative()
         ;
 
         $options = [];
