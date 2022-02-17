@@ -47,8 +47,8 @@ final class SaveClasses
             ->innerJoin('e', 'tl_toolbox_editor_css', 'c', 'e.id = c.pid')
             ->addOrderBy('e.id')
             ->addOrderBy('c.sorting')
-            ->execute()
-            ->fetchAll()
+            ->executeQuery()
+            ->fetchAllAssociative()
         ;
 
         $options = [];
