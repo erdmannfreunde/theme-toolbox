@@ -21,7 +21,6 @@
         "symfony/http-kernel": "^3.3 || ^4.0 || ^5.0"
     },
     "require-dev": {
-        "phpcq/all-tasks": "^1.2",
         "contao/manager-plugin": "^2.1"
     },
     "autoload": {
@@ -29,16 +28,17 @@
             "ErdmannFreunde\\ThemeToolboxBundle\\": "src"
         }
     },
-    "autoload-dev": {
-        "psr-4": {
-            "ErdmannFreunde\\ThemeToolboxBundle\\Test\\": "tests"
-        }
-    },
     "extra": {
         "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin",
         "branch-alias": {
             "dev-master": "1.0.x-dev",
             "dev-develop": "1.1.x-dev"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "contao-components/installer": true,
+            "contao/manager-plugin": true
         }
     }
 }
