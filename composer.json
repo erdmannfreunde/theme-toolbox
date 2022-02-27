@@ -14,11 +14,12 @@
         "source": "https://github.com/erdmannfreunde/theme-toolbox"
     },
     "require": {
-        "php": ">=7.0",
-        "contao/core-bundle": "^4.4",
-        "symfony/config": "^3.3 || ^4.0 || ^5.0",
-        "symfony/dependency-injection": "^3.3 || ^4.0 || ^5.0",
-        "symfony/http-kernel": "^3.3 || ^4.0 || ^5.0"
+        "php": ">=7.4",
+        "contao/core-bundle": "^4.13",
+        "doctrine/dbal": "^3.0",
+        "symfony/config": "^5.0",
+        "symfony/dependency-injection": "^5.0",
+        "symfony/http-kernel": "^5.0"
     },
     "require-dev": {
         "contao/manager-plugin": "^2.1"
@@ -29,11 +30,7 @@
         }
     },
     "extra": {
-        "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin",
-        "branch-alias": {
-            "dev-master": "1.0.x-dev",
-            "dev-develop": "1.1.x-dev"
-        }
+        "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin"
     },
     "config": {
         "allow-plugins": {
