@@ -1,8 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of erdmannfreunde/theme-toolbox.
+ *
+ * (c) Erdmann & Freunde <https://erdmann-freunde.de>
+ *
+ * @license LGPL-3.0-or-later
+ */
+
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
+use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Contao\DataContainer;
 use Contao\Input;
 use Contao\StringUtil;
@@ -10,16 +21,21 @@ use Doctrine\DBAL\Connection;
 
 final class RegisterFieldsInPaletteListener
 {
-    private $connection;
+    private Connection $connection;
 
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
     }
 
+    /**
+     * @Callback(table="tl_article", target="config.onload")
+     * @Callback(table="tl_content", target="config.onload")
+     * @Callback(table="tl_form_field", target="config.onload")
+     */
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
-        if (!in_array(Input::get('act'), ['edit', 'editAll'], true)) {
+        if (!\in_array(Input::get('act'), ['edit', 'editAll'], true)) {
             return;
         }
 
@@ -70,9 +86,11 @@ final class RegisterFieldsInPaletteListener
         foreach ($configs as $config) {
             $cssClasses = StringUtil::deserialize($config['classes'], true);
 
-            if (($type = ($type ?? null))
+            if (
+                ($type = ($type ?? null))
                 && ($allowedTypes = StringUtil::deserialize($config['allowedTypes'], true))
-                && !in_array($type, $allowedTypes, true)) {
+                && !\in_array($type, $allowedTypes, true)
+            ) {
                 continue;
             }
 
@@ -81,7 +99,7 @@ final class RegisterFieldsInPaletteListener
         }
 
         foreach ($configs as $config) {
-            if (isset($GLOBALS['TL_DCA'][$table]['fields']['toolbox_css' . $config['id']])) {
+            if (isset($GLOBALS['TL_DCA'][$table]['fields']['toolbox_css'.$config['id']])) {
                 continue;
             }
 
@@ -89,27 +107,27 @@ final class RegisterFieldsInPaletteListener
                 continue;
             }
 
-            $GLOBALS['TL_DCA'][$table]['fields']['toolbox_css' . $config['id']] = [
-                'label'         => [$config['label'] ?: $config['title'], 'Sie können CSS-Klassen für die Kategorie auswählen.'],
-                'search'        => true,
-                'inputType'     => 'select',
-                'options'       => $options[$config['id']],
+            $GLOBALS['TL_DCA'][$table]['fields']['toolbox_css'.$config['id']] = [
+                'label' => [$config['label'] ?: $config['title'], 'Sie können CSS-Klassen für die Kategorie auswählen.'],
+                'search' => true,
+                'inputType' => 'select',
+                'options' => $options[$config['id']],
                 'load_callback' => [[SaveClasses::class, 'onLoadCallback']],
                 'save_callback' => [[SaveClasses::class, 'onSaveCallback']],
-                'eval'          => [
+                'eval' => [
                     'mandatory' => false,
-                    'multiple'       => true,
-                    'size'           => 10,
+                    'multiple' => true,
+                    'size' => 10,
                     'doNotSaveEmpty' => true,
-                    'tl_class'       => 'w50 w50h autoheight',
-                    'chosen'         => true,
+                    'tl_class' => 'w50 w50h autoheight',
+                    'chosen' => true,
                 ],
             ];
 
-            $paletteManipulator->addField('toolbox_css' . $config['id'], 'toolbox_legend', PaletteManipulator::POSITION_APPEND);
+            $paletteManipulator->addField('toolbox_css'.$config['id'], 'toolbox_legend', PaletteManipulator::POSITION_APPEND);
         }
 
-        foreach ($GLOBALS['TL_DCA'][$table]['palettes'] as $k => $palette) {
+        foreach (array_keys($GLOBALS['TL_DCA'][$table]['palettes']) as $k) {
             if ('__selector__' === $k) {
                 continue;
             }

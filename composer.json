@@ -1,41 +1,43 @@
 {
-    "name": "erdmannfreunde/theme-toolbox",
-    "description": "Erdmann & Freunde Theme Utilities",
-    "keywords": [
-        "contao",
-        "bundle"
-    ],
-    "type": "contao-bundle",
-    "homepage": "https://www.erdmann-freunde.de",
-    "license": "LGPL-3.0-or-later",
-    "support": {
-        "email": "moin@erdmannfreunde.de",
-        "issues": "https://github.com/erdmannfreunde/theme-toolbox/issues",
-        "source": "https://github.com/erdmannfreunde/theme-toolbox"
-    },
-    "require": {
-        "php": ">=7.4",
-        "contao/core-bundle": "^4.13",
-        "doctrine/dbal": "^3.0",
-        "symfony/config": "^5.0",
-        "symfony/dependency-injection": "^5.0",
-        "symfony/http-kernel": "^5.0"
-    },
-    "require-dev": {
-        "contao/manager-plugin": "^2.1"
-    },
-    "autoload": {
-        "psr-4": {
-            "ErdmannFreunde\\ThemeToolboxBundle\\": "src"
-        }
-    },
-    "extra": {
-        "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin"
-    },
-    "config": {
-        "allow-plugins": {
-            "contao-components/installer": true,
-            "contao/manager-plugin": true
-        }
+  "name": "erdmannfreunde/theme-toolbox",
+  "description": "Erdmann & Freunde Theme Utilities",
+  "keywords": [
+    "contao",
+    "bundle"
+  ],
+  "type": "contao-bundle",
+  "homepage": "https://www.erdmann-freunde.de",
+  "license": "LGPL-3.0-or-later",
+  "support": {
+    "email": "moin@erdmannfreunde.de",
+    "issues": "https://github.com/erdmannfreunde/theme-toolbox/issues",
+    "source": "https://github.com/erdmannfreunde/theme-toolbox"
+  },
+  "require": {
+    "php": ">=7.4",
+    "contao/core-bundle": "^4.13",
+    "doctrine/dbal": "^3.0",
+    "symfony/config": "^5.0",
+    "symfony/dependency-injection": "^5.0",
+    "symfony/http-kernel": "^5.0"
+  },
+  "require-dev": {
+    "contao/manager-plugin": "^2.1",
+    "contao/easy-coding-standard": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "ErdmannFreunde\\ThemeToolboxBundle\\": "src"
     }
+  },
+  "extra": {
+    "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin"
+  },
+  "config": {
+    "allow-plugins": {
+      "contao-components/installer": true,
+      "contao/manager-plugin": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
 }

@@ -25,6 +25,14 @@ CAUTION:
 -----------------
 **Please make sure to disable bypassing script cache after you finished your work on SCSS-files, as disabling the script cache can cause big performance issues!**
 
+## Development notes:
+
+Code style:
+
+```shell
+vendor/bin/ecs check src contao --fix
+```
+
 -------
 
 [1]: https://erdmann-freunde.de/produkte/contao-themes/

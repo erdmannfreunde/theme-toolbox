@@ -1,60 +1,46 @@
 <?php
 
-/**
+declare(strict_types=1);
+
+/*
  * This file is part of erdmannfreunde/theme-toolbox.
  *
- * (c) 2018-2018 Erdmann & Freunde.
+ * (c) Erdmann & Freunde <https://erdmann-freunde.de>
  *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- *
- * This project is provided in good faith and hope to be usable by anyone.
- *
- * @package    erdmannfreunde/theme-toolbox
- * @author     Richard Henkenjohann <richardhenkenjohann@googlemail.com>
- * @copyright  2018-2018 Erdmann & Freunde.
- * @license    https://github.com/erdmannfreunde/theme-toolbox/blob/master/LICENSE LGPL-3.0-or-later
- * @filesource
+ * @license LGPL-3.0-or-later
  */
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
 use Contao\Automator;
 use Contao\Config;
+use Contao\CoreBundle\ServiceAnnotation\Hook;
 
 /**
- * Class DisableCssCachingListener
+ * Purge the script (css) cache each time.
  *
- * @package ErdmannFreunde\ThemeToolboxBundle\EventListener
+ * @Hook("replaceDynamicScriptTags")
  */
 class DisableCssCachingListener
 {
-    /**
-     * Purge the script (css) cache each time.
-     *
-     * @param string $buffer The string with the tags to be replaced.
-     *
-     * @return string
-     *
-     * @SuppressWarnings(PHPMD.Superglobals)
-     * @SuppressWarnings(PHPMD.CamelCaseVariableName)
-     */
-    public function onReplaceDynamicScriptTags($buffer)
+    public function __invoke($buffer): string
     {
         // Do not bypass in debug mode, in debug mode the css files are generated on the fly nonetheless.
-        if (isset($GLOBALS['TL_USER_CSS'])
-            && \is_array($GLOBALS['TL_USER_CSS'])
-            && !empty($GLOBALS['TL_USER_CSS'])
+        if (
+            isset($GLOBALS['TL_USER_CSS'])
+            && !empty($GLOBALS['TL_USER_CSS']) && \is_array($GLOBALS['TL_USER_CSS'])
             && Config::get('bypassScriptCache')
-            && !Config::get('debugMode')) {
+            && !Config::get('debugMode')
+        ) {
             // Purging script cache is the only way to be compatible with Contao versions 4.4 to 4.6
             $automator = new Automator();
             $automator->purgeScriptCache();
 
             $time = time();
+
             foreach (array_unique($GLOBALS['TL_USER_CSS']) as $i => $stylesheet) {
                 // Add version (mtime) flag. Ignore if one is already present, last flag wins.
-                $GLOBALS['TL_USER_CSS'][$i] = $stylesheet . '|' . $time;
+                $GLOBALS['TL_USER_CSS'][$i] = $stylesheet.'|'.$time;
             }
         }
 

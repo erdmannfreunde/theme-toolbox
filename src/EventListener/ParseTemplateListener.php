@@ -1,24 +1,18 @@
 <?php
 
-/**
+declare(strict_types=1);
+
+/*
  * This file is part of erdmannfreunde/theme-toolbox.
  *
- * (c) 2018-2018 Erdmann & Freunde.
+ * (c) Erdmann & Freunde <https://erdmann-freunde.de>
  *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- *
- * This project is provided in good faith and hope to be usable by anyone.
- *
- * @package    erdmannfreunde/theme-toolbox
- * @author     Richard Henkenjohann <richardhenkenjohann@googlemail.com>
- * @copyright  2018-2018 Erdmann & Freunde.
- * @license    https://github.com/erdmannfreunde/theme-toolbox/blob/master/LICENSE LGPL-3.0-or-later
- * @filesource
+ * @license LGPL-3.0-or-later
  */
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
+use Contao\CoreBundle\ServiceAnnotation\Hook;
 use Contao\FrontendTemplate;
 use Contao\StringUtil;
 use Contao\Template;
@@ -26,7 +20,9 @@ use Contao\Widget;
 
 class ParseTemplateListener
 {
-
+    /**
+     * @Hook("parseTemplate")
+     */
     public function onParseTemplate(Template $template): void
     {
         if (!$template instanceof FrontendTemplate) {
@@ -37,17 +33,24 @@ class ParseTemplateListener
             return;
         }
 
-        $template->class .= ' ' . $this->uniqueClasses($template->toolbox_classes);
+        $template->class .= ' '.$this->uniqueClasses($template->toolbox_classes);
     }
 
+    /**
+     * @Hook("parseWidget")
+     */
     public function onParseWidget(string $buffer, Widget $widget): string
     {
         if (!$widget->toolbox_classes) {
             return $buffer;
         }
 
-        return preg_replace('/class="(.+?)"/',
-            sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)), $buffer, 1);
+        return preg_replace(
+            '/class="(.+?)"/',
+            sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)),
+            $buffer,
+            1
+        );
     }
 
     private function uniqueClasses(string $classes): string
