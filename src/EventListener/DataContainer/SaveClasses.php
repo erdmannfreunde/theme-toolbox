@@ -77,6 +77,6 @@ final class SaveClasses
 
         $options = array_unique(array_merge(...$options));
 
-        return array_values(array_filter($options, static fn ($option) => 1 === preg_match(sprintf('/(^|\s)(%s)(\s|$)/', preg_quote($option)), $dc->activeRecord->toolbox_classes)));
+        return array_values(array_filter($options, static fn ($option) => 1 === preg_match(sprintf('/(^|\s)(%s)(\s|$)/', preg_quote($option)), $dc->activeRecord->toolbox_classes ?? '')));
     }
 }
