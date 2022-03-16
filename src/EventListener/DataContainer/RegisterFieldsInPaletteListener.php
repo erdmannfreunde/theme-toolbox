@@ -29,9 +29,9 @@ final class RegisterFieldsInPaletteListener
     }
 
     /**
-     * @Callback(table="tl_article", target="config.onload")
-     * @Callback(table="tl_content", target="config.onload")
-     * @Callback(table="tl_form_field", target="config.onload")
+     * @Callback(table="tl_article", target="config.onload", priority=-10)
+     * @Callback(table="tl_content", target="config.onload", priority=-10)
+     * @Callback(table="tl_form_field", target="config.onload", priority=-10)
      */
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
