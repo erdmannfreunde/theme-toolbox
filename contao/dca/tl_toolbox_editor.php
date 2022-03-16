@@ -64,7 +64,7 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor'] = [
                 'icon' => 'delete.gif',
                 'attributes' => sprintf(
                     "onclick=\"if(!confirm('%s'))return false;Backend.getScrollOffset()\"",
-                    $GLOBALS['TL_LANG']['MSC']['deleteConfirm']
+                    ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
                 ),
             ],
             'show' => [
