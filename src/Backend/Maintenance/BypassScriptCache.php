@@ -18,12 +18,13 @@ use Contao\Config;
 use Contao\Controller;
 use Contao\Environment;
 use Contao\Input;
+use Contao\MaintenanceModuleInterface;
 use Contao\StringUtil;
 
 /**
  * Class Maintenance.
  */
-class BypassScriptCache extends Backend implements \executable
+class BypassScriptCache extends Backend implements MaintenanceModuleInterface
 {
     /**
      * Return true if the module is active.
