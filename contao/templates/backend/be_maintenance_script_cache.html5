@@ -11,7 +11,7 @@
     <form action="<?= $this->action ?>" class="tl_form" method="post">
         <div class="tl_formbody_edit">
             <input type="hidden" name="FORM_SUBMIT" value="<?= $this->formSubmit ?>">
-            <input type="hidden" name="REQUEST_TOKEN" value="<?= REQUEST_TOKEN ?>">
+            <input type="hidden" name="REQUEST_TOKEN" value="<?= \Contao\System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue() ?>">
             <?php if ($this->explain): ?>
                 <div class="tl_message">
                     <p class="<?= $this->class ?>"><?= $this->explain ?></p>
