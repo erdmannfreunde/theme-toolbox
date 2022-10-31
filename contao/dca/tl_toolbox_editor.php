@@ -13,7 +13,7 @@ declare(strict_types=1);
 $GLOBALS['TL_DCA']['tl_toolbox_editor'] = [
     // Config
     'config' => [
-        'dataContainer' => 'Table',
+        'dataContainer' => \Contao\DC_Table::class,
         'ctable' => ['tl_toolbox_editor_css'],
         'switchToEdit' => true,
         'sql' => [

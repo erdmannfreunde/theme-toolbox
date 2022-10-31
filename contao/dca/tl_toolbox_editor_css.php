@@ -23,7 +23,7 @@ use Contao\StringUtil;
 $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
     // Config
     'config' => [
-        'dataContainer' => 'Table',
+        'dataContainer' => \Contao\DC_Table::class,
         'ptable' => 'tl_toolbox_editor',
         'switchToEdit' => true,
         'enableVersioning' => true,
