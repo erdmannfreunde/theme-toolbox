@@ -17,9 +17,9 @@
     "php": ">=7.4",
     "contao/core-bundle": "^5.0",
     "doctrine/dbal": "^3.0",
-    "symfony/config": "^5.0",
-    "symfony/dependency-injection": "^5.0",
-    "symfony/http-kernel": "^5.0"
+    "symfony/config": "^5.0 || ^6.0",
+    "symfony/dependency-injection": "^5.0 || ^6.0",
+    "symfony/http-kernel": "^5.0 || ^6.0"
   },
   "require-dev": {
     "contao/manager-plugin": "^2.1",
@@ -37,7 +37,8 @@
     "allow-plugins": {
       "contao-components/installer": true,
       "contao/manager-plugin": true,
-      "dealerdirect/phpcodesniffer-composer-installer": true
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "php-http/discovery": true
     }
   }
 }
