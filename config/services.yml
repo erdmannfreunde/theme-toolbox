@@ -1,4 +1,7 @@
 services:
+  _defaults:
+    autoconfigure: true
+
   erdmannfreunde.theme_toolbox.listener.disable_css_caching:
     class: ErdmannFreunde\ThemeToolboxBundle\EventListener\DisableCssCachingListener
     public: true
