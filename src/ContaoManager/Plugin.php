@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ErdmannFreunde\ThemeToolboxBundle\ContaoManager;
 
+use Composer\InstalledVersions;
 use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
@@ -28,9 +29,23 @@ class Plugin implements BundlePluginInterface
      */
     public function getBundles(ParserInterface $parser)
     {
+        $dependencies[] = ContaoCoreBundle::class;
+
+        if (InstalledVersions::isInstalled('contao/news-bundle')) {
+            $dependencies[] = \Contao\NewsBundle\ContaoNewsBundle::class;
+        }
+
+        if (InstalledVersions::isInstalled('contao/calendar-bundle')) {
+            $dependencies[] = \Contao\CalendarBundle\ContaoCalendarBundle::class;
+        }
+
+        if (InstalledVersions::isInstalled('contao/faq-bundle')) {
+            $dependencies[] = \Contao\FaqBundle\ContaoFaqBundle::class;
+        }
+
         return [
             BundleConfig::create(ErdmannFreundeThemeToolboxBundle::class)
-                ->setLoadAfter([ContaoCoreBundle::class]),
+                ->setLoadAfter($dependencies),
         ];
     }
 }

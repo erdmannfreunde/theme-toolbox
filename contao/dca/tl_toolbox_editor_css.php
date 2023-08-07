@@ -175,5 +175,26 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'eval' => [],
             'sql' => "char(1) NOT NULL default ''",
         ],
+        'news' => [
+            'exclude' => true,
+            'filter' => true,
+            'inputType' => 'checkbox',
+            'eval' => [],
+            'sql' => "char(1) NOT NULL default ''",
+        ],
+        'events' => [
+            'exclude' => true,
+            'filter' => true,
+            'inputType' => 'checkbox',
+            'eval' => [],
+            'sql' => "char(1) NOT NULL default ''",
+        ],
+        'faqs' => [
+            'exclude' => true,
+            'filter' => true,
+            'inputType' => 'checkbox',
+            'eval' => [],
+            'sql' => "char(1) NOT NULL default ''",
+        ],
     ],
 ];

@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 
+use Composer\InstalledVersions;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 use Contao\CoreBundle\ServiceAnnotation\Callback;
+use Contao\Database;
 use Contao\DataContainer;
 use Contao\Input;
 use Contao\StringUtil;
@@ -32,6 +34,9 @@ final class RegisterFieldsInPaletteListener
      * @Callback(table="tl_article", target="config.onload", priority=-10)
      * @Callback(table="tl_content", target="config.onload", priority=-10)
      * @Callback(table="tl_form_field", target="config.onload", priority=-10)
+     * @Callback(table="tl_news", target="config.onload", priority=-10)
+     * @Callback(table="tl_calendar_events", target="config.onload", priority=-10)
+     * @Callback(table="tl_faq", target="config.onload", priority=-10)
      */
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
@@ -63,9 +68,33 @@ final class RegisterFieldsInPaletteListener
             $qb->andWhere('c.articles = 1');
         }
 
+        if ('tl_news' === $table && InstalledVersions::isInstalled('contao/news-bundle')) {
+            if (Database::getInstance()->fieldExists('news', 'tl_toolbox_editor_css')) {
+                $qb->andWhere('c.news = 1');
+            } else {
+                return;
+            }
+        }
+
+        if ('tl_calendar_events' === $table && InstalledVersions::isInstalled('contao/calendar-bundle')) {
+            if (Database::getInstance()->fieldExists('events', 'tl_toolbox_editor_css')) {
+                $qb->andWhere('c.events = 1');
+            } else {
+                return;
+            }
+        }
+
+        if ('tl_faq' === $table && InstalledVersions::isInstalled('contao/faq-bundle')) {
+            if (Database::getInstance()->fieldExists('faqs', 'tl_toolbox_editor_css')) {
+                $qb->andWhere('c.faqs = 1');
+            } else {
+                return;
+            }
+        }
+
         $configs = $qb->executeQuery()->fetchAllAssociative();
 
-        if ('tl_article' !== $table) {
+        if ('tl_article' !== $table && 'tl_news' !== $table && 'tl_calendar_events' !== $table && 'tl_faq' !== $table) {
             $type = $this->connection
                 ->createQueryBuilder()
                 ->select('type')

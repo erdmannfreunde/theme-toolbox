@@ -20,3 +20,9 @@ services:
 
   ErdmannFreunde\ThemeToolboxBundle\EventListener\ParseTemplateListener:
     public: true
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\AdditionalFieldListener:
+    arguments: [ '@database_connection' ]
+    public: true
+
+
