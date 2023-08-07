@@ -40,6 +40,15 @@
       <trans-unit id="tl_toolbox_editor_css.use_ffl.0">
         <source>Form fields</source>
       </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.news.0">
+        <source>News</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.events.0">
+        <source>Events</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.faqs.0">
+        <source>FAQ</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

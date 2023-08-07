@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
+use Composer\InstalledVersions;
 use Contao\CoreBundle\ServiceAnnotation\Hook;
 use Contao\FrontendTemplate;
 use Contao\StringUtil;
@@ -27,6 +28,12 @@ class ParseTemplateListener
     {
         if (!$template instanceof FrontendTemplate) {
             return;
+        }
+
+        if (InstalledVersions::isInstalled('contao/faq-bundle')) {
+            if ($template->type === 'faqreader' && is_array($template->faq) && $template->faq['toolbox_classes']) {
+                $template->toolbox_classes = $template->faq['toolbox_classes'];
+            }
         }
 
         if (!$template->toolbox_classes) {

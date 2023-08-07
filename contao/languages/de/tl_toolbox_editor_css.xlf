@@ -53,6 +53,18 @@
         <source>Form fields</source>
         <target>Formularfelder</target>
       </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.news.0">
+        <source>News</source>
+        <target>Nachrichten</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.events.0">
+        <source>Events</source>
+        <target>Events</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.faqs.0">
+        <source>FAQ</source>
+        <target>FAQ</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

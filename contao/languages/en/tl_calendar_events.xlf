@@ -1,0 +1,9 @@
+<?xml version="1.0" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_calendar_events.php" source-language="en">
+    <body>
+    <trans-unit id="tl_calendar_events.toolbox_legend">
+        <source>Toolbox css classes</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
