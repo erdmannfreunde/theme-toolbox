@@ -21,6 +21,9 @@
     "symfony/dependency-injection": "^5.0 || ^6.0",
     "symfony/http-kernel": "^5.0 || ^6.0"
   },
+  "conflict": {
+    "contao/core-bundle": "<5.0",  
+  }
   "require-dev": {
     "contao/manager-plugin": "^2.1",
     "contao/easy-coding-standard": "^4.0"
