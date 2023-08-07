@@ -22,7 +22,7 @@
     "symfony/http-kernel": "^5.0 || ^6.0"
   },
   "conflict": {
-    "contao/core-bundle": "<5.0",  
+    "contao/core-bundle": "<5.0"
   }
   "require-dev": {
     "contao/manager-plugin": "^2.1",
