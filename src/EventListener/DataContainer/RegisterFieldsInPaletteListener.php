@@ -37,6 +37,7 @@ final class RegisterFieldsInPaletteListener
      * @Callback(table="tl_news", target="config.onload", priority=-10)
      * @Callback(table="tl_calendar_events", target="config.onload", priority=-10)
      * @Callback(table="tl_faq", target="config.onload", priority=-10)
+     * @Callback(table="tl_module", target="config.onload", priority=-10)
      */
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
@@ -92,9 +93,35 @@ final class RegisterFieldsInPaletteListener
             }
         }
 
+        if ('tl_module' === $table) {
+            if (InstalledVersions::isInstalled('contao/calendar-bundle')) {
+                if (Database::getInstance()->fieldExists('events', 'tl_toolbox_editor_css')) {
+                    $qb->andWhere('c.events = 1');
+                } else {
+                    return;
+                }
+            }
+
+            if (InstalledVersions::isInstalled('contao/news-bundle')) {
+                if (Database::getInstance()->fieldExists('news', 'tl_toolbox_editor_css')) {
+                    $qb->andWhere('c.news = 1');
+                } else {
+                    return;
+                }
+            }
+
+            if (InstalledVersions::isInstalled('contao/faq-bundle')) {
+                if (Database::getInstance()->fieldExists('faqs', 'tl_toolbox_editor_css')) {
+                    $qb->andWhere('c.faqs = 1');
+                } else {
+                    return;
+                }
+            }
+        }
+
         $configs = $qb->executeQuery()->fetchAllAssociative();
 
-        if ('tl_article' !== $table && 'tl_news' !== $table && 'tl_calendar_events' !== $table && 'tl_faq' !== $table) {
+        if ('tl_article' !== $table && 'tl_news' !== $table && 'tl_calendar_events' !== $table && 'tl_faq' !== $table && 'tl_module' !== $table) {
             $type = $this->connection
                 ->createQueryBuilder()
                 ->select('type')
