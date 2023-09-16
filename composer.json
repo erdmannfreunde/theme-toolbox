@@ -14,7 +14,7 @@
     "source": "https://github.com/erdmannfreunde/theme-toolbox"
   },
   "require": {
-    "php": ">=7.4",
+    "php": "^8.1",
     "contao/core-bundle": "^5.0",
     "doctrine/dbal": "^3.0",
     "symfony/config": "^5.0 || ^6.0",
