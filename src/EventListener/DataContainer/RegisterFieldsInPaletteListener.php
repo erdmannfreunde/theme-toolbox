@@ -14,11 +14,13 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 
 use Composer\InstalledVersions;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
+use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Contao\Database;
 use Contao\DataContainer;
 use Contao\Input;
 use Contao\StringUtil;
+use Contao\System;
 use Doctrine\DBAL\Connection;
 
 final class RegisterFieldsInPaletteListener
@@ -121,7 +123,12 @@ final class RegisterFieldsInPaletteListener
 
         $configs = $qb->executeQuery()->fetchAllAssociative();
 
-        if ('tl_article' !== $table && 'tl_news' !== $table && 'tl_calendar_events' !== $table && 'tl_faq' !== $table && 'tl_module' !== $table) {
+        if ('tl_article' !== $table &&
+            'tl_news' !== $table &&
+            'tl_calendar_events' !== $table &&
+            'tl_faq' !== $table &&
+            'tl_module' !== $table
+        ) {
             $type = $this->connection
                 ->createQueryBuilder()
                 ->select('type')
@@ -154,6 +161,8 @@ final class RegisterFieldsInPaletteListener
                 array_combine(array_column($cssClasses, 'key'), array_column($cssClasses, 'value'));
         }
 
+        $permission = $this->checkPermission($table);
+
         foreach ($configs as $config) {
             if (isset($GLOBALS['TL_DCA'][$table]['fields']['toolbox_css'.$config['id']])) {
                 continue;
@@ -165,6 +174,7 @@ final class RegisterFieldsInPaletteListener
 
             $GLOBALS['TL_DCA'][$table]['fields']['toolbox_css'.$config['id']] = [
                 'label' => [$config['label'] ?: $config['title'], 'Sie können CSS-Klassen für die Kategorie auswählen.'],
+                'exclude' => $permission,
                 'search' => true,
                 'inputType' => 'select',
                 'options' => $options[$config['id']],
@@ -190,5 +200,15 @@ final class RegisterFieldsInPaletteListener
 
             $paletteManipulator->applyToPalette($k, $table);
         }
+    }
+
+    public function checkPermission(string $table): bool
+    {
+        if (System::getContainer()->get('security.helper')
+            ->isGranted(ContaoCorePermissions::USER_CAN_EDIT_FIELD_OF_TABLE, $table . '::' . 'toolbox_permissions')) {
+            return false;
+        }
+
+        return true;
     }
 }

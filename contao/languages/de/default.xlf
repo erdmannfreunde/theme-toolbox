@@ -5,6 +5,10 @@
         <source>The script cache currently gets bypassed.</source>
         <target>Der Skript Cache wird aktuell umgangen.</target>
       </trans-unit>
+      <trans-unit id="MSC.eufThemeToolbox.0">
+        <source>CSS Toolbox</source>
+        <target>CSS Toolbox</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
