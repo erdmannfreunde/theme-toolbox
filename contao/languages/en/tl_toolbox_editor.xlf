@@ -13,6 +13,9 @@
       <trans-unit id="tl_toolbox_editor.label.1">
         <source>Please enter a label name.</source>
       </trans-unit>
+      <trans-unit id="tl_toolbox_editor.title_legend">
+        <source>Title</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

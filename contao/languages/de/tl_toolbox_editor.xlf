@@ -17,6 +17,10 @@
         <source>Please enter a label name.</source>
         <target>Bitte geben Sie eine Bezeichnung ein. Diese wird als Titel für das Klassen-Auswahlfeld verwendet.</target>
       </trans-unit>
+      <trans-unit id="tl_toolbox_editor.title_legend">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
