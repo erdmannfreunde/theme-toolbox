@@ -10,10 +10,11 @@ declare(strict_types=1);
  * @license LGPL-3.0-or-later
  */
 
+use Contao\DC_Table;
+
 $GLOBALS['TL_DCA']['tl_toolbox_editor'] = [
-    // Config
     'config' => [
-        'dataContainer' => \Contao\DC_Table::class,
+        'dataContainer' => DC_Table::class,
         'ctable' => ['tl_toolbox_editor_css'],
         'switchToEdit' => true,
         'sql' => [
@@ -22,7 +23,6 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor'] = [
             ],
         ],
     ],
-    // List
     'list' => [
         'sorting' => [
             'mode' => 1,
@@ -44,24 +44,23 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor'] = [
         ],
         'operations' => [
             'edit' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor']['edit'],
-                'href' => 'table=tl_toolbox_editor_css',
-                'icon' => 'edit.gif',
-            ],
-            'editheader' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor']['editheader'],
                 'href' => 'act=edit',
                 'icon' => 'header.svg',
             ],
+            'children' => [
+                'href' => 'table=tl_toolbox_editor_css',
+                'icon' => 'children.svg',
+            ],
             'copy' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor']['copy'],
                 'href' => 'act=copy',
-                'icon' => 'copy.gif',
+                'icon' => 'copy.svg',
             ],
             'delete' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor']['delete'],
                 'href' => 'act=delete',
-                'icon' => 'delete.gif',
+                'icon' => 'delete.svg',
                 'attributes' => sprintf(
                     "onclick=\"if(!confirm('%s'))return false;Backend.getScrollOffset()\"",
                     ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
@@ -70,15 +69,13 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor'] = [
             'show' => [
                 'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor']['show'],
                 'href' => 'act=show',
-                'icon' => 'show.gif',
+                'icon' => 'show.svg',
             ],
         ],
     ],
-    // Palettes
     'palettes' => [
         'default' => '{title_legend},title,label',
     ],
-    // Fields
     'fields' => [
         'id' => [
             'sql' => 'int(10) unsigned NOT NULL auto_increment',
