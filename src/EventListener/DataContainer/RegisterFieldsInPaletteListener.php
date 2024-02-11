@@ -43,7 +43,7 @@ final class RegisterFieldsInPaletteListener
      */
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
-        if (!\in_array(Input::get('act'), ['edit', 'editAll'], true)) {
+        if (!\in_array(Input::get('act'), ['edit', 'editAll', 'overrideAll'], true)) {
             return;
         }
 
