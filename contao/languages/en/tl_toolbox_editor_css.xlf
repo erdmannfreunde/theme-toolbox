@@ -11,7 +11,7 @@
         <source>Please enter the group title.</source>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.classes.0">
-        <source>Classes</source>
+        <source>CSS classes</source>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.classes.1">
         <source>Please enter classes and translations</source>
@@ -48,6 +48,12 @@
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.faqs.0">
         <source>FAQ</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.ow_key">
+        <source>CSS class</source>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.ow_value">
+        <source>Title</source>
       </trans-unit>
     </body>
   </file>

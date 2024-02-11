@@ -14,12 +14,12 @@
         <target>Bitte geben Sie den Titel der CSS-Untergruppe ein. Dieser Titel wird für die Gruppierung der Klassen innerhalb der Auswahl verwendet.</target>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.classes.0">
-        <source>Classes</source>
-        <target>Klassen</target>
+        <source>CSS classes</source>
+        <target>CSS-Klassen</target>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.classes.1">
         <source>Please enter classes and translations</source>
-        <target>Bitte geben Sie die CSS-Klassen und ihre Übersetzung ein. Schlüssel ist die CSS-Klasse, Wert ist die Bezeichung im Backend.Sie können auch mehre Klassen eingeben, zum Beispiel btn btn--primary.</target>
+        <target>Bitte geben Sie die CSS-Klassen und ihren Titel ein. Schlüssel ist die CSS-Klasse, Wert ist die Bezeichung im Backend. Sie können auch mehre Klassen eingeben, zum Beispiel btn btn--primary.</target>
       </trans-unit>
       <trans-unit id="tl_toolbox_editor_css.scope_legend">
         <source>Scope</source>
@@ -64,6 +64,14 @@
       <trans-unit id="tl_toolbox_editor_css.faqs.0">
         <source>FAQ</source>
         <target>FAQ</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.ow_key">
+        <source>CSS class</source>
+        <target>CSS-Klasse</target>
+      </trans-unit>
+      <trans-unit id="tl_toolbox_editor_css.ow_value">
+        <source>Title</source>
+        <target>Titel</target>
       </trans-unit>
     </body>
   </file>

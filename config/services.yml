@@ -27,3 +27,8 @@ services:
   ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\AdditionalFieldListener:
     arguments: [ '@database_connection' ]
     public: true
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\ToolboxEditorCssCallback:
+    public: true;
+    arguments:
+      - '@request_stack'
