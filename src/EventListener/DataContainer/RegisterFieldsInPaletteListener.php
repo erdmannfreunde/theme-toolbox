@@ -142,15 +142,7 @@ final class RegisterFieldsInPaletteListener
 
         $options = [];
 
-        $addToModules = false;
-
-        if ('tl_module' === $table && (
-                InstalledVersions::isInstalled('contao/news-bundle') ||
-                InstalledVersions::isInstalled('contao/calendar-bundle') ||
-                InstalledVersions::isInstalled('contao/faq-bundle'))
-        ) {
-            $addToModules = true;
-        }
+        $addToModulesDca = $this->checkAdditionsContaoModules($table);
 
         $paletteManipulator = PaletteManipulator::create()
             ->addLegend('toolbox_legend', 'expert_legend', PaletteManipulator::POSITION_AFTER)
@@ -182,7 +174,7 @@ final class RegisterFieldsInPaletteListener
                 continue;
             }
 
-            if (false === $addToModules) {
+            if (false === $addToModulesDca) {
                 continue;
             }
 
@@ -221,6 +213,23 @@ final class RegisterFieldsInPaletteListener
         if (System::getContainer()->get('security.helper')
             ->isGranted(ContaoCorePermissions::USER_CAN_EDIT_FIELD_OF_TABLE, $table . '::' . 'toolbox_permissions')) {
             return false;
+        }
+
+        return true;
+    }
+
+    public function checkAdditionsContaoModules($table): bool
+    {
+        if ('tl_module' === $table) {
+            if (
+                (InstalledVersions::isInstalled('contao/news-bundle')) ||
+                (InstalledVersions::isInstalled('contao/calendar-bundle')) ||
+                (InstalledVersions::isInstalled('contao/faq-bundle'))
+            ) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
         return true;
