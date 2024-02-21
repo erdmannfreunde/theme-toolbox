@@ -142,6 +142,16 @@ final class RegisterFieldsInPaletteListener
 
         $options = [];
 
+        $addToModules = false;
+
+        if ('tl_module' === $table && (
+                InstalledVersions::isInstalled('contao/news-bundle') ||
+                InstalledVersions::isInstalled('contao/calendar-bundle') ||
+                InstalledVersions::isInstalled('contao/faq-bundle'))
+        ) {
+            $addToModules = true;
+        }
+
         $paletteManipulator = PaletteManipulator::create()
             ->addLegend('toolbox_legend', 'expert_legend', PaletteManipulator::POSITION_AFTER)
         ;
@@ -169,6 +179,10 @@ final class RegisterFieldsInPaletteListener
             }
 
             if (!isset($options[$config['id']])) {
+                continue;
+            }
+
+            if (false === $addToModules) {
                 continue;
             }
 
