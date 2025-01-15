@@ -24,8 +24,12 @@ services:
   ErdmannFreunde\ThemeToolboxBundle\EventListener\GetAllEventsListener:
     public: true
 
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\GeneratePageListener:
+    tags:
+      - { name: contao.hook, hook: generatePage }
+
   ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\AdditionalFieldListener:
-    arguments: [ '@database_connection' ]
+    arguments: ['@database_connection']
     public: true
 
   ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\ToolboxEditorCssCallback:
