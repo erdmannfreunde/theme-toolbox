@@ -5,25 +5,45 @@
 
 # Theme Toolbox
 
-This package holds helpful tools to work with the [Contao Themes][1] by [Erdmann & Freunde][2].
+Dieses Paket enthält hilfreiche Tools zur Arbeit mit den [Contao Themes][1] von [Erdmann & Freunde][2].
 
-## 1. CSS Class Picker
+## 1. CSS-Klassen-Auswahl
 
-If you don't want to give your clients a list of class names, that can be used for variants and specific styles, 
-you can use the theme toolbox to add human readable styles to elements, modules and articles. In toolbox editor you
-can add css classes and it's translations and chose where this styles will be visible. 
+Wenn du deinen Kunden keine Liste von Klassennamen für Varianten und spezifische Stile geben möchtest, kannst du die Theme-Toolbox verwenden, um menschenlesbare Stile zu Elementen, Modulen und Artikeln hinzuzufügen. Im Toolbox-Editor kannst du CSS-Klassen und deren Übersetzungen hinzufügen und auswählen, wo diese Styles sichtbar sein sollen.
 
-## 2. Bypass SCSS cache 
+## 2. SCSS-Cache umgehen
 
-While we encourage you to do frontend theme development on your local machine (there are so many advantages!), our 
-themes will come with a "server edition" that allows you to let Contao compile your SCSS-files on your server.
+Der SCSS-Compiler in Contao erkennt Änderungen in SCSS-Partials nicht, sodass der Cache nicht aktualisiert wird. Wenn du "Script-Cache umgehen" in den Contao-Wartungseinstellungen aktivierst, werden die SCSS-Dateien nicht zwischengespeichert, sondern bei jeden Aufruf gelöscht.
 
-When enabling "Bypass script cache" in the Contao Maintenance settings, the SCSS files do not get cached in production
-mode.
+**Wichtig: Bitte stelle sicher, dass du das Umgehen des Script-Caches deaktivierst, nachdem du deine Arbeit an den SCSS-Dateien abgeschlossen hast, da das Deaktivieren des Script-Caches große Leistungsprobleme verursachen kann!**
 
-CAUTION:
------------------
-**Please make sure to disable bypassing script cache after you finished your work on SCSS-files, as disabling the script cache can cause big performance issues!**
+## 3. Header- und Footer-Klassen
+
+Im Seitenlayout lassen sich eigene Header- und Footer-Klassen im Seitenlayout vergeben und über Template-Anpassungen nutzen. Das `fe_page.html.twig` Template könnte folgendermaßen aussehen:
+
+```twig
+{% extends '@Contao/fe_page' %}
+
+{% block header %}
+  {% if header %}
+    <header id="header" class="header {{ headerClass }}">
+      <div class="inside">
+        {{ header|raw }}
+      </div>
+    </header>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  {% if footer %}
+    <footer id="footer" class="footer {{ footerClass }}">
+      <div class="inside">
+        {{ footer|raw }}
+      </div>
+    </footer>
+  {% endif %}
+{% endblock %}
+```
 
 ## Development notes:
 
@@ -33,7 +53,7 @@ Code style:
 vendor/bin/ecs check src contao --fix
 ```
 
--------
+---
 
 [1]: https://erdmann-freunde.de/produkte/contao-themes/
 [2]: https://erdmann-freunde.de/
