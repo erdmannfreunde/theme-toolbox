@@ -14,8 +14,8 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 
 use Composer\InstalledVersions;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\CoreBundle\Security\ContaoCorePermissions;
-use Contao\CoreBundle\ServiceAnnotation\Callback;
 use Contao\Database;
 use Contao\DataContainer;
 use Contao\Input;
@@ -32,15 +32,13 @@ final class RegisterFieldsInPaletteListener
         $this->connection = $connection;
     }
 
-    /**
-     * @Callback(table="tl_article", target="config.onload", priority=-10)
-     * @Callback(table="tl_content", target="config.onload", priority=-10)
-     * @Callback(table="tl_form_field", target="config.onload", priority=-10)
-     * @Callback(table="tl_news", target="config.onload", priority=-10)
-     * @Callback(table="tl_calendar_events", target="config.onload", priority=-10)
-     * @Callback(table="tl_faq", target="config.onload", priority=-10)
-     * @Callback(table="tl_module", target="config.onload", priority=-10)
-     */
+    #[AsCallback(table: 'tl_article', target: 'config.onload', priority: -10)]
+    #[AsCallback(table: 'tl_content', target: 'config.onload', priority: -10)]
+    #[AsCallback(table: 'tl_form_field', target: 'config.onload', priority: -10)]
+    #[AsCallback(table: 'tl_news', target: 'config.onload', priority: -10)]
+    #[AsCallback(table: 'tl_calendar_events', target: 'config.onload', priority: -10)]
+    #[AsCallback(table: 'tl_faq', target: 'config.onload', priority: -10)]
+    #[AsCallback(table: 'tl_module', target: 'config.onload', priority: -10)]
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
         if (!\in_array(Input::get('act'), ['edit', 'editAll', 'overrideAll'], true)) {

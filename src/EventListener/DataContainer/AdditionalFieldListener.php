@@ -14,7 +14,7 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 
 use Composer\InstalledVersions;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
-use Contao\CoreBundle\ServiceAnnotation\Callback;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\Database;
 use Contao\DataContainer;
 use Contao\Input;
@@ -29,9 +29,7 @@ final class AdditionalFieldListener
         $this->connection = $connection;
     }
 
-    /**
-     * @Callback(table="tl_toolbox_editor_css", target="config.onload", priority=-10)
-     */
+    #[AsCallback(table: 'tl_toolbox_editor_css', target: 'config.onload', priority: -10)]
     public function onLoadContentCallback(DataContainer $dataContainer): void
     {
         if (!\in_array(Input::get('act'), ['edit', 'editAll'], true)) {

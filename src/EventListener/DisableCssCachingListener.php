@@ -14,13 +14,12 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
 use Contao\Automator;
 use Contao\Config;
-use Contao\CoreBundle\ServiceAnnotation\Hook;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 
 /**
  * Purge the script (css) cache each time.
- *
- * @Hook("replaceDynamicScriptTags")
  */
+#[AsHook('replaceDynamicScriptTags')]
 class DisableCssCachingListener
 {
     public function __invoke($buffer): string

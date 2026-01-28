@@ -14,13 +14,12 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
 use Contao\BackendUser;
 use Contao\Config;
-use Contao\CoreBundle\ServiceAnnotation\Hook;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 
 /**
  * Add an error message when the bypass script mode is active.
- *
- * @Hook("getSystemMessages")
  */
+#[AsHook('getSystemMessages')]
 class BypassModeAlertMessageListener
 {
     public function __invoke(): string

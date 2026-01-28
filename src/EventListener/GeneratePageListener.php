@@ -1,17 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\LayoutModel;
 use Contao\PageModel;
-use Contao\CoreBundle\ServiceAnnotation\Hook;
 
+#[AsHook('generatePage')]
 class GeneratePageListener
 {
-    /**
-     * @Hook("generatePage")
-     */
-    public function onGeneratePage(PageModel $pageModel, LayoutModel $layoutModel, $pageRegular): void
+    public function __invoke(PageModel $pageModel, LayoutModel $layoutModel, $pageRegular): void
     {
         // Klassen aus dem Layout holen
         $headerClass = $layoutModel->headerClass ?? '';

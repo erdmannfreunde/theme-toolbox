@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace ErdmannFreunde\ThemeToolboxBundle\EventListener;
 
 use Composer\InstalledVersions;
-use Contao\CoreBundle\ServiceAnnotation\Hook;
+use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\FrontendTemplate;
 use Contao\StringUtil;
 use Contao\Template;
@@ -21,9 +21,7 @@ use Contao\Widget;
 
 class ParseTemplateListener
 {
-    /**
-     * @Hook("parseTemplate")
-     */
+    #[AsHook('parseTemplate')]
     public function onParseTemplate(Template $template): void
     {
         if (!$template instanceof FrontendTemplate) {
@@ -43,9 +41,7 @@ class ParseTemplateListener
         $template->class .= ' '.$this->uniqueClasses($template->toolbox_classes);
     }
 
-    /**
-     * @Hook("parseWidget")
-     */
+    #[AsHook('parseWidget')]
     public function onParseWidget(string $buffer, Widget $widget): string
     {
         if (!$widget->toolbox_classes) {
