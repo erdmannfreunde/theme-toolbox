@@ -47,38 +47,14 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'format' => '%s',
         ],
         'global_operations' => [
-            'all' => [
-                'label' => &$GLOBALS['TL_LANG']['MSC']['all'],
-                'href' => 'act=select',
-                'class' => 'header_edit_all',
-                'attributes' => 'onclick="Backend.getScrollOffset()" accesskey="e"',
-            ],
+            'all',
         ],
         'operations' => [
-            'edit' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['edit'],
-                'href' => 'act=edit',
-                'icon' => 'edit.gif',
-            ],
-            'copy' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['copy'],
-                'href' => 'act=copy',
-                'icon' => 'copy.gif',
-            ],
-            'delete' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['delete'],
-                'href' => 'act=delete',
-                'icon' => 'delete.gif',
-                'attributes' => sprintf(
-                    "onclick=\"if(!confirm('%s'))return false;Backend.getScrollOffset()\"",
-                    ($GLOBALS['TL_LANG']['MSC']['deleteConfirm'] ?? null)
-                ),
-            ],
-            'show' => [
-                'label' => &$GLOBALS['TL_LANG']['tl_toolbox_editor_css']['show'],
-                'href' => 'act=show',
-                'icon' => 'show.gif',
-            ],
+            'edit',
+            'copy',
+            'cut',
+            'delete',
+            'show',
         ],
     ],
     // Palettes
