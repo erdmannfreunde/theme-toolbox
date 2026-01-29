@@ -15,18 +15,14 @@ namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
 use Composer\InstalledVersions;
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
-use Contao\Database;
 use Contao\DataContainer;
 use Contao\Input;
 use Doctrine\DBAL\Connection;
 
 final class AdditionalFieldListener
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     #[AsCallback(table: 'tl_toolbox_editor_css', target: 'config.onload', priority: -10)]

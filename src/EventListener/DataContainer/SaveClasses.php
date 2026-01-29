@@ -17,13 +17,10 @@ use Doctrine\DBAL\Connection;
 
 final class SaveClasses
 {
-    private Connection $connection;
-
     private static array $classes = [];
 
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     public function onSaveCallback($value, $dc)
@@ -34,7 +31,7 @@ final class SaveClasses
             self::$classes[$id] = [];
         }
 
-        $mergedClasses = array_merge(self::$classes[$id], StringUtil::deserialize($value, true));
+        $mergedClasses = [...self::$classes[$id], ...StringUtil::deserialize($value, true)];
 
         if (\count($mergedClasses) > \count(array_unique($mergedClasses))) {
             throw new \Exception('CSS-Klassen doppelt vorhanden! Wird nicht gespeichert.');
@@ -45,7 +42,7 @@ final class SaveClasses
         $this->connection->update(
             $dc->table,
             ['toolbox_classes' => implode(' ', self::$classes[$id])],
-            ['id' => $dc->id]
+            ['id' => $dc->id],
         );
 
         return null;
@@ -77,6 +74,6 @@ final class SaveClasses
 
         $options = array_unique(array_merge(...$options));
 
-        return array_values(array_filter($options, static fn ($option) => 1 === preg_match(sprintf('/(^|\s)(%s)(\s|$)/', preg_quote($option)), $dc->activeRecord->toolbox_classes ?? '')));
+        return array_values(array_filter($options, static fn ($option) => 1 === preg_match(\sprintf('/(^|\s)(%s)(\s|$)/', preg_quote((string) $option)), $dc->activeRecord->toolbox_classes ?? '')));
     }
 }

@@ -25,11 +25,8 @@ use Doctrine\DBAL\Connection;
 
 final class RegisterFieldsInPaletteListener
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     #[AsCallback(table: 'tl_article', target: 'config.onload', priority: -10)]
@@ -121,11 +118,12 @@ final class RegisterFieldsInPaletteListener
 
         $configs = $qb->executeQuery()->fetchAllAssociative();
 
-        if ('tl_article' !== $table &&
-            'tl_news' !== $table &&
-            'tl_calendar_events' !== $table &&
-            'tl_faq' !== $table &&
-            'tl_module' !== $table
+        if (
+            'tl_article' !== $table
+            && 'tl_news' !== $table
+            && 'tl_calendar_events' !== $table
+            && 'tl_faq' !== $table
+            && 'tl_module' !== $table
         ) {
             $type = $this->connection
                 ->createQueryBuilder()
@@ -150,7 +148,7 @@ final class RegisterFieldsInPaletteListener
             $cssClasses = StringUtil::deserialize($config['classes'], true);
 
             if (
-                ($type = ($type ?? null))
+                ($type ??= null)
                 && ($allowedTypes = StringUtil::deserialize($config['allowedTypes'], true))
                 && !\in_array($type, $allowedTypes, true)
             ) {
@@ -208,26 +206,23 @@ final class RegisterFieldsInPaletteListener
 
     public function checkPermission(string $table): bool
     {
-        if (System::getContainer()->get('security.helper')
-            ->isGranted(ContaoCorePermissions::USER_CAN_EDIT_FIELD_OF_TABLE, $table . '::' . 'toolbox_permissions')) {
-            return false;
-        }
-
-        return true;
+        return !System::getContainer()->get('security.helper')
+            ->isGranted(ContaoCorePermissions::USER_CAN_EDIT_FIELD_OF_TABLE, $table.'::toolbox_permissions')
+        ;
     }
 
     public function checkAdditionsContaoModules($table): bool
     {
         if ('tl_module' === $table) {
             if (
-                (InstalledVersions::isInstalled('contao/news-bundle')) ||
-                (InstalledVersions::isInstalled('contao/calendar-bundle')) ||
-                (InstalledVersions::isInstalled('contao/faq-bundle'))
+                InstalledVersions::isInstalled('contao/news-bundle')
+                || InstalledVersions::isInstalled('contao/calendar-bundle')
+                || InstalledVersions::isInstalled('contao/faq-bundle')
             ) {
                 return true;
-            } else {
-                return false;
             }
+
+            return false;
         }
 
         return true;

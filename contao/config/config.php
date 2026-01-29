@@ -16,5 +16,5 @@ $GLOBALS['BE_MOD']['design']['toolboxEditor'] = ['tables' => ['tl_toolbox_editor
 
 array_unshift(
     $GLOBALS['TL_MAINTENANCE'],
-    BypassScriptCache::class
+    BypassScriptCache::class,
 );

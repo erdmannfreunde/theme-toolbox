@@ -45,12 +45,26 @@ Im Seitenlayout lassen sich eigene Header- und Footer-Klassen im Seitenlayout ve
 {% endblock %}
 ```
 
-## Development notes:
+## Development notes
 
-Code style:
+### Code style (ECS)
 
 ```shell
-vendor/bin/ecs check src contao --fix
+# Prüfen
+vendor/bin/ecs check
+
+# Automatisch korrigieren
+vendor/bin/ecs check --fix
+```
+
+### Code-Modernisierung (Rector)
+
+```shell
+# Vorschau der Änderungen
+vendor/bin/rector --dry-run
+
+# Änderungen anwenden
+vendor/bin/rector
 ```
 
 ---

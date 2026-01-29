@@ -34,13 +34,11 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'fields' => ['sorting'],
             'panelLayout' => 'filter;sort,search,limit',
             'headerFields' => ['title'],
-            'child_record_callback' => static function (array $row) {
-                return sprintf(
-                    '<div class="tl_content_left">%s <span style="color:#999;padding-left:3px">[%s]</span></div>',
-                    $row['title'] ?? '',
-                    implode(', ', array_column(StringUtil::deserialize($row['classes'] ?? '', true), 'key'))
-                );
-            },
+            'child_record_callback' => static fn (array $row) => sprintf(
+                '<div class="tl_content_left">%s <span style="color:#999;padding-left:3px">[%s]</span></div>',
+                $row['title'] ?? '',
+                implode(', ', array_column(StringUtil::deserialize($row['classes'] ?? '', true), 'key')),
+            ),
         ],
         'label' => [
             'fields' => ['title'],
@@ -113,7 +111,7 @@ $GLOBALS['TL_DCA']['tl_toolbox_editor_css'] = [
             'exclude' => true,
             'filter' => true,
             'inputType' => 'checkbox',
-            'options_callback' => static fn () => array_map('array_keys', $GLOBALS['TL_CTE']),
+            'options_callback' => static fn () => array_map(array_keys(...), $GLOBALS['TL_CTE']),
             'reference' => &$GLOBALS['TL_LANG']['CTE'],
             'eval' => ['multiple' => true, 'helpwizard' => true],
             'sql' => 'blob NULL',

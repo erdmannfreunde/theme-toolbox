@@ -13,10 +13,13 @@ declare(strict_types=1);
 namespace ErdmannFreunde\ThemeToolboxBundle\ContaoManager;
 
 use Composer\InstalledVersions;
+use Contao\CalendarBundle\ContaoCalendarBundle;
 use Contao\CoreBundle\ContaoCoreBundle;
+use Contao\FaqBundle\ContaoFaqBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
+use Contao\NewsBundle\ContaoNewsBundle;
 use ErdmannFreunde\ThemeToolboxBundle\ErdmannFreundeThemeToolboxBundle;
 
 /**
@@ -24,23 +27,20 @@ use ErdmannFreunde\ThemeToolboxBundle\ErdmannFreundeThemeToolboxBundle;
  */
 class Plugin implements BundlePluginInterface
 {
-    /**
-     * {@inheritdoc}
-     */
     public function getBundles(ParserInterface $parser)
     {
         $dependencies[] = ContaoCoreBundle::class;
 
         if (InstalledVersions::isInstalled('contao/news-bundle')) {
-            $dependencies[] = \Contao\NewsBundle\ContaoNewsBundle::class;
+            $dependencies[] = ContaoNewsBundle::class;
         }
 
         if (InstalledVersions::isInstalled('contao/calendar-bundle')) {
-            $dependencies[] = \Contao\CalendarBundle\ContaoCalendarBundle::class;
+            $dependencies[] = ContaoCalendarBundle::class;
         }
 
         if (InstalledVersions::isInstalled('contao/faq-bundle')) {
-            $dependencies[] = \Contao\FaqBundle\ContaoFaqBundle::class;
+            $dependencies[] = ContaoFaqBundle::class;
         }
 
         return [

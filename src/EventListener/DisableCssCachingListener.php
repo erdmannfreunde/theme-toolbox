@@ -24,14 +24,16 @@ class DisableCssCachingListener
 {
     public function __invoke($buffer): string
     {
-        // Do not bypass in debug mode, in debug mode the css files are generated on the fly nonetheless.
+        // Do not bypass in debug mode, in debug mode the css files are generated on the
+        // fly nonetheless.
         if (
             isset($GLOBALS['TL_USER_CSS'])
             && !empty($GLOBALS['TL_USER_CSS']) && \is_array($GLOBALS['TL_USER_CSS'])
             && Config::get('bypassScriptCache')
             && !Config::get('debugMode')
         ) {
-            // Purging script cache is the only way to be compatible with Contao versions 4.4 to 4.6
+            // Purging script cache is the only way to be compatible with Contao versions 4.4
+            // to 4.6
             $automator = new Automator();
             $automator->purgeScriptCache();
 

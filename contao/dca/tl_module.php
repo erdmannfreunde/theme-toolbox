@@ -1,11 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of erdmannfreunde/theme-toolbox.
+ *
+ * (c) Erdmann & Freunde <https://erdmann-freunde.de>
+ *
+ * @license LGPL-3.0-or-later
+ */
+
 use Composer\InstalledVersions;
 
 if (
-    InstalledVersions::isInstalled('contao/news-bundle') ||
-    InstalledVersions::isInstalled('contao/calendar-bundle') ||
-    InstalledVersions::isInstalled('contao/faq-bundle')
+    InstalledVersions::isInstalled('contao/news-bundle')
+    || InstalledVersions::isInstalled('contao/calendar-bundle')
+    || InstalledVersions::isInstalled('contao/faq-bundle')
 ) {
     $GLOBALS['TL_DCA']['tl_module']['fields']['toolbox_classes']['sql'] = 'text NULL';
     $GLOBALS['TL_DCA']['tl_module']['fields']['toolbox_permissions'] = [

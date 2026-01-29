@@ -29,7 +29,7 @@ class ParseTemplateListener
         }
 
         if (InstalledVersions::isInstalled('contao/faq-bundle')) {
-            if ($template->type === 'faqreader' && is_array($template->faq) && $template->faq['toolbox_classes']) {
+            if ('faqreader' === $template->type && \is_array($template->faq) && $template->faq['toolbox_classes']) {
                 $template->toolbox_classes = $template->faq['toolbox_classes'];
             }
         }
@@ -50,9 +50,9 @@ class ParseTemplateListener
 
         return preg_replace(
             '/class="(.+?)"/',
-            sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)),
+            \sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)),
             $buffer,
-            1
+            1,
         );
     }
 
