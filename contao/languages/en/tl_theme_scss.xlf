@@ -41,6 +41,9 @@
       <trans-unit id="showDiff">
         <source>Show diff</source>
       </trans-unit>
+      <trans-unit id="hideDiff">
+        <source>Hide diff</source>
+      </trans-unit>
       <trans-unit id="originalFile">
         <source>Original file</source>
       </trans-unit>

@@ -54,6 +54,10 @@
         <source>Show diff</source>
         <target>Unterschiede anzeigen</target>
       </trans-unit>
+      <trans-unit id="hideDiff">
+        <source>Hide diff</source>
+        <target>Unterschiede ausblenden</target>
+      </trans-unit>
       <trans-unit id="originalFile">
         <source>Original file</source>
         <target>Originaldatei</target>

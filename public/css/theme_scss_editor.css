@@ -60,7 +60,7 @@
 
 .theme-scss-editor__file-tree {
   padding: 10px;
-  max-height: 550px;
+  max-height: 640px;
   overflow-y: auto;
 }
 
@@ -146,14 +146,53 @@
   min-width: 0;
 }
 
-.theme-scss-editor__file-header {
+.theme-scss-editor__actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.theme-scss-editor__actions .tl_submit {
+  padding: 8px 20px;
+}
+
+/* Editor panels */
+.theme-scss-editor__editors {
+  display: flex;
+  flex: 1;
+  gap: 0;
+}
+
+.theme-scss-editor__editors--diff {
+  gap: 20px;
+}
+
+.theme-scss-editor__editor-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.theme-scss-editor__editors--diff .theme-scss-editor__editor-panel {
+  flex: 1;
+}
+
+.theme-scss-editor__panel-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 15px;
-  background: var(--invert-bg);
-  color: var(--invert-text);
+  padding: 15px 15px;
+  background: rgba(0, 100, 148, 0.05);
+  color: var(--text);
   border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.theme-scss-editor__panel-header--original {
+  background: var(--panel-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom: none;
 }
 
 .theme-scss-editor__file-name {
@@ -173,47 +212,23 @@
 
 .theme-scss-editor__editor-container {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border);
   border-top: none;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  overflow: hidden;
 }
 
 .theme-scss-editor__editor {
-  height: 600px;
+  flex: 1;
+  min-height: 500px;
   font-size: 14px !important;
   visibility: hidden;
 }
 
 .theme-scss-editor__editor--ready {
   visibility: visible;
-}
-
-.theme-scss-editor__editor--readonly {
-  height: 300px;
-  opacity: 0.9;
-}
-
-.theme-scss-editor__actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid var(--border);
-}
-
-.theme-scss-editor__actions .tl_submit {
-  padding: 8px 20px;
-}
-
-.theme-scss-editor__diff {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-
-.theme-scss-editor__diff h4 {
-  margin: 0 0 10px;
-  font-size: 14px;
-  color: var(--gray);
 }
 
 .theme-scss-editor__empty {
@@ -245,4 +260,36 @@
   background: var(--error-bg);
   border: 1px solid var(--red);
   color: var(--red);
+}
+
+/* Diff highlighting for ACE editor */
+.diff-added {
+  position: absolute;
+  background: rgba(46, 160, 67, 0.25);
+  border-left: 3px solid #2ea043;
+}
+
+.diff-removed {
+  position: absolute;
+  background: rgba(248, 81, 73, 0.25);
+  border-left: 3px solid #f85149;
+}
+
+.diff-changed {
+  position: absolute;
+  background: rgba(210, 153, 34, 0.25);
+  border-left: 3px solid #d29922;
+}
+
+/* Dark mode adjustments for diff colors */
+html[data-color-scheme='dark'] .diff-added {
+  background: rgba(46, 160, 67, 0.2);
+}
+
+html[data-color-scheme='dark'] .diff-removed {
+  background: rgba(248, 81, 73, 0.2);
+}
+
+html[data-color-scheme='dark'] .diff-changed {
+  background: rgba(210, 153, 34, 0.2);
 }

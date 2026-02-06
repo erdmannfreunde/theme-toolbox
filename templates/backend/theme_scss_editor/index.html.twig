@@ -34,17 +34,6 @@
 
                 <div class="theme-scss-editor__main">
                     {% if selected_file %}
-                        <div class="theme-scss-editor__file-header">
-                            <span class="theme-scss-editor__file-name">{{ selected_file }}</span>
-                            {% if is_custom %}
-                                <span class="theme-scss-editor__custom-badge">{{ 'customized'|trans({}, 'contao_tl_theme_scss') }}</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="theme-scss-editor__editor-container">
-                            <div id="scssEditor" class="theme-scss-editor__editor">{{ file_content }}</div>
-                        </div>
-
                         <div class="theme-scss-editor__actions">
                             <button type="button" class="tl_submit" id="saveBtn" onclick="ThemeScssEditor.save()">
                                 {{ 'save'|trans({}, 'contao_tl_theme_scss') }}
@@ -59,9 +48,27 @@
                             </button>
                         </div>
 
-                        <div id="diffContainer" class="theme-scss-editor__diff" style="display:none">
-                            <h4>{{ 'originalFile'|trans({}, 'contao_tl_theme_scss') }}</h4>
-                            <div id="originalEditor" class="theme-scss-editor__editor theme-scss-editor__editor--readonly">{{ original_content }}</div>
+                        <div id="editorWrapper" class="theme-scss-editor__editors">
+                            <div class="theme-scss-editor__editor-panel theme-scss-editor__editor-panel--custom">
+                                <div class="theme-scss-editor__panel-header">
+                                    <span class="theme-scss-editor__file-name">{{ selected_file }}</span>
+                                    {% if is_custom %}
+                                        <span class="theme-scss-editor__custom-badge">{{ 'customized'|trans({}, 'contao_tl_theme_scss') }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="theme-scss-editor__editor-container">
+                                    <div id="scssEditor" class="theme-scss-editor__editor">{{ file_content }}</div>
+                                </div>
+                            </div>
+
+                            <div id="originalPanel" class="theme-scss-editor__editor-panel theme-scss-editor__editor-panel--original" style="display:none">
+                                <div class="theme-scss-editor__panel-header theme-scss-editor__panel-header--original">
+                                    <span class="theme-scss-editor__file-name">{{ 'originalFile'|trans({}, 'contao_tl_theme_scss') }}</span>
+                                </div>
+                                <div class="theme-scss-editor__editor-container">
+                                    <div id="originalEditor" class="theme-scss-editor__editor theme-scss-editor__editor--readonly">{{ original_content }}</div>
+                                </div>
+                            </div>
                         </div>
                     {% else %}
                         <div class="theme-scss-editor__empty">
@@ -82,12 +89,14 @@
             csrfToken: '{{ csrf_token }}',
             isCustom: {{ is_custom ? 'true' : 'false' }},
             showingDiff: false,
+            originalContent: {{ original_content|json_encode|raw }},
+            diffMarkers: [],
 
             init: function() {
                 var editorEl = document.getElementById('scssEditor');
                 if (editorEl) {
                     this.editor = ace.edit('scssEditor');
-                    this.editor.setTheme('ace/theme/monokai');
+                    this.editor.setTheme((document.documentElement.dataset.colorScheme === 'dark' ? 'ace/theme/twilight' : 'ace/theme/clouds'));
                     this.editor.session.setMode('ace/mode/scss');
                     this.editor.setOptions({
                         fontSize: '14px',
@@ -108,12 +117,13 @@
                 var originalEditorEl = document.getElementById('originalEditor');
                 if (originalEditorEl) {
                     this.originalEditor = ace.edit('originalEditor');
-                    this.originalEditor.setTheme('ace/theme/monokai');
+                    this.originalEditor.setTheme((document.documentElement.dataset.colorScheme === 'dark' ? 'ace/theme/twilight' : 'ace/theme/clouds'));
                     this.originalEditor.session.setMode('ace/mode/scss');
                     this.originalEditor.setReadOnly(true);
                     this.originalEditor.setOptions({
                         fontSize: '14px',
-                        showPrintMargin: false
+                        showPrintMargin: false,
+                        tabSize: 2
                     });
 
                     originalEditorEl.classList.add('theme-scss-editor__editor--ready');
@@ -152,6 +162,9 @@
                             ThemeScssEditor.isCustom = true;
                             ThemeScssEditor.updateUI();
                         }
+                        if (ThemeScssEditor.showingDiff) {
+                            ThemeScssEditor.highlightDiff();
+                        }
                     } else {
                         ThemeScssEditor.showMessage(data.error || data.message, 'error');
                     }
@@ -182,6 +195,7 @@
                         ThemeScssEditor.editor.setValue(data.content, -1);
                         ThemeScssEditor.isCustom = false;
                         ThemeScssEditor.updateUI();
+                        ThemeScssEditor.clearDiffMarkers();
                     } else {
                         ThemeScssEditor.showMessage(data.error || data.message, 'error');
                     }
@@ -192,12 +206,124 @@
             },
 
             toggleDiff: function() {
-                var container = document.getElementById('diffContainer');
+                var wrapper = document.getElementById('editorWrapper');
+                var originalPanel = document.getElementById('originalPanel');
+                var btn = document.getElementById('showDiffBtn');
+
                 this.showingDiff = !this.showingDiff;
-                container.style.display = this.showingDiff ? 'block' : 'none';
-                if (this.showingDiff && this.originalEditor) {
-                    this.originalEditor.resize();
+
+                if (this.showingDiff) {
+                    wrapper.classList.add('theme-scss-editor__editors--diff');
+                    originalPanel.style.display = 'flex';
+                    btn.textContent = '{{ 'hideDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+
+                    setTimeout(function() {
+                        ThemeScssEditor.editor.resize();
+                        ThemeScssEditor.originalEditor.resize();
+                        ThemeScssEditor.highlightDiff();
+                        ThemeScssEditor.syncScroll();
+                    }, 50);
+                } else {
+                    wrapper.classList.remove('theme-scss-editor__editors--diff');
+                    originalPanel.style.display = 'none';
+                    btn.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    this.clearDiffMarkers();
+
+                    setTimeout(function() {
+                        ThemeScssEditor.editor.resize();
+                    }, 50);
                 }
+            },
+
+            syncScroll: function() {
+                var self = this;
+                this.editor.session.on('changeScrollTop', function(scrollTop) {
+                    if (self.showingDiff && self.originalEditor) {
+                        self.originalEditor.session.setScrollTop(scrollTop);
+                    }
+                });
+                this.originalEditor.session.on('changeScrollTop', function(scrollTop) {
+                    if (self.showingDiff && self.editor) {
+                        self.editor.session.setScrollTop(scrollTop);
+                    }
+                });
+            },
+
+            // Compute LCS (Longest Common Subsequence) for proper diff
+            computeLCS: function(a, b) {
+                var m = a.length, n = b.length;
+                var dp = [];
+                for (var i = 0; i <= m; i++) {
+                    dp[i] = [];
+                    for (var j = 0; j <= n; j++) {
+                        if (i === 0 || j === 0) {
+                            dp[i][j] = 0;
+                        } else if (a[i - 1] === b[j - 1]) {
+                            dp[i][j] = dp[i - 1][j - 1] + 1;
+                        } else {
+                            dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                        }
+                    }
+                }
+                return dp;
+            },
+
+            // Backtrack to find the diff operations
+            computeDiff: function(originalLines, customLines) {
+                var dp = this.computeLCS(originalLines, customLines);
+                var diff = [];
+                var i = originalLines.length, j = customLines.length;
+
+                while (i > 0 || j > 0) {
+                    if (i > 0 && j > 0 && originalLines[i - 1] === customLines[j - 1]) {
+                        diff.unshift({ type: 'equal', origLine: i - 1, customLine: j - 1 });
+                        i--; j--;
+                    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                        diff.unshift({ type: 'added', customLine: j - 1 });
+                        j--;
+                    } else if (i > 0) {
+                        diff.unshift({ type: 'removed', origLine: i - 1 });
+                        i--;
+                    }
+                }
+                return diff;
+            },
+
+            highlightDiff: function() {
+                this.clearDiffMarkers();
+
+                var customLines = this.editor.getValue().split('\n');
+                var originalLines = this.originalContent ? this.originalContent.split('\n') : [];
+                var Range = ace.require('ace/range').Range;
+
+                var diff = this.computeDiff(originalLines, customLines);
+
+                for (var k = 0; k < diff.length; k++) {
+                    var op = diff[k];
+
+                    if (op.type === 'added') {
+                        var addedMarker = this.editor.session.addMarker(
+                            new Range(op.customLine, 0, op.customLine, 1),
+                            'diff-added',
+                            'fullLine'
+                        );
+                        this.diffMarkers.push({editor: this.editor, id: addedMarker});
+                    } else if (op.type === 'removed') {
+                        var removedMarker = this.originalEditor.session.addMarker(
+                            new Range(op.origLine, 0, op.origLine, 1),
+                            'diff-removed',
+                            'fullLine'
+                        );
+                        this.diffMarkers.push({editor: this.originalEditor, id: removedMarker});
+                    }
+                }
+            },
+
+            clearDiffMarkers: function() {
+                this.diffMarkers.forEach(function(marker) {
+                    marker.editor.session.removeMarker(marker.id);
+                });
+                this.diffMarkers = [];
             },
 
             updateUI: function() {
@@ -207,7 +333,7 @@
 
                 if (this.isCustom) {
                     if (!badge) {
-                        var header = document.querySelector('.theme-scss-editor__file-header');
+                        var header = document.querySelector('.theme-scss-editor__panel-header');
                         if (header) {
                             badge = document.createElement('span');
                             badge.className = 'theme-scss-editor__custom-badge';
@@ -224,7 +350,7 @@
                             revertBtn.id = 'revertBtn';
                             revertBtn.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
                             revertBtn.onclick = function() { ThemeScssEditor.revert(); };
-                            actions.appendChild(revertBtn);
+                            actions.insertBefore(revertBtn, showDiffBtn);
                         }
                     }
                     if (showDiffBtn) {
@@ -234,8 +360,9 @@
                     if (badge) badge.remove();
                     if (revertBtn) revertBtn.remove();
                     if (showDiffBtn) showDiffBtn.style.display = 'none';
-                    document.getElementById('diffContainer').style.display = 'none';
-                    this.showingDiff = false;
+                    if (this.showingDiff) {
+                        this.toggleDiff();
+                    }
                 }
             },
 
