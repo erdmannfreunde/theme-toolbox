@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.1">
+  <file datatype="php" original="contao/languages/en/tl_theme_scss.php" source-language="en">
+    <body>
+      <trans-unit id="selectTheme">
+        <source>Theme</source>
+      </trans-unit>
+      <trans-unit id="scssFiles">
+        <source>SCSS Files</source>
+      </trans-unit>
+      <trans-unit id="selectFile">
+        <source>Select a file from the sidebar to edit</source>
+      </trans-unit>
+      <trans-unit id="customized">
+        <source>Customized</source>
+      </trans-unit>
+      <trans-unit id="save">
+        <source>Save</source>
+      </trans-unit>
+      <trans-unit id="saving">
+        <source>Saving...</source>
+      </trans-unit>
+      <trans-unit id="saved">
+        <source>File saved successfully</source>
+      </trans-unit>
+      <trans-unit id="saveError">
+        <source>Error saving file</source>
+      </trans-unit>
+      <trans-unit id="revert">
+        <source>Revert to original</source>
+      </trans-unit>
+      <trans-unit id="reverted">
+        <source>File reverted to original</source>
+      </trans-unit>
+      <trans-unit id="revertError">
+        <source>Error reverting file</source>
+      </trans-unit>
+      <trans-unit id="confirmRevert">
+        <source>Are you sure you want to revert to the original file? All changes will be lost.</source>
+      </trans-unit>
+      <trans-unit id="showDiff">
+        <source>Show diff</source>
+      </trans-unit>
+      <trans-unit id="originalFile">
+        <source>Original file</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

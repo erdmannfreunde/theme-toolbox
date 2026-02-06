@@ -1,0 +1,5 @@
+theme_scss_editor_controllers:
+    resource:
+        path: ../src/Controller/Backend/
+        namespace: ErdmannFreunde\ThemeToolboxBundle\Controller\Backend
+    type: attribute

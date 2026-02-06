@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of erdmannfreunde/theme-toolbox.
+ *
+ * (c) Erdmann & Freunde <https://erdmann-freunde.de>
+ *
+ * @license LGPL-3.0-or-later
+ */
+
+namespace ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer;
+
+use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
+
+class LayoutThemeScssOptionsCallback
+{
+    public function __construct(
+        private readonly ThemeScssFileManager $fileManager,
+    ) {
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function __invoke(): array
+    {
+        $themes = $this->fileManager->getAvailableThemes();
+        $options = [];
+
+        foreach ($themes as $name => $path) {
+            // Check if default.scss exists
+            if ($this->fileManager->getDefaultScssPath($name)) {
+                $options[$name] = $name;
+            }
+        }
+
+        return $options;
+    }
+}

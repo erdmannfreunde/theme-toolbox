@@ -19,15 +19,19 @@ use Contao\FaqBundle\ContaoFaqBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
 use Contao\ManagerPlugin\Bundle\Parser\ParserInterface;
+use Contao\ManagerPlugin\Routing\RoutingPluginInterface;
 use Contao\NewsBundle\ContaoNewsBundle;
 use ErdmannFreunde\ThemeToolboxBundle\ErdmannFreundeThemeToolboxBundle;
+use Symfony\Component\Config\Loader\LoaderResolverInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Contao Manager plugin.
  */
-class Plugin implements BundlePluginInterface
+class Plugin implements BundlePluginInterface, RoutingPluginInterface
 {
-    public function getBundles(ParserInterface $parser)
+    public function getBundles(ParserInterface $parser): array
     {
         $dependencies[] = ContaoCoreBundle::class;
 
@@ -47,5 +51,12 @@ class Plugin implements BundlePluginInterface
             BundleConfig::create(ErdmannFreundeThemeToolboxBundle::class)
                 ->setLoadAfter($dependencies),
         ];
+    }
+
+    public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel): RouteCollection
+    {
+        $file = '@ErdmannFreundeThemeToolboxBundle/config/routes.yaml';
+
+        return $resolver->resolve($file)->load($file);
     }
 }

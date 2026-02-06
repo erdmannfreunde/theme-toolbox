@@ -36,3 +36,37 @@ services:
     public: true;
     arguments:
       - '@request_stack'
+
+  # Theme SCSS Editor Services
+  ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager:
+    arguments:
+      - '%kernel.project_dir%'
+      - '@filesystem'
+
+  ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '%kernel.project_dir%'
+      - '@filesystem'
+      - '%kernel.debug%'
+
+  ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeScssEditorController:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@contao.csrf.token_manager'
+    calls:
+      - [setContainer, ['@service_container']]
+    tags: ['controller.service_arguments']
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\ThemeScssGeneratePageListener:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\LayoutThemeScssOptionsCallback:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+    public: true
+
+  ErdmannFreunde\ThemeToolboxBundle\EventListener\BackendModuleRedirectListener:
+    arguments:
+      - '@router'

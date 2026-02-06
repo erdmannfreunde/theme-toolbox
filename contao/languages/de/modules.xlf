@@ -9,6 +9,14 @@
         <source>Manage css classes for content elements</source>
         <target>CSS Klassen für Inhaltselemente verwalten</target>
       </trans-unit>
+      <trans-unit id="MOD.themeScssEditor.0">
+        <source>Theme SCSS Editor</source>
+        <target>Theme SCSS Editor</target>
+      </trans-unit>
+      <trans-unit id="MOD.themeScssEditor.1">
+        <source>Edit and customize SCSS files for themes</source>
+        <target>SCSS-Dateien für Themes bearbeiten und anpassen</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

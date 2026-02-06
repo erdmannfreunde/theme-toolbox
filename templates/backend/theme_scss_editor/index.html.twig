@@ -1,0 +1,260 @@
+{% extends '@Contao/be_main.html.twig' %}
+
+{% block main %}
+    <main id="main" aria-labelledby="main_headline">
+        <h1 id="main_headline">{{ headline }}</h1>
+
+        <div id="tl_buttons">
+            <a href="{{ back_url }}" class="header_back" title="{{ 'MSC.backBTTitle'|trans({}, 'contao_default') }}">
+                {{ 'MSC.backBT'|trans({}, 'contao_default') }}
+            </a>
+        </div>
+
+        <div class="theme-scss-editor">
+            <div class="theme-scss-editor__toolbar">
+                <div class="theme-scss-editor__theme-select">
+                    <label for="themeSelect">{{ 'selectTheme'|trans({}, 'contao_tl_theme_scss') }}:</label>
+                    <select id="themeSelect" class="tl_select" onchange="ThemeScssEditor.changeTheme(this.value)">
+                        {% for name, path in themes %}
+                            <option value="{{ name }}"{{ name == selected_theme ? ' selected' : '' }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="theme-scss-editor__container">
+                <div class="theme-scss-editor__sidebar">
+                    <div class="theme-scss-editor__files">
+                        <h3>{{ 'scssFiles'|trans({}, 'contao_tl_theme_scss') }}</h3>
+                        <div class="theme-scss-editor__file-tree">
+                            {{ include('@ErdmannFreundeThemeToolbox/backend/theme_scss_editor/_file_tree.html.twig', {tree: files, selected_file: selected_file}) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="theme-scss-editor__main">
+                    {% if selected_file %}
+                        <div class="theme-scss-editor__file-header">
+                            <span class="theme-scss-editor__file-name">{{ selected_file }}</span>
+                            {% if is_custom %}
+                                <span class="theme-scss-editor__custom-badge">{{ 'customized'|trans({}, 'contao_tl_theme_scss') }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="theme-scss-editor__editor-container">
+                            <div id="scssEditor" class="theme-scss-editor__editor">{{ file_content }}</div>
+                        </div>
+
+                        <div class="theme-scss-editor__actions">
+                            <button type="button" class="tl_submit" id="saveBtn" onclick="ThemeScssEditor.save()">
+                                {{ 'save'|trans({}, 'contao_tl_theme_scss') }}
+                            </button>
+                            {% if is_custom %}
+                                <button type="button" class="tl_submit" id="revertBtn" onclick="ThemeScssEditor.revert()">
+                                    {{ 'revert'|trans({}, 'contao_tl_theme_scss') }}
+                                </button>
+                            {% endif %}
+                            <button type="button" class="tl_submit" id="showDiffBtn" onclick="ThemeScssEditor.toggleDiff()" style="{{ is_custom ? '' : 'display:none' }}">
+                                {{ 'showDiff'|trans({}, 'contao_tl_theme_scss') }}
+                            </button>
+                        </div>
+
+                        <div id="diffContainer" class="theme-scss-editor__diff" style="display:none">
+                            <h4>{{ 'originalFile'|trans({}, 'contao_tl_theme_scss') }}</h4>
+                            <div id="originalEditor" class="theme-scss-editor__editor theme-scss-editor__editor--readonly">{{ original_content }}</div>
+                        </div>
+                    {% else %}
+                        <div class="theme-scss-editor__empty">
+                            <p>{{ 'selectFile'|trans({}, 'contao_tl_theme_scss') }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <script src="{{ asset('assets/ace/js/ace.js') }}"></script>
+        <script>
+        var ThemeScssEditor = {
+            editor: null,
+            originalEditor: null,
+            theme: '{{ selected_theme|e('js') }}',
+            file: '{{ selected_file|e('js') }}',
+            csrfToken: '{{ csrf_token }}',
+            isCustom: {{ is_custom ? 'true' : 'false' }},
+            showingDiff: false,
+
+            init: function() {
+                var editorEl = document.getElementById('scssEditor');
+                if (editorEl) {
+                    this.editor = ace.edit('scssEditor');
+                    this.editor.setTheme('ace/theme/monokai');
+                    this.editor.session.setMode('ace/mode/scss');
+                    this.editor.setOptions({
+                        fontSize: '14px',
+                        showPrintMargin: false,
+                        tabSize: 2,
+                        useSoftTabs: true
+                    });
+
+                    this.editor.commands.addCommand({
+                        name: 'save',
+                        bindKey: {win: 'Ctrl-S', mac: 'Cmd-S'},
+                        exec: function() { ThemeScssEditor.save(); }
+                    });
+
+                    editorEl.classList.add('theme-scss-editor__editor--ready');
+                }
+
+                var originalEditorEl = document.getElementById('originalEditor');
+                if (originalEditorEl) {
+                    this.originalEditor = ace.edit('originalEditor');
+                    this.originalEditor.setTheme('ace/theme/monokai');
+                    this.originalEditor.session.setMode('ace/mode/scss');
+                    this.originalEditor.setReadOnly(true);
+                    this.originalEditor.setOptions({
+                        fontSize: '14px',
+                        showPrintMargin: false
+                    });
+
+                    originalEditorEl.classList.add('theme-scss-editor__editor--ready');
+                }
+            },
+
+            changeTheme: function(theme) {
+                window.location.href = '{{ path('theme_scss_editor_index') }}?theme=' + encodeURIComponent(theme);
+            },
+
+            selectFile: function(file) {
+                window.location.href = '{{ path('theme_scss_editor_index') }}?theme=' + encodeURIComponent(this.theme) + '&file=' + encodeURIComponent(file);
+            },
+
+            save: function() {
+                var content = this.editor.getValue();
+                var btn = document.getElementById('saveBtn');
+                btn.disabled = true;
+                btn.textContent = '{{ 'saving'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+
+                fetch('{{ path('theme_scss_editor_save') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'theme=' + encodeURIComponent(this.theme) +
+                          '&file=' + encodeURIComponent(this.file) +
+                          '&content=' + encodeURIComponent(content) +
+                          '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    btn.disabled = false;
+                    btn.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    if (data.success) {
+                        ThemeScssEditor.showMessage(data.message, 'success');
+                        if (data.isCustom && !ThemeScssEditor.isCustom) {
+                            ThemeScssEditor.isCustom = true;
+                            ThemeScssEditor.updateUI();
+                        }
+                    } else {
+                        ThemeScssEditor.showMessage(data.error || data.message, 'error');
+                    }
+                })
+                .catch(function(error) {
+                    btn.disabled = false;
+                    btn.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    ThemeScssEditor.showMessage('Error: ' + error, 'error');
+                });
+            },
+
+            revert: function() {
+                if (!confirm('{{ 'confirmRevert'|trans({}, 'contao_tl_theme_scss')|e('js') }}')) {
+                    return;
+                }
+
+                fetch('{{ path('theme_scss_editor_revert') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'theme=' + encodeURIComponent(this.theme) +
+                          '&file=' + encodeURIComponent(this.file) +
+                          '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        ThemeScssEditor.showMessage(data.message, 'success');
+                        ThemeScssEditor.editor.setValue(data.content, -1);
+                        ThemeScssEditor.isCustom = false;
+                        ThemeScssEditor.updateUI();
+                    } else {
+                        ThemeScssEditor.showMessage(data.error || data.message, 'error');
+                    }
+                })
+                .catch(function(error) {
+                    ThemeScssEditor.showMessage('Error: ' + error, 'error');
+                });
+            },
+
+            toggleDiff: function() {
+                var container = document.getElementById('diffContainer');
+                this.showingDiff = !this.showingDiff;
+                container.style.display = this.showingDiff ? 'block' : 'none';
+                if (this.showingDiff && this.originalEditor) {
+                    this.originalEditor.resize();
+                }
+            },
+
+            updateUI: function() {
+                var badge = document.querySelector('.theme-scss-editor__custom-badge');
+                var revertBtn = document.getElementById('revertBtn');
+                var showDiffBtn = document.getElementById('showDiffBtn');
+
+                if (this.isCustom) {
+                    if (!badge) {
+                        var header = document.querySelector('.theme-scss-editor__file-header');
+                        if (header) {
+                            badge = document.createElement('span');
+                            badge.className = 'theme-scss-editor__custom-badge';
+                            badge.textContent = '{{ 'customized'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                            header.appendChild(badge);
+                        }
+                    }
+                    if (!revertBtn) {
+                        var actions = document.querySelector('.theme-scss-editor__actions');
+                        if (actions) {
+                            revertBtn = document.createElement('button');
+                            revertBtn.type = 'button';
+                            revertBtn.className = 'tl_submit';
+                            revertBtn.id = 'revertBtn';
+                            revertBtn.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                            revertBtn.onclick = function() { ThemeScssEditor.revert(); };
+                            actions.appendChild(revertBtn);
+                        }
+                    }
+                    if (showDiffBtn) {
+                        showDiffBtn.style.display = '';
+                    }
+                } else {
+                    if (badge) badge.remove();
+                    if (revertBtn) revertBtn.remove();
+                    if (showDiffBtn) showDiffBtn.style.display = 'none';
+                    document.getElementById('diffContainer').style.display = 'none';
+                    this.showingDiff = false;
+                }
+            },
+
+            showMessage: function(message, type) {
+                var existing = document.querySelector('.theme-scss-editor__message');
+                if (existing) existing.remove();
+
+                var msg = document.createElement('div');
+                msg.className = 'theme-scss-editor__message theme-scss-editor__message--' + type;
+                msg.textContent = message;
+                document.querySelector('.theme-scss-editor__main').prepend(msg);
+
+                setTimeout(function() { msg.remove(); }, 5000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ThemeScssEditor.init();
+        });
+        </script>
+    </main>
+{% endblock %}

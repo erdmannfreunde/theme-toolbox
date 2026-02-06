@@ -1,0 +1,36 @@
+{% macro render_tree(tree, selected_file) %}
+    <ul class="theme-scss-editor__tree">
+        {# First render directories #}
+        {% for name, content in tree %}
+            {% if name != '_files' %}
+                <li class="theme-scss-editor__tree-folder">
+                    <span class="theme-scss-editor__tree-folder-name">{{ name }}</span>
+                    {{ _self.render_tree(content, selected_file) }}
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {# Then render files #}
+        {% if tree._files is defined %}
+            {% for file in tree._files %}
+                {% set classes = 'theme-scss-editor__tree-file' %}
+                {% if file.path == selected_file %}
+                    {% set classes = classes ~ ' theme-scss-editor__tree-file--selected' %}
+                {% endif %}
+                {% if file.hasCustom %}
+                    {% set classes = classes ~ ' theme-scss-editor__tree-file--custom' %}
+                {% endif %}
+                <li class="{{ classes }}">
+                    <a href="javascript:void(0)" onclick="ThemeScssEditor.selectFile('{{ file.path|e('js') }}')">
+                        {{ file.name }}
+                        {% if file.hasCustom %}
+                            <span class="theme-scss-editor__custom-indicator">*</span>
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+{% endmacro %}
+
+{{ _self.render_tree(tree, selected_file) }}
