@@ -108,6 +108,10 @@
             showingDiff: false,
             originalContent: {{ original_content|json_encode|raw }},
             diffMarkers: [],
+            // Store actual custom content when in diff mode (without placeholders)
+            actualCustomContent: null,
+            // Track which lines in custom editor are placeholders
+            customPlaceholderLines: [],
 
             init: function() {
                 var editorEl = document.getElementById('scssEditor');
@@ -126,6 +130,40 @@
                         name: 'save',
                         bindKey: {win: 'Ctrl-S', mac: 'Ctrl-Option-S'},
                         exec: function() { ThemeScssEditor.save(); }
+                    });
+
+                    // Track placeholder index changes during diff editing
+                    this.editor.session.on('change', function(delta) {
+                        if (!ThemeScssEditor.showingDiff || ThemeScssEditor._updatingDiff) return;
+
+                        var startRow = delta.start.row;
+                        var endRow = delta.end.row;
+                        var linesChanged = endRow - startRow;
+
+                        var newPlaceholders = [];
+                        for (var i = 0; i < ThemeScssEditor.customPlaceholderLines.length; i++) {
+                            var idx = ThemeScssEditor.customPlaceholderLines[i];
+
+                            if (delta.action === 'insert') {
+                                if (idx === startRow) {
+                                    continue; // User typed on placeholder - no longer a placeholder
+                                } else if (idx > startRow) {
+                                    newPlaceholders.push(idx + linesChanged);
+                                } else {
+                                    newPlaceholders.push(idx);
+                                }
+                            } else if (delta.action === 'remove') {
+                                if (idx >= startRow && idx <= endRow) {
+                                    continue; // Placeholder in removed range
+                                } else if (idx > endRow) {
+                                    newPlaceholders.push(idx - linesChanged);
+                                } else {
+                                    newPlaceholders.push(idx);
+                                }
+                            }
+                        }
+                        ThemeScssEditor.customPlaceholderLines = newPlaceholders;
+                        ThemeScssEditor._diffContentDirty = true;
                     });
 
                     editorEl.classList.add('theme-scss-editor__editor--ready');
@@ -170,7 +208,13 @@
             },
 
             save: function() {
-                var content = this.editor.getValue();
+                var content;
+                if (this.showingDiff) {
+                    content = this.extractRealContent();
+                    this.actualCustomContent = content;
+                } else {
+                    content = this.editor.getValue();
+                }
                 var btn = document.getElementById('saveBtn');
                 var btnText = btn.querySelector('span');
                 btn.disabled = true;
@@ -195,7 +239,7 @@
                             ThemeScssEditor.updateUI();
                         }
                         if (ThemeScssEditor.showingDiff) {
-                            ThemeScssEditor.highlightDiff();
+                            ThemeScssEditor.prepareAlignedDiff();
                         }
                     } else {
                         ThemeScssEditor.showMessage(data.error || data.message, 'error');
@@ -253,7 +297,7 @@
                     setTimeout(function() {
                         ThemeScssEditor.editor.resize();
                         ThemeScssEditor.originalEditor.resize();
-                        ThemeScssEditor.highlightDiff();
+                        ThemeScssEditor.prepareAlignedDiff();
                         ThemeScssEditor.syncScroll();
                     }, 50);
                 } else {
@@ -261,6 +305,8 @@
                     originalPanel.style.display = 'none';
                     if (btnText) btnText.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
                     this.clearDiffMarkers();
+                    // Restore original content
+                    this.originalEditor.setValue(this.originalContent || '', -1);
 
                     setTimeout(function() {
                         ThemeScssEditor.editor.resize();
@@ -309,8 +355,19 @@
 
                 while (i > 0 || j > 0) {
                     if (i > 0 && j > 0 && originalLines[i - 1] === customLines[j - 1]) {
-                        diff.unshift({ type: 'equal', origLine: i - 1, customLine: j - 1 });
-                        i--; j--;
+                        // Lines match - prefer earlier matches for common tokens like }
+                        if (dp[i][j - 1] === dp[i][j]) {
+                            // Same LCS without this custom line - skip to find earlier match
+                            diff.unshift({ type: 'added', customLine: j - 1 });
+                            j--;
+                        } else if (dp[i - 1][j] === dp[i][j]) {
+                            diff.unshift({ type: 'removed', origLine: i - 1 });
+                            i--;
+                        } else {
+                            // Match is essential - take it
+                            diff.unshift({ type: 'equal', origLine: i - 1, customLine: j - 1 });
+                            i--; j--;
+                        }
                     } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
                         diff.unshift({ type: 'added', customLine: j - 1 });
                         j--;
@@ -322,41 +379,255 @@
                 return diff;
             },
 
-            highlightDiff: function() {
+            // Line number mapping for editors (visual row -> actual line number or null)
+            originalLineMap: [],
+            customLineMap: [],
+
+            // Prepare aligned diff with placeholder lines for synchronization
+            prepareAlignedDiff: function() {
+                this._updatingDiff = true;
                 this.clearDiffMarkers();
 
-                var customLines = this.editor.getValue().split('\n');
+                // Store actual custom content before adding placeholders
+                this.actualCustomContent = this.editor.getValue();
+                this._diffContentDirty = false;
+                var customLines = this.actualCustomContent.split('\n');
                 var originalLines = this.originalContent ? this.originalContent.split('\n') : [];
                 var Range = ace.require('ace/range').Range;
 
-                var diff = this.computeDiff(originalLines, customLines);
+                var rawDiff = this.computeDiff(originalLines, customLines);
+
+                // Merge consecutive removed+added blocks into "changed" pairs
+                var diff = [];
+                var d = 0;
+                while (d < rawDiff.length) {
+                    // Collect block of consecutive 'removed'
+                    var removedBlock = [];
+                    while (d < rawDiff.length && rawDiff[d].type === 'removed') {
+                        removedBlock.push(rawDiff[d]);
+                        d++;
+                    }
+                    // Collect block of consecutive 'added'
+                    var addedBlock = [];
+                    while (d < rawDiff.length && rawDiff[d].type === 'added') {
+                        addedBlock.push(rawDiff[d]);
+                        d++;
+                    }
+                    // Pair up as "changed", remaining become pure removed/added
+                    var pairs = Math.min(removedBlock.length, addedBlock.length);
+                    for (var p = 0; p < pairs; p++) {
+                        diff.push({ type: 'changed', origLine: removedBlock[p].origLine, customLine: addedBlock[p].customLine });
+                    }
+                    for (var ri = pairs; ri < removedBlock.length; ri++) {
+                        diff.push(removedBlock[ri]);
+                    }
+                    for (var ai = pairs; ai < addedBlock.length; ai++) {
+                        diff.push(addedBlock[ai]);
+                    }
+                    // If current item is not removed/added, push it
+                    if (d < rawDiff.length && rawDiff[d].type !== 'removed' && rawDiff[d].type !== 'added') {
+                        diff.push(rawDiff[d]);
+                        d++;
+                    }
+                }
+
+                // Build aligned content for BOTH editors
+                var alignedOriginal = [];
+                var alignedCustom = [];
+                this.originalLineMap = [];
+                this.customLineMap = [];
+                var placeholderLinesOriginal = [];
+                var placeholderLinesCustom = [];
+                this.customPlaceholderLines = [];
+                var addedLines = [];
+                var removedLines = [];
+                var changedLinesOriginal = [];
+                var changedLinesCustom = [];
+                var originalLineNumber = 1;
+                var customLineNumber = 1;
 
                 for (var k = 0; k < diff.length; k++) {
                     var op = diff[k];
 
-                    if (op.type === 'added') {
-                        var addedMarker = this.editor.session.addMarker(
-                            new Range(op.customLine, 0, op.customLine, 1),
-                            'diff-added',
-                            'fullLine'
-                        );
-                        this.diffMarkers.push({editor: this.editor, id: addedMarker});
+                    if (op.type === 'equal') {
+                        alignedOriginal.push(originalLines[op.origLine]);
+                        alignedCustom.push(customLines[op.customLine]);
+                        this.originalLineMap.push(originalLineNumber);
+                        this.customLineMap.push(customLineNumber);
+                        originalLineNumber++;
+                        customLineNumber++;
+                    } else if (op.type === 'changed') {
+                        // Line modified - show both on same row, no placeholders
+                        alignedOriginal.push(originalLines[op.origLine]);
+                        alignedCustom.push(customLines[op.customLine]);
+                        this.originalLineMap.push(originalLineNumber);
+                        this.customLineMap.push(customLineNumber);
+                        changedLinesOriginal.push(alignedOriginal.length - 1);
+                        changedLinesCustom.push(alignedCustom.length - 1);
+                        originalLineNumber++;
+                        customLineNumber++;
+                    } else if (op.type === 'added') {
+                        // Line added in custom - placeholder in original
+                        alignedOriginal.push('');
+                        alignedCustom.push(customLines[op.customLine]);
+                        this.originalLineMap.push(null);
+                        this.customLineMap.push(customLineNumber);
+                        placeholderLinesOriginal.push(alignedOriginal.length - 1);
+                        addedLines.push(alignedCustom.length - 1);
+                        customLineNumber++;
                     } else if (op.type === 'removed') {
-                        var removedMarker = this.originalEditor.session.addMarker(
-                            new Range(op.origLine, 0, op.origLine, 1),
-                            'diff-removed',
-                            'fullLine'
-                        );
-                        this.diffMarkers.push({editor: this.originalEditor, id: removedMarker});
+                        // Line removed - in original, placeholder in custom
+                        alignedOriginal.push(originalLines[op.origLine]);
+                        alignedCustom.push('');
+                        this.originalLineMap.push(originalLineNumber);
+                        this.customLineMap.push(null);
+                        removedLines.push(alignedOriginal.length - 1);
+                        placeholderLinesCustom.push(alignedCustom.length - 1);
+                        this.customPlaceholderLines.push(alignedCustom.length - 1);
+                        originalLineNumber++;
                     }
                 }
+
+                // Update both editors with aligned content
+                this.originalEditor.setValue(alignedOriginal.join('\n'), -1);
+                this.editor.setValue(alignedCustom.join('\n'), -1);
+
+                // Set custom gutter renderer for original editor
+                var self = this;
+                this.originalEditor.session.gutterRenderer = {
+                    getWidth: function(session, lastLineNumber, config) {
+                        return (self.originalLineMap.length.toString().length + 1) * config.characterWidth;
+                    },
+                    getText: function(session, row) {
+                        var lineNum = self.originalLineMap[row];
+                        return lineNum !== null ? lineNum.toString() : '';
+                    }
+                };
+                this.originalEditor.renderer.updateFull();
+
+                // Set custom gutter renderer for custom editor
+                this.editor.session.gutterRenderer = {
+                    getWidth: function(session, lastLineNumber, config) {
+                        return (self.customLineMap.length.toString().length + 1) * config.characterWidth;
+                    },
+                    getText: function(session, row) {
+                        var lineNum = self.customLineMap[row];
+                        return lineNum !== null ? lineNum.toString() : '';
+                    }
+                };
+                this.editor.renderer.updateFull();
+
+                // Add markers for placeholders in original (gray)
+                this.placeholderGutterLines = [];
+                for (var p = 0; p < placeholderLinesOriginal.length; p++) {
+                    var placeholderMarker = this.originalEditor.session.addMarker(
+                        new Range(placeholderLinesOriginal[p], 0, placeholderLinesOriginal[p], 1),
+                        'diff-placeholder',
+                        'fullLine'
+                    );
+                    this.diffMarkers.push({editor: this.originalEditor, id: placeholderMarker});
+                    this.originalEditor.session.addGutterDecoration(placeholderLinesOriginal[p], 'diff-placeholder-gutter');
+                    this.placeholderGutterLines.push({editor: this.originalEditor, line: placeholderLinesOriginal[p]});
+                }
+
+                // Add markers for placeholders in custom (gray)
+                for (var pc = 0; pc < placeholderLinesCustom.length; pc++) {
+                    var placeholderMarkerCustom = this.editor.session.addMarker(
+                        new Range(placeholderLinesCustom[pc], 0, placeholderLinesCustom[pc], 1),
+                        'diff-placeholder',
+                        'fullLine'
+                    );
+                    this.diffMarkers.push({editor: this.editor, id: placeholderMarkerCustom});
+                    this.editor.session.addGutterDecoration(placeholderLinesCustom[pc], 'diff-placeholder-gutter');
+                    this.placeholderGutterLines.push({editor: this.editor, line: placeholderLinesCustom[pc]});
+                }
+
+                // Add markers for added lines (green) in custom editor
+                for (var a = 0; a < addedLines.length; a++) {
+                    var addedMarker = this.editor.session.addMarker(
+                        new Range(addedLines[a], 0, addedLines[a], 1),
+                        'diff-added',
+                        'fullLine'
+                    );
+                    this.diffMarkers.push({editor: this.editor, id: addedMarker});
+                }
+
+                // Add markers for removed lines (red) in original editor
+                for (var r = 0; r < removedLines.length; r++) {
+                    var removedMarker = this.originalEditor.session.addMarker(
+                        new Range(removedLines[r], 0, removedLines[r], 1),
+                        'diff-removed',
+                        'fullLine'
+                    );
+                    this.diffMarkers.push({editor: this.originalEditor, id: removedMarker});
+                }
+
+                // Add markers for changed lines (red in original, green in custom)
+                for (var c = 0; c < changedLinesOriginal.length; c++) {
+                    var changedOrigMarker = this.originalEditor.session.addMarker(
+                        new Range(changedLinesOriginal[c], 0, changedLinesOriginal[c], 1),
+                        'diff-removed',
+                        'fullLine'
+                    );
+                    this.diffMarkers.push({editor: this.originalEditor, id: changedOrigMarker});
+
+                    var changedCustomMarker = this.editor.session.addMarker(
+                        new Range(changedLinesCustom[c], 0, changedLinesCustom[c], 1),
+                        'diff-added',
+                        'fullLine'
+                    );
+                    this.diffMarkers.push({editor: this.editor, id: changedCustomMarker});
+                }
+                this._updatingDiff = false;
             },
 
+            placeholderGutterLines: [],
+
+            _updatingDiff: false,
+            _diffContentDirty: false,
+
             clearDiffMarkers: function() {
+                this._updatingDiff = true;
                 this.diffMarkers.forEach(function(marker) {
                     marker.editor.session.removeMarker(marker.id);
                 });
                 this.diffMarkers = [];
+                // Remove gutter decorations
+                this.placeholderGutterLines.forEach(function(item) {
+                    item.editor.session.removeGutterDecoration(item.line, 'diff-placeholder-gutter');
+                });
+                this.placeholderGutterLines = [];
+                // Reset gutter renderer for both editors
+                if (this.originalEditor && this.originalEditor.session) {
+                    this.originalEditor.session.gutterRenderer = null;
+                    this.originalEditor.renderer.updateFull();
+                }
+                if (this.editor && this.editor.session) {
+                    this.editor.session.gutterRenderer = null;
+                    this.editor.renderer.updateFull();
+                }
+                // Restore actual custom content (re-extract if edited in diff mode)
+                if (this.actualCustomContent !== null) {
+                    if (this._diffContentDirty) {
+                        this.actualCustomContent = this.extractRealContent();
+                        this._diffContentDirty = false;
+                    }
+                    this.editor.setValue(this.actualCustomContent, -1);
+                    this.actualCustomContent = null;
+                }
+                this.customPlaceholderLines = [];
+                this._updatingDiff = false;
+            },
+
+            extractRealContent: function() {
+                var lines = this.editor.getValue().split('\n');
+                var realLines = [];
+                for (var i = 0; i < lines.length; i++) {
+                    if (this.customPlaceholderLines.indexOf(i) === -1) {
+                        realLines.push(lines[i]);
+                    }
+                }
+                return realLines.join('\n');
             },
 
             isRenaming: false,
@@ -469,7 +740,7 @@
                         if (actions) {
                             revertBtn = document.createElement('button');
                             revertBtn.type = 'button';
-                            revertBtn.className = 'tl_submit';
+                            revertBtn.className = 'action';
                             revertBtn.id = 'revertBtn';
                             var img = document.createElement('img');
                             img.src = '/system/themes/flexible/icons/undo.svg';

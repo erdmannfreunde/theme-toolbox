@@ -1,6 +1,9 @@
 .theme-scss-editor {
   margin: 20px 0;
   overflow: hidden;
+  height: calc(100vh - 7rem);
+  display: flex;
+  flex-direction: column;
 }
 
 .theme-scss-editor__toolbar {
@@ -33,16 +36,22 @@
 
 .theme-scss-editor__container {
   display: flex;
-  min-height: 600px;
+  max-height: 100%;
 }
 
 .theme-scss-editor__sidebar {
+  display: flex;
+  flex-direction: column;
   width: 280px;
-  flex-shrink: 0;
   background: var(--panel-bg);
-  border: 1px solid var(--border);
-  /* border-radius: var(--border-radius); */
+  border-right: 1px solid var(--border);
   overflow: hidden;
+}
+
+.theme-scss-editor__files {
+  position: relative;
+  overflow: auto;
+  resize: horizontal;
 }
 
 .theme-scss-editor__files h3 {
@@ -57,7 +66,7 @@
 
 .theme-scss-editor__file-tree {
   padding: 10px;
-  max-height: 640px;
+  max-height: max-content;
   overflow-y: auto;
 }
 
@@ -358,6 +367,18 @@
   border-left: 3px solid #d29922;
 }
 
+.diff-placeholder {
+  position: absolute;
+  background: rgba(128, 128, 128, 0.2);
+  border-left: 3px solid #888;
+}
+
+/* Hide line numbers for placeholder lines in ACE gutter */
+.ace_gutter-cell.diff-placeholder-gutter {
+  color: transparent !important;
+  background: rgba(128, 128, 128, 0.2);
+}
+
 /* Dark mode adjustments for diff colors */
 html[data-color-scheme='dark'] .diff-added {
   background: rgba(46, 160, 67, 0.2);
@@ -369,4 +390,12 @@ html[data-color-scheme='dark'] .diff-removed {
 
 html[data-color-scheme='dark'] .diff-changed {
   background: rgba(210, 153, 34, 0.2);
+}
+
+html[data-color-scheme='dark'] .diff-placeholder {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+html[data-color-scheme='dark'] .ace_gutter-cell.diff-placeholder-gutter {
+  background: rgba(128, 128, 128, 0.15);
 }
