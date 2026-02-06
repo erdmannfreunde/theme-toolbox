@@ -47,6 +47,39 @@
       <trans-unit id="originalFile">
         <source>Original file</source>
       </trans-unit>
+      <trans-unit id="rename">
+        <source>Rename</source>
+      </trans-unit>
+      <trans-unit id="confirmRename">
+        <source>Confirm rename</source>
+      </trans-unit>
+      <trans-unit id="cancelRename">
+        <source>Cancel rename</source>
+      </trans-unit>
+      <trans-unit id="renamed">
+        <source>File renamed successfully</source>
+      </trans-unit>
+      <trans-unit id="renameError">
+        <source>Error renaming file</source>
+      </trans-unit>
+      <trans-unit id="invalidFileName">
+        <source>Invalid file name</source>
+      </trans-unit>
+      <trans-unit id="customOnly">
+        <source>Custom</source>
+      </trans-unit>
+      <trans-unit id="delete">
+        <source>Delete</source>
+      </trans-unit>
+      <trans-unit id="confirmDelete">
+        <source>Are you sure you want to delete this custom file? This action cannot be undone.</source>
+      </trans-unit>
+      <trans-unit id="deleted">
+        <source>File deleted successfully</source>
+      </trans-unit>
+      <trans-unit id="deleteError">
+        <source>Error deleting file</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

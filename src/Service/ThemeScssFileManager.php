@@ -59,38 +59,68 @@ class ThemeScssFileManager
     /**
      * Get all SCSS files for a theme.
      *
-     * @return array<int, array{path: string, name: string, isCustom: bool, hasCustom: bool}>
+     * @return array<int, array{path: string, name: string, isCustom: bool, hasCustom: bool, isCustomOnly: bool}>
      */
     public function getScssFiles(string $themeName): array
     {
+        $files = [];
+        $seenPaths = [];
+
+        // First, get files from the theme directory
         $themePath = $this->getThemePath($themeName);
 
-        if (!$themePath) {
-            return [];
+        if ($themePath) {
+            $scssPath = $themePath . '/' . self::SCSS_DIR;
+
+            if (is_dir($scssPath)) {
+                $finder = new Finder();
+                $finder->files()->in($scssPath)->name('*.scss')->sortByName();
+
+                foreach ($finder as $file) {
+                    $relativePath = $file->getRelativePathname();
+                    $customPath = $this->getCustomFilePath($relativePath);
+                    $seenPaths[$relativePath] = true;
+
+                    $files[] = [
+                        'path' => $relativePath,
+                        'name' => $file->getFilename(),
+                        'directory' => $file->getRelativePath(),
+                        'isCustom' => false,
+                        'hasCustom' => $this->filesystem->exists($customPath),
+                        'isCustomOnly' => false,
+                    ];
+                }
+            }
         }
 
-        $scssPath = $themePath . '/' . self::SCSS_DIR;
+        // Then, add custom-only files (files that exist only in layout/custom/scss/)
+        $customScssPath = $this->getCustomDirPath();
 
-        if (!is_dir($scssPath)) {
-            return [];
+        if (is_dir($customScssPath)) {
+            $customFinder = new Finder();
+            $customFinder->files()->in($customScssPath)->name('*.scss')->sortByName();
+
+            foreach ($customFinder as $file) {
+                $relativePath = $file->getRelativePathname();
+
+                // Skip if we already have this file from the theme directory
+                if (isset($seenPaths[$relativePath])) {
+                    continue;
+                }
+
+                $files[] = [
+                    'path' => $relativePath,
+                    'name' => $file->getFilename(),
+                    'directory' => $file->getRelativePath(),
+                    'isCustom' => true,
+                    'hasCustom' => true,
+                    'isCustomOnly' => true,
+                ];
+            }
         }
 
-        $files = [];
-        $finder = new Finder();
-        $finder->files()->in($scssPath)->name('*.scss')->sortByName();
-
-        foreach ($finder as $file) {
-            $relativePath = $file->getRelativePathname();
-            $customPath = $this->getCustomFilePath($relativePath);
-
-            $files[] = [
-                'path' => $relativePath,
-                'name' => $file->getFilename(),
-                'directory' => $file->getRelativePath(),
-                'isCustom' => false,
-                'hasCustom' => $this->filesystem->exists($customPath),
-            ];
-        }
+        // Sort all files by path
+        usort($files, fn ($a, $b) => strcmp($a['path'], $b['path']));
 
         return $files;
     }
@@ -157,6 +187,30 @@ class ThemeScssFileManager
         }
 
         return false;
+    }
+
+    /**
+     * Rename a custom file.
+     */
+    public function renameCustomFile(string $oldPath, string $newPath): bool
+    {
+        $oldCustomPath = $this->getCustomFilePath($oldPath);
+        $newCustomPath = $this->getCustomFilePath($newPath);
+
+        if (!$this->filesystem->exists($oldCustomPath)) {
+            return false;
+        }
+
+        // Ensure target directory exists
+        $targetDir = \dirname($newCustomPath);
+
+        if (!is_dir($targetDir)) {
+            $this->filesystem->mkdir($targetDir, 0755);
+        }
+
+        $this->filesystem->rename($oldCustomPath, $newCustomPath);
+
+        return true;
     }
 
     /**

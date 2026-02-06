@@ -20,10 +20,15 @@
                 {% if file.hasCustom %}
                     {% set classes = classes ~ ' theme-scss-editor__tree-file--custom' %}
                 {% endif %}
+                {% if file.isCustomOnly is defined and file.isCustomOnly %}
+                    {% set classes = classes ~ ' theme-scss-editor__tree-file--custom-only' %}
+                {% endif %}
                 <li class="{{ classes }}">
                     <a href="javascript:void(0)" onclick="ThemeScssEditor.selectFile('{{ file.path|e('js') }}')">
                         {{ file.name }}
-                        {% if file.hasCustom %}
+                        {% if file.isCustomOnly is defined and file.isCustomOnly %}
+                            <span class="theme-scss-editor__custom-only-indicator">+</span>
+                        {% elseif file.hasCustom %}
                             <span class="theme-scss-editor__custom-indicator">*</span>
                         {% endif %}
                     </a>

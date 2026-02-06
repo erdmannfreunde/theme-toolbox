@@ -46,6 +46,7 @@ class ThemeScssEditorController extends AbstractBackendController
         $files = [];
         $fileContent = '';
         $isCustom = false;
+        $isCustomOnly = false;
         $originalContent = '';
 
         if ($selectedTheme && isset($themes[$selectedTheme])) {
@@ -55,6 +56,8 @@ class ThemeScssEditorController extends AbstractBackendController
                 $fileContent = $this->fileManager->getFileContent($selectedTheme, $selectedFile) ?? '';
                 $isCustom = $this->fileManager->hasCustomFile($selectedFile);
                 $originalContent = $this->fileManager->getOriginalFileContent($selectedTheme, $selectedFile) ?? '';
+                // Check if this is a custom-only file (no original exists)
+                $isCustomOnly = $isCustom && $originalContent === '';
             }
         }
 
@@ -68,6 +71,7 @@ class ThemeScssEditorController extends AbstractBackendController
             'file_content' => $fileContent,
             'original_content' => $originalContent,
             'is_custom' => $isCustom,
+            'is_custom_only' => $isCustomOnly,
             'csrf_token' => $this->csrfTokenManager->getDefaultTokenValue(),
         ]);
     }
@@ -118,6 +122,60 @@ class ThemeScssEditorController extends AbstractBackendController
                 : ($GLOBALS['TL_LANG']['tl_theme_scss']['revertError'] ?? 'Error reverting file'),
             'content' => $originalContent,
             'isCustom' => false,
+        ]);
+    }
+
+    #[Route('/rename', name: 'theme_scss_editor_rename', methods: ['POST'])]
+    public function rename(Request $request): JsonResponse
+    {
+        System::loadLanguageFile('tl_theme_scss');
+
+        $theme = $request->request->get('theme', '');
+        $oldName = $request->request->get('oldName', '');
+        $newName = $request->request->get('newName', '');
+
+        if (!$theme || !$oldName || !$newName) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        // Validate new name
+        if (!preg_match('/^[\w\-\/]+\.scss$/', $newName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $GLOBALS['TL_LANG']['tl_theme_scss']['invalidFileName'] ?? 'Invalid file name',
+            ], 400);
+        }
+
+        $success = $this->fileManager->renameCustomFile($oldName, $newName);
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? ($GLOBALS['TL_LANG']['tl_theme_scss']['renamed'] ?? 'File renamed successfully')
+                : ($GLOBALS['TL_LANG']['tl_theme_scss']['renameError'] ?? 'Error renaming file'),
+            'newName' => $newName,
+        ]);
+    }
+
+    #[Route('/delete', name: 'theme_scss_editor_delete', methods: ['POST'])]
+    public function delete(Request $request): JsonResponse
+    {
+        System::loadLanguageFile('tl_theme_scss');
+
+        $theme = $request->request->get('theme', '');
+        $file = $request->request->get('file', '');
+
+        if (!$theme || !$file) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        $success = $this->fileManager->deleteCustomFile($file);
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? ($GLOBALS['TL_LANG']['tl_theme_scss']['deleted'] ?? 'File deleted successfully')
+                : ($GLOBALS['TL_LANG']['tl_theme_scss']['deleteError'] ?? 'Error deleting file'),
         ]);
     }
 

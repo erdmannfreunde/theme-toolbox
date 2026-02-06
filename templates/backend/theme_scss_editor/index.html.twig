@@ -4,26 +4,22 @@
     <main id="main" aria-labelledby="main_headline">
         <h1 id="main_headline">{{ headline }}</h1>
 
-        <div id="tl_buttons">
-            <a href="{{ back_url }}" class="header_back" title="{{ 'MSC.backBTTitle'|trans({}, 'contao_default') }}">
-                {{ 'MSC.backBT'|trans({}, 'contao_default') }}
-            </a>
-        </div>
-
-        <div class="theme-scss-editor">
-            <div class="theme-scss-editor__toolbar">
-                <div class="theme-scss-editor__theme-select">
-                    <label for="themeSelect">{{ 'selectTheme'|trans({}, 'contao_tl_theme_scss') }}:</label>
-                    <select id="themeSelect" class="tl_select" onchange="ThemeScssEditor.changeTheme(this.value)">
-                        {% for name, path in themes %}
-                            <option value="{{ name }}"{{ name == selected_theme ? ' selected' : '' }}>{{ name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+        <div class="theme-scss-editor content">
+            
 
             <div class="theme-scss-editor__container">
                 <div class="theme-scss-editor__sidebar">
+                    <div class="theme-scss-editor__toolbar">
+                        <div class="theme-scss-editor__theme-select">
+                            <label for="themeSelect">{{ 'selectTheme'|trans({}, 'contao_tl_theme_scss') }}:</label>
+                            <select id="themeSelect" class="tl_select" onchange="ThemeScssEditor.changeTheme(this.value)">
+                                {% for name, path in themes %}
+                                    <option value="{{ name }}"{{ name == selected_theme ? ' selected' : '' }}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="theme-scss-editor__files">
                         <h3>{{ 'scssFiles'|trans({}, 'contao_tl_theme_scss') }}</h3>
                         <div class="theme-scss-editor__file-tree">
@@ -35,24 +31,45 @@
                 <div class="theme-scss-editor__main">
                     {% if selected_file %}
                         <div class="theme-scss-editor__actions">
-                            <button type="button" class="tl_submit" id="saveBtn" onclick="ThemeScssEditor.save()">
-                                {{ 'save'|trans({}, 'contao_tl_theme_scss') }}
+                            <button type="button" class="action" id="saveBtn" onclick="ThemeScssEditor.save()">
+                                <img src="/system/themes/flexible/icons/editor.svg" alt="" width="16" height="16">
+                                <span>{{ 'save'|trans({}, 'contao_tl_theme_scss') }}</span>
                             </button>
-                            {% if is_custom %}
-                                <button type="button" class="tl_submit" id="revertBtn" onclick="ThemeScssEditor.revert()">
-                                    {{ 'revert'|trans({}, 'contao_tl_theme_scss') }}
+                            {% if is_custom and not is_custom_only %}
+                                <button type="button" class="action" id="showDiffBtn" onclick="ThemeScssEditor.toggleDiff()">
+                                    <img src="/system/themes/flexible/icons/diffTemplate.svg" alt="" width="16" height="16">
+                                    <span>{{ 'showDiff'|trans({}, 'contao_tl_theme_scss') }}</span>
+                                </button>
+                                <button type="button" class="action" id="revertBtn" onclick="ThemeScssEditor.revert()">
+                                    <img src="/system/themes/flexible/icons/undo.svg" alt="" width="16" height="16">
+                                    <span>{{ 'revert'|trans({}, 'contao_tl_theme_scss') }}</span>
                                 </button>
                             {% endif %}
-                            <button type="button" class="tl_submit" id="showDiffBtn" onclick="ThemeScssEditor.toggleDiff()" style="{{ is_custom ? '' : 'display:none' }}">
-                                {{ 'showDiff'|trans({}, 'contao_tl_theme_scss') }}
-                            </button>
+                            {% if is_custom_only %}
+                                <button type="button" class="action action--danger" id="deleteBtn" onclick="ThemeScssEditor.deleteFile()">
+                                    <img src="/system/themes/flexible/icons/delete.svg" alt="" width="16" height="16">
+                                    <span>{{ 'delete'|trans({}, 'contao_tl_theme_scss') }}</span>
+                                </button>
+                            {% endif %}
                         </div>
 
                         <div id="editorWrapper" class="theme-scss-editor__editors">
                             <div class="theme-scss-editor__editor-panel theme-scss-editor__editor-panel--custom">
                                 <div class="theme-scss-editor__panel-header">
-                                    <span class="theme-scss-editor__file-name">{{ selected_file }}</span>
-                                    {% if is_custom %}
+                                    <span id="fileNameDisplay" class="theme-scss-editor__file-name">{{ selected_file }}</span>
+                                    <input type="text" id="fileNameInput" class="theme-scss-editor__file-name-input" value="{{ selected_file }}" style="display:none">
+                                    <button type="button" id="renameBtn" class="theme-scss-editor__rename-btn" onclick="ThemeScssEditor.toggleRename()" title="{{ 'rename'|trans({}, 'contao_tl_theme_scss') }}">
+                                        <img src="/system/themes/flexible/icons/edit.svg" alt="" width="14" height="14">
+                                    </button>
+                                    <button type="button" id="confirmRenameBtn" class="theme-scss-editor__rename-confirm" onclick="ThemeScssEditor.confirmRename()" style="display:none" title="{{ 'confirmRename'|trans({}, 'contao_tl_theme_scss') }}">
+                                        <img src="/system/themes/flexible/icons/ok.svg" alt="" width="14" height="14">
+                                    </button>
+                                    <button type="button" id="cancelRenameBtn" class="theme-scss-editor__rename-cancel" onclick="ThemeScssEditor.cancelRename()" style="display:none" title="{{ 'cancelRename'|trans({}, 'contao_tl_theme_scss') }}">
+                                        <img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">
+                                    </button>
+                                    {% if is_custom_only %}
+                                        <span class="theme-scss-editor__custom-only-badge">{{ 'customOnly'|trans({}, 'contao_tl_theme_scss') }}</span>
+                                    {% elseif is_custom %}
                                         <span class="theme-scss-editor__custom-badge">{{ 'customized'|trans({}, 'contao_tl_theme_scss') }}</span>
                                     {% endif %}
                                 </div>
@@ -107,7 +124,7 @@
 
                     this.editor.commands.addCommand({
                         name: 'save',
-                        bindKey: {win: 'Ctrl-S', mac: 'Cmd-S'},
+                        bindKey: {win: 'Ctrl-S', mac: 'Ctrl-Option-S'},
                         exec: function() { ThemeScssEditor.save(); }
                     });
 
@@ -128,6 +145,20 @@
 
                     originalEditorEl.classList.add('theme-scss-editor__editor--ready');
                 }
+
+                // Keyboard support for rename input
+                var renameInput = document.getElementById('fileNameInput');
+                if (renameInput) {
+                    renameInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            ThemeScssEditor.confirmRename();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            ThemeScssEditor.cancelRename();
+                        }
+                    });
+                }
             },
 
             changeTheme: function(theme) {
@@ -141,8 +172,9 @@
             save: function() {
                 var content = this.editor.getValue();
                 var btn = document.getElementById('saveBtn');
+                var btnText = btn.querySelector('span');
                 btn.disabled = true;
-                btn.textContent = '{{ 'saving'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                btnText.textContent = '{{ 'saving'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
 
                 fetch('{{ path('theme_scss_editor_save') }}', {
                     method: 'POST',
@@ -155,7 +187,7 @@
                 .then(function(response) { return response.json(); })
                 .then(function(data) {
                     btn.disabled = false;
-                    btn.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    btnText.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
                     if (data.success) {
                         ThemeScssEditor.showMessage(data.message, 'success');
                         if (data.isCustom && !ThemeScssEditor.isCustom) {
@@ -171,7 +203,7 @@
                 })
                 .catch(function(error) {
                     btn.disabled = false;
-                    btn.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    btnText.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
                     ThemeScssEditor.showMessage('Error: ' + error, 'error');
                 });
             },
@@ -209,13 +241,14 @@
                 var wrapper = document.getElementById('editorWrapper');
                 var originalPanel = document.getElementById('originalPanel');
                 var btn = document.getElementById('showDiffBtn');
+                var btnText = btn ? btn.querySelector('span') : null;
 
                 this.showingDiff = !this.showingDiff;
 
                 if (this.showingDiff) {
                     wrapper.classList.add('theme-scss-editor__editors--diff');
                     originalPanel.style.display = 'flex';
-                    btn.textContent = '{{ 'hideDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    if (btnText) btnText.textContent = '{{ 'hideDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
 
                     setTimeout(function() {
                         ThemeScssEditor.editor.resize();
@@ -226,7 +259,7 @@
                 } else {
                     wrapper.classList.remove('theme-scss-editor__editors--diff');
                     originalPanel.style.display = 'none';
-                    btn.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                    if (btnText) btnText.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
                     this.clearDiffMarkers();
 
                     setTimeout(function() {
@@ -326,6 +359,96 @@
                 this.diffMarkers = [];
             },
 
+            isRenaming: false,
+
+            toggleRename: function() {
+                this.isRenaming = true;
+                document.getElementById('fileNameDisplay').style.display = 'none';
+                document.getElementById('renameBtn').style.display = 'none';
+                document.getElementById('fileNameInput').style.display = 'inline-block';
+                document.getElementById('confirmRenameBtn').style.display = 'inline-flex';
+                document.getElementById('cancelRenameBtn').style.display = 'inline-flex';
+
+                var input = document.getElementById('fileNameInput');
+                input.focus();
+                input.select();
+            },
+
+            cancelRename: function() {
+                this.isRenaming = false;
+                document.getElementById('fileNameInput').value = this.file;
+                document.getElementById('fileNameDisplay').style.display = 'inline';
+                document.getElementById('renameBtn').style.display = 'inline-flex';
+                document.getElementById('fileNameInput').style.display = 'none';
+                document.getElementById('confirmRenameBtn').style.display = 'none';
+                document.getElementById('cancelRenameBtn').style.display = 'none';
+            },
+
+            confirmRename: function() {
+                var newName = document.getElementById('fileNameInput').value.trim();
+                var oldName = this.file;
+
+                if (!newName || newName === oldName) {
+                    this.cancelRename();
+                    return;
+                }
+
+                if (!newName.endsWith('.scss')) {
+                    newName += '.scss';
+                }
+
+                var self = this;
+
+                fetch('{{ path('theme_scss_editor_rename') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'theme=' + encodeURIComponent(this.theme) +
+                          '&oldName=' + encodeURIComponent(oldName) +
+                          '&newName=' + encodeURIComponent(newName) +
+                          '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.location.href = '{{ path('theme_scss_editor_index') }}?theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(newName);
+                    } else {
+                        self.showMessage(data.error || data.message, 'error');
+                        self.cancelRename();
+                    }
+                })
+                .catch(function(error) {
+                    self.showMessage('Error: ' + error, 'error');
+                    self.cancelRename();
+                });
+            },
+
+            deleteFile: function() {
+                if (!confirm('{{ 'confirmDelete'|trans({}, 'contao_tl_theme_scss')|e('js') }}')) {
+                    return;
+                }
+
+                var self = this;
+
+                fetch('{{ path('theme_scss_editor_delete') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'theme=' + encodeURIComponent(this.theme) +
+                          '&file=' + encodeURIComponent(this.file) +
+                          '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.location.href = '{{ path('theme_scss_editor_index') }}?theme=' + encodeURIComponent(self.theme);
+                    } else {
+                        self.showMessage(data.error || data.message, 'error');
+                    }
+                })
+                .catch(function(error) {
+                    self.showMessage('Error: ' + error, 'error');
+                });
+            },
+
             updateUI: function() {
                 var badge = document.querySelector('.theme-scss-editor__custom-badge');
                 var revertBtn = document.getElementById('revertBtn');
@@ -348,7 +471,15 @@
                             revertBtn.type = 'button';
                             revertBtn.className = 'tl_submit';
                             revertBtn.id = 'revertBtn';
-                            revertBtn.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                            var img = document.createElement('img');
+                            img.src = '/system/themes/flexible/icons/undo.svg';
+                            img.alt = '';
+                            img.width = 16;
+                            img.height = 16;
+                            var span = document.createElement('span');
+                            span.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                            revertBtn.appendChild(img);
+                            revertBtn.appendChild(span);
                             revertBtn.onclick = function() { ThemeScssEditor.revert(); };
                             actions.insertBefore(revertBtn, showDiffBtn);
                         }
