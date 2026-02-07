@@ -330,6 +330,7 @@
 }
 
 .theme-scss-editor__message {
+  position: absolute;
   padding: 12px 15px;
   margin-bottom: 15px;
   border-radius: var(--border-radius);

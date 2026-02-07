@@ -54,6 +54,7 @@ services:
     arguments:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
       - '@contao.csrf.token_manager'
+      - '@translator'
     calls:
       - [setContainer, ['@service_container']]
     tags: ['controller.service_arguments']

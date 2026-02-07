@@ -20,13 +20,17 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/contao/themeScssEditor', defaults: ['_scope' => 'backend', '_token_check' => true])]
 class ThemeScssEditorController extends AbstractBackendController
 {
+    private const TRANSLATION_DOMAIN = 'contao_tl_theme_scss';
+
     public function __construct(
         private readonly ThemeScssFileManager $fileManager,
         private readonly ContaoCsrfTokenManager $csrfTokenManager,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -79,8 +83,6 @@ class ThemeScssEditorController extends AbstractBackendController
     #[Route('/save', name: 'theme_scss_editor_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
-        System::loadLanguageFile('tl_theme_scss');
-
         $theme = $request->request->get('theme', '');
         $file = $request->request->get('file', '');
         $content = $request->request->get('content', '');
@@ -94,8 +96,8 @@ class ThemeScssEditorController extends AbstractBackendController
         return new JsonResponse([
             'success' => $success,
             'message' => $success
-                ? ($GLOBALS['TL_LANG']['tl_theme_scss']['saved'] ?? 'File saved successfully')
-                : ($GLOBALS['TL_LANG']['tl_theme_scss']['saveError'] ?? 'Error saving file'),
+                ? $this->translator->trans('saved', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('saveError', [], self::TRANSLATION_DOMAIN),
             'isCustom' => true,
         ]);
     }
@@ -103,8 +105,6 @@ class ThemeScssEditorController extends AbstractBackendController
     #[Route('/revert', name: 'theme_scss_editor_revert', methods: ['POST'])]
     public function revert(Request $request): JsonResponse
     {
-        System::loadLanguageFile('tl_theme_scss');
-
         $theme = $request->request->get('theme', '');
         $file = $request->request->get('file', '');
 
@@ -118,8 +118,8 @@ class ThemeScssEditorController extends AbstractBackendController
         return new JsonResponse([
             'success' => $success,
             'message' => $success
-                ? ($GLOBALS['TL_LANG']['tl_theme_scss']['reverted'] ?? 'File reverted to original')
-                : ($GLOBALS['TL_LANG']['tl_theme_scss']['revertError'] ?? 'Error reverting file'),
+                ? $this->translator->trans('reverted', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('revertError', [], self::TRANSLATION_DOMAIN),
             'content' => $originalContent,
             'isCustom' => false,
         ]);
@@ -128,8 +128,6 @@ class ThemeScssEditorController extends AbstractBackendController
     #[Route('/rename', name: 'theme_scss_editor_rename', methods: ['POST'])]
     public function rename(Request $request): JsonResponse
     {
-        System::loadLanguageFile('tl_theme_scss');
-
         $theme = $request->request->get('theme', '');
         $oldName = $request->request->get('oldName', '');
         $newName = $request->request->get('newName', '');
@@ -142,7 +140,7 @@ class ThemeScssEditorController extends AbstractBackendController
         if (!preg_match('/^[\w\-\/]+\.scss$/', $newName)) {
             return new JsonResponse([
                 'success' => false,
-                'error' => $GLOBALS['TL_LANG']['tl_theme_scss']['invalidFileName'] ?? 'Invalid file name',
+                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
             ], 400);
         }
 
@@ -151,8 +149,8 @@ class ThemeScssEditorController extends AbstractBackendController
         return new JsonResponse([
             'success' => $success,
             'message' => $success
-                ? ($GLOBALS['TL_LANG']['tl_theme_scss']['renamed'] ?? 'File renamed successfully')
-                : ($GLOBALS['TL_LANG']['tl_theme_scss']['renameError'] ?? 'Error renaming file'),
+                ? $this->translator->trans('renamed', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('renameError', [], self::TRANSLATION_DOMAIN),
             'newName' => $newName,
         ]);
     }
@@ -160,8 +158,6 @@ class ThemeScssEditorController extends AbstractBackendController
     #[Route('/delete', name: 'theme_scss_editor_delete', methods: ['POST'])]
     public function delete(Request $request): JsonResponse
     {
-        System::loadLanguageFile('tl_theme_scss');
-
         $theme = $request->request->get('theme', '');
         $file = $request->request->get('file', '');
 
@@ -174,8 +170,8 @@ class ThemeScssEditorController extends AbstractBackendController
         return new JsonResponse([
             'success' => $success,
             'message' => $success
-                ? ($GLOBALS['TL_LANG']['tl_theme_scss']['deleted'] ?? 'File deleted successfully')
-                : ($GLOBALS['TL_LANG']['tl_theme_scss']['deleteError'] ?? 'Error deleting file'),
+                ? $this->translator->trans('deleted', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('deleteError', [], self::TRANSLATION_DOMAIN),
         ]);
     }
 

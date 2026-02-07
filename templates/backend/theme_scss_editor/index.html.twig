@@ -387,6 +387,9 @@
             prepareAlignedDiff: function() {
                 this._updatingDiff = true;
                 this.clearDiffMarkers();
+                // Re-assert after clearDiffMarkers resets it to false,
+                // so setValue() below won't trigger the change listener
+                this._updatingDiff = true;
 
                 // Store actual custom content before adding placeholders
                 this.actualCustomContent = this.editor.getValue();
@@ -438,7 +441,6 @@
                 this.customLineMap = [];
                 var placeholderLinesOriginal = [];
                 var placeholderLinesCustom = [];
-                this.customPlaceholderLines = [];
                 var addedLines = [];
                 var removedLines = [];
                 var changedLinesOriginal = [];
@@ -483,7 +485,6 @@
                         this.customLineMap.push(null);
                         removedLines.push(alignedOriginal.length - 1);
                         placeholderLinesCustom.push(alignedCustom.length - 1);
-                        this.customPlaceholderLines.push(alignedCustom.length - 1);
                         originalLineNumber++;
                     }
                 }
@@ -491,6 +492,9 @@
                 // Update both editors with aligned content
                 this.originalEditor.setValue(alignedOriginal.join('\n'), -1);
                 this.editor.setValue(alignedCustom.join('\n'), -1);
+
+                // Assign placeholder lines AFTER setValue to prevent change listener interference
+                this.customPlaceholderLines = placeholderLinesCustom.slice();
 
                 // Set custom gutter renderer for original editor
                 var self = this;
@@ -735,28 +739,44 @@
                             header.appendChild(badge);
                         }
                     }
-                    if (!revertBtn) {
-                        var actions = document.querySelector('.theme-scss-editor__actions');
-                        if (actions) {
+                    var actions = document.querySelector('.theme-scss-editor__actions');
+                    if (actions) {
+                        if (!showDiffBtn) {
+                            showDiffBtn = document.createElement('button');
+                            showDiffBtn.type = 'button';
+                            showDiffBtn.className = 'action';
+                            showDiffBtn.id = 'showDiffBtn';
+                            var diffImg = document.createElement('img');
+                            diffImg.src = '/system/themes/flexible/icons/diffTemplate.svg';
+                            diffImg.alt = '';
+                            diffImg.width = 16;
+                            diffImg.height = 16;
+                            var diffSpan = document.createElement('span');
+                            diffSpan.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                            showDiffBtn.appendChild(diffImg);
+                            showDiffBtn.appendChild(diffSpan);
+                            showDiffBtn.onclick = function() { ThemeScssEditor.toggleDiff(); };
+                            actions.appendChild(showDiffBtn);
+                        } else {
+                            showDiffBtn.style.display = '';
+                        }
+                        if (!revertBtn) {
                             revertBtn = document.createElement('button');
                             revertBtn.type = 'button';
                             revertBtn.className = 'action';
                             revertBtn.id = 'revertBtn';
-                            var img = document.createElement('img');
-                            img.src = '/system/themes/flexible/icons/undo.svg';
-                            img.alt = '';
-                            img.width = 16;
-                            img.height = 16;
-                            var span = document.createElement('span');
-                            span.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
-                            revertBtn.appendChild(img);
-                            revertBtn.appendChild(span);
+                            var revertImg = document.createElement('img');
+                            revertImg.src = '/system/themes/flexible/icons/undo.svg';
+                            revertImg.alt = '';
+                            revertImg.width = 16;
+                            revertImg.height = 16;
+                            var revertSpan = document.createElement('span');
+                            revertSpan.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                            revertBtn.appendChild(revertImg);
+                            revertBtn.appendChild(revertSpan);
                             revertBtn.onclick = function() { ThemeScssEditor.revert(); };
-                            actions.insertBefore(revertBtn, showDiffBtn);
+                            actions.appendChild(revertBtn);
                         }
-                    }
-                    if (showDiffBtn) {
-                        showDiffBtn.style.display = '';
                     }
                 } else {
                     if (badge) badge.remove();
