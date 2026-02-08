@@ -17,13 +17,13 @@ use Symfony\Component\Finder\Finder;
 
 class ThemeScssFileManager
 {
-    private const LAYOUT_DIR = 'layout';
-    private const CUSTOM_DIR = 'layout/custom';
     private const SCSS_DIR = 'scss';
 
     public function __construct(
         private readonly string $projectDir,
         private readonly Filesystem $filesystem,
+        private readonly string $layoutDir = 'layout',
+        private readonly string $customDir = 'layout/custom',
     ) {
     }
 
@@ -34,7 +34,7 @@ class ThemeScssFileManager
      */
     public function getAvailableThemes(): array
     {
-        $layoutPath = $this->projectDir . '/' . self::LAYOUT_DIR;
+        $layoutPath = $this->projectDir . '/' . $this->layoutDir;
 
         if (!is_dir($layoutPath)) {
             return [];
@@ -226,7 +226,7 @@ class ThemeScssFileManager
      */
     public function getOriginalFilePath(string $themeName, string $relativePath): string
     {
-        return $this->projectDir . '/' . self::LAYOUT_DIR . '/' . $themeName . '/' . self::SCSS_DIR . '/' . $relativePath;
+        return $this->projectDir . '/' . $this->layoutDir . '/' . $themeName . '/' . self::SCSS_DIR . '/' . $relativePath;
     }
 
     /**
@@ -234,7 +234,7 @@ class ThemeScssFileManager
      */
     public function getCustomFilePath(string $relativePath): string
     {
-        return $this->projectDir . '/' . self::CUSTOM_DIR . '/' . self::SCSS_DIR . '/' . $relativePath;
+        return $this->projectDir . '/' . $this->customDir . '/' . self::SCSS_DIR . '/' . $relativePath;
     }
 
     /**
@@ -242,7 +242,7 @@ class ThemeScssFileManager
      */
     public function getCustomDirPath(): string
     {
-        return $this->projectDir . '/' . self::CUSTOM_DIR . '/' . self::SCSS_DIR;
+        return $this->projectDir . '/' . $this->customDir . '/' . self::SCSS_DIR;
     }
 
     /**
