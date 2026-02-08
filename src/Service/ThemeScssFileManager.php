@@ -28,6 +28,42 @@ class ThemeScssFileManager
     }
 
     /**
+     * Validate a relative path to prevent directory traversal attacks.
+     *
+     * @throws \InvalidArgumentException if the path is invalid
+     */
+    private function validateRelativePath(string $relativePath): void
+    {
+        if (
+            '' === $relativePath
+            || str_contains($relativePath, '..')
+            || str_starts_with($relativePath, '/')
+            || str_contains($relativePath, "\0")
+            || str_contains($relativePath, '\\')
+        ) {
+            throw new \InvalidArgumentException('Invalid file path.');
+        }
+    }
+
+    /**
+     * Validate a theme name to prevent directory traversal attacks.
+     *
+     * @throws \InvalidArgumentException if the theme name is invalid
+     */
+    private function validateThemeName(string $themeName): void
+    {
+        if (
+            '' === $themeName
+            || str_contains($themeName, '..')
+            || str_contains($themeName, '/')
+            || str_contains($themeName, '\\')
+            || str_contains($themeName, "\0")
+        ) {
+            throw new \InvalidArgumentException('Invalid theme name.');
+        }
+    }
+
+    /**
      * Get all available themes (directories in layout/).
      *
      * @return array<string, string>
@@ -130,6 +166,9 @@ class ThemeScssFileManager
      */
     public function getFileContent(string $themeName, string $relativePath, bool $preferCustom = true): ?string
     {
+        $this->validateThemeName($themeName);
+        $this->validateRelativePath($relativePath);
+
         $customPath = $this->getCustomFilePath($relativePath);
         $originalPath = $this->getOriginalFilePath($themeName, $relativePath);
 
@@ -149,6 +188,9 @@ class ThemeScssFileManager
      */
     public function getOriginalFileContent(string $themeName, string $relativePath): ?string
     {
+        $this->validateThemeName($themeName);
+        $this->validateRelativePath($relativePath);
+
         $originalPath = $this->getOriginalFilePath($themeName, $relativePath);
 
         if ($this->filesystem->exists($originalPath)) {
@@ -163,6 +205,8 @@ class ThemeScssFileManager
      */
     public function saveCustomFile(string $relativePath, string $content): bool
     {
+        $this->validateRelativePath($relativePath);
+
         $customPath = $this->getCustomFilePath($relativePath);
         $customDir = \dirname($customPath);
 
@@ -178,6 +222,8 @@ class ThemeScssFileManager
      */
     public function deleteCustomFile(string $relativePath): bool
     {
+        $this->validateRelativePath($relativePath);
+
         $customPath = $this->getCustomFilePath($relativePath);
 
         if ($this->filesystem->exists($customPath)) {
@@ -194,6 +240,9 @@ class ThemeScssFileManager
      */
     public function renameCustomFile(string $oldPath, string $newPath): bool
     {
+        $this->validateRelativePath($oldPath);
+        $this->validateRelativePath($newPath);
+
         $oldCustomPath = $this->getCustomFilePath($oldPath);
         $newCustomPath = $this->getCustomFilePath($newPath);
 
@@ -218,6 +267,8 @@ class ThemeScssFileManager
      */
     public function hasCustomFile(string $relativePath): bool
     {
+        $this->validateRelativePath($relativePath);
+
         return $this->filesystem->exists($this->getCustomFilePath($relativePath));
     }
 

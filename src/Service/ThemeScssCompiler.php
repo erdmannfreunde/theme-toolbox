@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ErdmannFreunde\ThemeToolboxBundle\Service;
 
+use Psr\Log\LoggerInterface;
 use ScssPhp\ScssPhp\Compiler;
 use ScssPhp\ScssPhp\OutputStyle;
 use Symfony\Component\Filesystem\Filesystem;
@@ -25,6 +26,7 @@ class ThemeScssCompiler
         private readonly string $projectDir,
         private readonly Filesystem $filesystem,
         private readonly bool $debugMode = false,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 
@@ -75,7 +77,11 @@ class ThemeScssCompiler
 
             return $outputFile;
         } catch (\Exception $e) {
-            // Log error or handle it appropriately
+            $this->logger?->error('SCSS compilation failed for theme "{theme}": {error}', [
+                'theme' => $themeName,
+                'error' => $e->getMessage(),
+            ]);
+
             return null;
         }
     }

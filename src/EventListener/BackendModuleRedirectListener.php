@@ -41,9 +41,8 @@ class BackendModuleRedirectListener
             return;
         }
 
-        // Redirect to our controller route
-        $params = $request->query->all();
-        unset($params['do']);
+        // Redirect to our controller route (whitelist allowed parameters)
+        $params = array_intersect_key($request->query->all(), array_flip(['theme', 'file']));
 
         $url = $this->urlGenerator->generate('theme_scss_editor_index', $params);
 

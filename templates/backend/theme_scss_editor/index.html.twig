@@ -103,10 +103,10 @@
             originalEditor: null,
             theme: '{{ selected_theme|e('js') }}',
             file: '{{ selected_file|e('js') }}',
-            csrfToken: '{{ csrf_token }}',
+            csrfToken: '{{ csrf_token|e('js') }}',
             isCustom: {{ is_custom ? 'true' : 'false' }},
             showingDiff: false,
-            originalContent: {{ original_content|json_encode|raw }},
+            originalContent: {{ original_content|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }},
             diffMarkers: [],
             // Store actual custom content when in diff mode (without placeholders)
             actualCustomContent: null,

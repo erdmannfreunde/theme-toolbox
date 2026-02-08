@@ -80,6 +80,11 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
+    private function isValidTheme(string $theme): bool
+    {
+        return '' !== $theme && isset($this->fileManager->getAvailableThemes()[$theme]);
+    }
+
     #[Route('/save', name: 'theme_scss_editor_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
@@ -87,7 +92,7 @@ class ThemeScssEditorController extends AbstractBackendController
         $file = $request->request->get('file', '');
         $content = $request->request->get('content', '');
 
-        if (!$theme || !$file) {
+        if (!$this->isValidTheme($theme) || !$file) {
             return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
         }
 
@@ -108,7 +113,7 @@ class ThemeScssEditorController extends AbstractBackendController
         $theme = $request->request->get('theme', '');
         $file = $request->request->get('file', '');
 
-        if (!$theme || !$file) {
+        if (!$this->isValidTheme($theme) || !$file) {
             return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
         }
 
@@ -132,12 +137,12 @@ class ThemeScssEditorController extends AbstractBackendController
         $oldName = $request->request->get('oldName', '');
         $newName = $request->request->get('newName', '');
 
-        if (!$theme || !$oldName || !$newName) {
+        if (!$this->isValidTheme($theme) || !$oldName || !$newName) {
             return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
         }
 
         // Validate new name
-        if (!preg_match('/^[\w\-\/]+\.scss$/', $newName)) {
+        if (!preg_match('/^[\w\-]+\.scss$/', $newName)) {
             return new JsonResponse([
                 'success' => false,
                 'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
@@ -161,7 +166,7 @@ class ThemeScssEditorController extends AbstractBackendController
         $theme = $request->request->get('theme', '');
         $file = $request->request->get('file', '');
 
-        if (!$theme || !$file) {
+        if (!$this->isValidTheme($theme) || !$file) {
             return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
         }
 
@@ -181,7 +186,7 @@ class ThemeScssEditorController extends AbstractBackendController
         $theme = $request->query->get('theme', '');
         $file = $request->query->get('file', '');
 
-        if (!$theme || !$file) {
+        if (!$this->isValidTheme($theme) || !$file) {
             return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
         }
 
