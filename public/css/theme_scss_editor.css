@@ -1,3 +1,12 @@
+/* Theme Toolbox navigation group icon */
+#tl_navigation .group-themeToolbox {
+  background: url('../icons/paintbrush.svg') 3px 2px no-repeat;
+}
+
+html[data-color-scheme='dark'] #tl_navigation .group-themeToolbox {
+  background: url('../icons/paintbrush--dark.svg') 3px 2px no-repeat;
+}
+
 .theme-scss-editor {
   margin: 20px 0;
   overflow: hidden;

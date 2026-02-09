@@ -1,8 +1,11 @@
 <?xml version="1.0" ?><xliff version="1.1">
   <file datatype="php" original="src/Resources/contao/languages/en/modules.php" source-language="en">
     <body>
+      <trans-unit id="MOD.themeToolbox">
+        <source>Theme Toolbox</source>
+      </trans-unit>
       <trans-unit id="MOD.toolboxEditor.0">
-        <source>Toolbox Editor</source>
+        <source>CSS Class Manager</source>
       </trans-unit>
       <trans-unit id="MOD.toolboxEditor.1">
         <source>Manage css classes for content elements</source>

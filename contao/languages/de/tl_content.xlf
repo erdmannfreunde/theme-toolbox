@@ -2,8 +2,8 @@
   <file datatype="php" original="src/Resources/contao/languages/en/tl_content.php" source-language="en" target-language="de">
     <body>
     <trans-unit id="tl_content.toolbox_legend">
-        <source>Toolbox css classes</source>
-        <target>Toolbox CSS-Klassen</target>
+        <source>CSS classes</source>
+        <target>CSS-Klassen</target>
       </trans-unit>
     </body>
   </file>

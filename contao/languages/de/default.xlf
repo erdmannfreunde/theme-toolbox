@@ -6,8 +6,8 @@
         <target>Der Skript Cache wird aktuell umgangen.</target>
       </trans-unit>
       <trans-unit id="MSC.eufThemeToolbox.0">
-        <source>CSS Toolbox</source>
-        <target>CSS Toolbox</target>
+        <source>CSS Class Manager</source>
+        <target>CSS Klassenmanager</target>
       </trans-unit>
     </body>
   </file>
