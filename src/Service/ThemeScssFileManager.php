@@ -221,7 +221,7 @@ class ThemeScssFileManager
             $this->filesystem->mkdir($customDir, 0755);
         }
 
-        return (bool) file_put_contents($customPath, $content);
+        return file_put_contents($customPath, $content) !== false;
     }
 
     /**

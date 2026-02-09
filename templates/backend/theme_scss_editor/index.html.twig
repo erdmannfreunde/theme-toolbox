@@ -21,7 +21,12 @@
                     </div>
 
                     <div class="theme-scss-editor__files">
-                        <h3>{{ 'scssFiles'|trans({}, 'contao_tl_theme_scss') }}</h3>
+                        <h3>
+                            {{ 'scssFiles'|trans({}, 'contao_tl_theme_scss') }}
+                            <button type="button" class="theme-scss-editor__tree-folder-add" onclick="ThemeScssEditor.showCreateInput('', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_scss') }}">
+                                <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12">
+                            </button>
+                        </h3>
                         <div class="theme-scss-editor__file-tree">
                             {{ include('@ErdmannFreundeThemeToolbox/backend/theme_scss_editor/_file_tree.html.twig', {tree: files, selected_file: selected_file}) }}
                         </div>
@@ -786,6 +791,96 @@
                         this.toggleDiff();
                     }
                 }
+            },
+
+            showCreateInput: function(directory, triggerBtn) {
+                // Remove any existing create input
+                var existing = document.querySelector('.theme-scss-editor__create-inline');
+                if (existing) existing.remove();
+
+                // Create inline input row
+                var li = document.createElement('li');
+                li.className = 'theme-scss-editor__create-inline';
+
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'theme-scss-editor__create-input';
+                input.placeholder = '{{ 'createFilePlaceholder'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+
+                var confirmBtn = document.createElement('button');
+                confirmBtn.type = 'button';
+                confirmBtn.className = 'theme-scss-editor__rename-confirm';
+                confirmBtn.title = '{{ 'confirmCreate'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                confirmBtn.innerHTML = '<img src="/system/themes/flexible/icons/ok.svg" alt="" width="14" height="14">';
+                confirmBtn.onclick = function() { ThemeScssEditor.createFile(directory, input.value); };
+
+                var cancelBtn = document.createElement('button');
+                cancelBtn.type = 'button';
+                cancelBtn.className = 'theme-scss-editor__rename-cancel';
+                cancelBtn.title = '{{ 'cancelCreate'|trans({}, 'contao_tl_theme_scss')|e('js') }}';
+                cancelBtn.innerHTML = '<img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">';
+                cancelBtn.onclick = function() { li.remove(); };
+
+                li.appendChild(input);
+                li.appendChild(confirmBtn);
+                li.appendChild(cancelBtn);
+
+                // Insert after the folder's name span (inside the folder's UL)
+                var parentFolder = triggerBtn.closest('.theme-scss-editor__tree-folder');
+                if (parentFolder) {
+                    var ul = parentFolder.querySelector('ul');
+                    if (ul) {
+                        ul.insertBefore(li, ul.firstChild);
+                    }
+                } else {
+                    // Root level - insert at top of file tree
+                    var tree = document.querySelector('.theme-scss-editor__file-tree > ul');
+                    if (tree) {
+                        tree.insertBefore(li, tree.firstChild);
+                    }
+                }
+
+                input.focus();
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        ThemeScssEditor.createFile(directory, input.value);
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        li.remove();
+                    }
+                });
+            },
+
+            createFile: function(directory, fileName) {
+                fileName = fileName.trim();
+                if (!fileName) return;
+
+                if (!fileName.endsWith('.scss')) {
+                    fileName += '.scss';
+                }
+
+                var self = this;
+
+                fetch('{{ path('theme_scss_editor_create') }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'theme=' + encodeURIComponent(this.theme) +
+                          '&directory=' + encodeURIComponent(directory) +
+                          '&fileName=' + encodeURIComponent(fileName) +
+                          '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+                })
+                .then(function(response) { return response.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        window.location.href = '{{ path('theme_scss_editor_index') }}?theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(data.filePath);
+                    } else {
+                        self.showMessage(data.error || data.message, 'error');
+                    }
+                })
+                .catch(function(error) {
+                    self.showMessage('Error: ' + error, 'error');
+                });
             },
 
             showMessage: function(message, type) {

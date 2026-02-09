@@ -117,6 +117,48 @@ html[data-color-scheme='dark'] #tl_navigation .group-themeToolbox {
   vertical-align: text-bottom;
 }
 
+.theme-scss-editor__tree-folder-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.theme-scss-editor__tree-folder:hover > .theme-scss-editor__tree-folder-name .theme-scss-editor__tree-folder-add,
+.theme-scss-editor__files h3:hover .theme-scss-editor__tree-folder-add {
+  opacity: 0.5;
+}
+
+.theme-scss-editor__tree-folder-add:hover {
+  opacity: 1 !important;
+}
+
+.theme-scss-editor__create-inline {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  margin: 2px 0;
+}
+
+.theme-scss-editor__create-input {
+  flex: 1;
+  font-size: 12px;
+  padding: 3px 6px;
+  border: 1px solid var(--form-border);
+  border-radius: var(--border-radius);
+  background: var(--form-bg);
+  color: var(--text);
+  min-width: 0;
+}
+
 .theme-scss-editor__tree-file {
   margin: 2px 0;
 }

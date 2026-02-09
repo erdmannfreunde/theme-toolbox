@@ -1,11 +1,17 @@
-{% macro render_tree(tree, selected_file) %}
+{% macro render_tree(tree, selected_file, current_path) %}
     <ul class="theme-scss-editor__tree">
         {# First render directories #}
         {% for name, content in tree %}
             {% if name != '_files' %}
+                {% set dir_path = current_path ? current_path ~ '/' ~ name : name %}
                 <li class="theme-scss-editor__tree-folder">
-                    <span class="theme-scss-editor__tree-folder-name">{{ name }}</span>
-                    {{ _self.render_tree(content, selected_file) }}
+                    <span class="theme-scss-editor__tree-folder-name">
+                        {{ name }}
+                        <button type="button" class="theme-scss-editor__tree-folder-add" onclick="ThemeScssEditor.showCreateInput('{{ dir_path|e('js') }}', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_scss') }}">
+                            <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12">
+                        </button>
+                    </span>
+                    {{ _self.render_tree(content, selected_file, dir_path) }}
                 </li>
             {% endif %}
         {% endfor %}
@@ -38,4 +44,4 @@
     </ul>
 {% endmacro %}
 
-{{ _self.render_tree(tree, selected_file) }}
+{{ _self.render_tree(tree, selected_file, '') }}

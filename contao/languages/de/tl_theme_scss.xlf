@@ -106,6 +106,34 @@
         <source>Error deleting file</source>
         <target>Fehler beim Löschen der Datei</target>
       </trans-unit>
+      <trans-unit id="createFile">
+        <source>New file</source>
+        <target>Neue Datei</target>
+      </trans-unit>
+      <trans-unit id="createFilePlaceholder">
+        <source>filename</source>
+        <target>Dateiname</target>
+      </trans-unit>
+      <trans-unit id="confirmCreate">
+        <source>Create file</source>
+        <target>Datei erstellen</target>
+      </trans-unit>
+      <trans-unit id="cancelCreate">
+        <source>Cancel</source>
+        <target>Abbrechen</target>
+      </trans-unit>
+      <trans-unit id="created">
+        <source>File created successfully</source>
+        <target>Datei erfolgreich erstellt</target>
+      </trans-unit>
+      <trans-unit id="createError">
+        <source>Error creating file</source>
+        <target>Fehler beim Erstellen der Datei</target>
+      </trans-unit>
+      <trans-unit id="fileExists">
+        <source>A file with this name already exists</source>
+        <target>Eine Datei mit diesem Namen existiert bereits</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

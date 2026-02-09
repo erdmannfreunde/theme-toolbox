@@ -160,6 +160,45 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
+    #[Route('/create', name: 'theme_scss_editor_create', methods: ['POST'])]
+    public function create(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $directory = $request->request->get('directory', '');
+        $fileName = $request->request->get('fileName', '');
+
+        if (!$this->isValidTheme($theme) || !$fileName) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        // Validate file name
+        if (!preg_match('/^[\w\-]+\.scss$/', $fileName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $filePath = $directory ? $directory . '/' . $fileName : $fileName;
+
+        if ($this->fileManager->hasCustomFile($filePath)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('fileExists', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $success = $this->fileManager->saveCustomFile($filePath, '');
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('created', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('createError', [], self::TRANSLATION_DOMAIN),
+            'filePath' => $filePath,
+        ]);
+    }
+
     #[Route('/delete', name: 'theme_scss_editor_delete', methods: ['POST'])]
     public function delete(Request $request): JsonResponse
     {

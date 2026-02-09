@@ -80,6 +80,27 @@
       <trans-unit id="deleteError">
         <source>Error deleting file</source>
       </trans-unit>
+      <trans-unit id="createFile">
+        <source>New file</source>
+      </trans-unit>
+      <trans-unit id="createFilePlaceholder">
+        <source>filename</source>
+      </trans-unit>
+      <trans-unit id="confirmCreate">
+        <source>Create file</source>
+      </trans-unit>
+      <trans-unit id="cancelCreate">
+        <source>Cancel</source>
+      </trans-unit>
+      <trans-unit id="created">
+        <source>File created successfully</source>
+      </trans-unit>
+      <trans-unit id="createError">
+        <source>Error creating file</source>
+      </trans-unit>
+      <trans-unit id="fileExists">
+        <source>A file with this name already exists</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>
