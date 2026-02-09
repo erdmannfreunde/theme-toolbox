@@ -10,11 +10,11 @@
       <trans-unit id="MOD.toolboxEditor.1">
         <source>Manage css classes for content elements</source>
       </trans-unit>
-      <trans-unit id="MOD.themeScssEditor.0">
-        <source>Theme SCSS Editor</source>
+      <trans-unit id="MOD.themeFileEditor.0">
+        <source>Theme Editor</source>
       </trans-unit>
-      <trans-unit id="MOD.themeScssEditor.1">
-        <source>Edit and customize SCSS files for themes</source>
+      <trans-unit id="MOD.themeFileEditor.1">
+        <source>Edit and customize theme files</source>
       </trans-unit>
     </body>
   </file>

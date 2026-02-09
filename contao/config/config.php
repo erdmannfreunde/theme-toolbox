@@ -23,12 +23,12 @@ if (false !== $offset) {
 }
 
 $GLOBALS['BE_MOD']['themeToolbox']['toolboxEditor'] = ['tables' => ['tl_toolbox_editor', 'tl_toolbox_editor_css']];
-$GLOBALS['BE_MOD']['themeToolbox']['themeScssEditor'] = [];
+$GLOBALS['BE_MOD']['themeToolbox']['themeFileEditor'] = [];
 
 array_unshift(
     $GLOBALS['TL_MAINTENANCE'],
     BypassScriptCache::class,
 );
 
-// Backend CSS for Theme SCSS Editor
-$GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_scss_editor.css';
+// Backend CSS for Theme File Editor
+$GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_file_editor.css';

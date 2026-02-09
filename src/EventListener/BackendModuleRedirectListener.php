@@ -37,14 +37,14 @@ class BackendModuleRedirectListener
         // Check if this is a backend request with our module
         $path = $request->getPathInfo();
 
-        if (!str_starts_with($path, '/contao') || $request->query->get('do') !== 'themeScssEditor') {
+        if (!str_starts_with($path, '/contao') || $request->query->get('do') !== 'themeFileEditor') {
             return;
         }
 
         // Redirect to our controller route (whitelist allowed parameters)
         $params = array_intersect_key($request->query->all(), array_flip(['theme', 'file']));
 
-        $url = $this->urlGenerator->generate('theme_scss_editor_index', $params);
+        $url = $this->urlGenerator->generate('theme_file_editor_index', $params);
 
         $event->setResponse(new RedirectResponse($url));
     }

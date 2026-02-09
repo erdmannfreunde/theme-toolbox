@@ -22,10 +22,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-#[Route('/contao/themeScssEditor', defaults: ['_scope' => 'backend', '_token_check' => true])]
-class ThemeScssEditorController extends AbstractBackendController
+#[Route('/contao/themeFileEditor', defaults: ['_scope' => 'backend', '_token_check' => true])]
+class ThemeFileEditorController extends AbstractBackendController
 {
-    private const TRANSLATION_DOMAIN = 'contao_tl_theme_scss';
+    private const TRANSLATION_DOMAIN = 'contao_tl_theme_file_editor';
 
     public function __construct(
         private readonly ThemeScssFileManager $fileManager,
@@ -34,14 +34,14 @@ class ThemeScssEditorController extends AbstractBackendController
     ) {
     }
 
-    #[Route('', name: 'theme_scss_editor_index', methods: ['GET'])]
+    #[Route('', name: 'theme_file_editor_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $this->initializeContaoFramework();
 
         System::loadLanguageFile('default');
         System::loadLanguageFile('modules');
-        System::loadLanguageFile('tl_theme_scss');
+        System::loadLanguageFile('tl_theme_file_editor');
 
         $themes = $this->fileManager->getAvailableThemes();
         $selectedTheme = $request->query->get('theme', array_key_first($themes) ?? '');
@@ -65,8 +65,8 @@ class ThemeScssEditorController extends AbstractBackendController
             }
         }
 
-        return $this->render('@ErdmannFreundeThemeToolbox/backend/theme_scss_editor/index.html.twig', [
-            'headline' => $GLOBALS['TL_LANG']['MOD']['themeScssEditor'][0] ?? 'Theme SCSS Editor',
+        return $this->render('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/index.html.twig', [
+            'headline' => $GLOBALS['TL_LANG']['MOD']['themeFileEditor'][0] ?? 'Theme SCSS Editor',
             'back_url' => $this->generateUrl('contao_backend'),
             'themes' => $themes,
             'selected_theme' => $selectedTheme,
@@ -85,7 +85,7 @@ class ThemeScssEditorController extends AbstractBackendController
         return '' !== $theme && isset($this->fileManager->getAvailableThemes()[$theme]);
     }
 
-    #[Route('/save', name: 'theme_scss_editor_save', methods: ['POST'])]
+    #[Route('/save', name: 'theme_file_editor_save', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
         $theme = $request->request->get('theme', '');
@@ -107,7 +107,7 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
-    #[Route('/revert', name: 'theme_scss_editor_revert', methods: ['POST'])]
+    #[Route('/revert', name: 'theme_file_editor_revert', methods: ['POST'])]
     public function revert(Request $request): JsonResponse
     {
         $theme = $request->request->get('theme', '');
@@ -130,7 +130,7 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
-    #[Route('/rename', name: 'theme_scss_editor_rename', methods: ['POST'])]
+    #[Route('/rename', name: 'theme_file_editor_rename', methods: ['POST'])]
     public function rename(Request $request): JsonResponse
     {
         $theme = $request->request->get('theme', '');
@@ -160,7 +160,7 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
-    #[Route('/create', name: 'theme_scss_editor_create', methods: ['POST'])]
+    #[Route('/create', name: 'theme_file_editor_create', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         $theme = $request->request->get('theme', '');
@@ -199,7 +199,7 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
-    #[Route('/delete', name: 'theme_scss_editor_delete', methods: ['POST'])]
+    #[Route('/delete', name: 'theme_file_editor_delete', methods: ['POST'])]
     public function delete(Request $request): JsonResponse
     {
         $theme = $request->request->get('theme', '');
@@ -219,7 +219,7 @@ class ThemeScssEditorController extends AbstractBackendController
         ]);
     }
 
-    #[Route('/content', name: 'theme_scss_editor_content', defaults: ['_token_check' => false], methods: ['GET'])]
+    #[Route('/content', name: 'theme_file_editor_content', defaults: ['_token_check' => false], methods: ['GET'])]
     public function getContent(Request $request): JsonResponse
     {
         $theme = $request->query->get('theme', '');

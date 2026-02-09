@@ -1,13 +1,13 @@
 {% macro render_tree(tree, selected_file, current_path) %}
-    <ul class="theme-scss-editor__tree">
+    <ul class="theme-file-editor__tree">
         {# First render directories #}
         {% for name, content in tree %}
             {% if name != '_files' %}
                 {% set dir_path = current_path ? current_path ~ '/' ~ name : name %}
-                <li class="theme-scss-editor__tree-folder">
-                    <span class="theme-scss-editor__tree-folder-name">
+                <li class="theme-file-editor__tree-folder">
+                    <span class="theme-file-editor__tree-folder-name">
                         {{ name }}
-                        <button type="button" class="theme-scss-editor__tree-folder-add" onclick="ThemeScssEditor.showCreateInput('{{ dir_path|e('js') }}', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_scss') }}">
+                        <button type="button" class="theme-file-editor__tree-folder-add" onclick="ThemeFileEditor.showCreateInput('{{ dir_path|e('js') }}', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_file_editor') }}">
                             <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12">
                         </button>
                     </span>
@@ -19,23 +19,23 @@
         {# Then render files #}
         {% if tree._files is defined %}
             {% for file in tree._files %}
-                {% set classes = 'theme-scss-editor__tree-file' %}
+                {% set classes = 'theme-file-editor__tree-file' %}
                 {% if file.path == selected_file %}
-                    {% set classes = classes ~ ' theme-scss-editor__tree-file--selected' %}
+                    {% set classes = classes ~ ' theme-file-editor__tree-file--selected' %}
                 {% endif %}
                 {% if file.hasCustom %}
-                    {% set classes = classes ~ ' theme-scss-editor__tree-file--custom' %}
+                    {% set classes = classes ~ ' theme-file-editor__tree-file--custom' %}
                 {% endif %}
                 {% if file.isCustomOnly is defined and file.isCustomOnly %}
-                    {% set classes = classes ~ ' theme-scss-editor__tree-file--custom-only' %}
+                    {% set classes = classes ~ ' theme-file-editor__tree-file--custom-only' %}
                 {% endif %}
                 <li class="{{ classes }}">
-                    <a href="javascript:void(0)" onclick="ThemeScssEditor.selectFile('{{ file.path|e('js') }}')">
+                    <a href="javascript:void(0)" onclick="ThemeFileEditor.selectFile('{{ file.path|e('js') }}')">
                         {{ file.name }}
                         {% if file.isCustomOnly is defined and file.isCustomOnly %}
-                            <span class="theme-scss-editor__custom-only-indicator">+</span>
+                            <span class="theme-file-editor__custom-only-indicator">+</span>
                         {% elseif file.hasCustom %}
-                            <span class="theme-scss-editor__custom-indicator">*</span>
+                            <span class="theme-file-editor__custom-indicator">*</span>
                         {% endif %}
                     </a>
                 </li>

@@ -37,7 +37,7 @@ services:
     arguments:
       - '@request_stack'
 
-  # Theme SCSS Editor Services
+  # Theme File Editor & SCSS Services
   ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager:
     arguments:
       - '%kernel.project_dir%'
@@ -53,7 +53,7 @@ services:
       - '%kernel.debug%'
       - '@?logger'
 
-  ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeScssEditorController:
+  ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeFileEditorController:
     arguments:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
       - '@contao.csrf.token_manager'

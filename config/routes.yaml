@@ -1,4 +1,4 @@
-theme_scss_editor_controllers:
+theme_file_editor_controllers:
     resource:
         path: ../src/Controller/Backend/
         namespace: ErdmannFreunde\ThemeToolboxBundle\Controller\Backend
