@@ -142,7 +142,7 @@ class ThemeScssEditorController extends AbstractBackendController
         }
 
         // Validate new name
-        if (!preg_match('/^[\w\-]+\.scss$/', $newName)) {
+        if (!preg_match('/^[\w\-\/]+\.scss$/', $newName)) {
             return new JsonResponse([
                 'success' => false,
                 'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
