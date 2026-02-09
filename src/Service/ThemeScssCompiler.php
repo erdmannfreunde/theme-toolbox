@@ -21,6 +21,9 @@ class ThemeScssCompiler
 {
     private const OUTPUT_DIR = 'assets/css';
 
+    /** @var array<string, string|null> */
+    private array $compiledPaths = [];
+
     public function __construct(
         private readonly ThemeScssFileManager $fileManager,
         private readonly string $projectDir,
@@ -35,10 +38,14 @@ class ThemeScssCompiler
      */
     public function compile(string $themeName): ?string
     {
+        if (\array_key_exists($themeName, $this->compiledPaths)) {
+            return $this->compiledPaths[$themeName];
+        }
+
         $defaultScssPath = $this->fileManager->getDefaultScssPath($themeName);
 
         if (!$defaultScssPath) {
-            return null;
+            return $this->compiledPaths[$themeName] = null;
         }
 
         $outputDir = $this->projectDir . '/' . self::OUTPUT_DIR;
@@ -46,7 +53,7 @@ class ThemeScssCompiler
 
         // Check if recompilation is needed using file modification times
         if ($this->filesystem->exists($outputFile) && !$this->needsRecompilation($themeName, $outputFile)) {
-            return $outputFile;
+            return $this->compiledPaths[$themeName] = $outputFile;
         }
 
         // Ensure output directory exists
@@ -75,14 +82,14 @@ class ThemeScssCompiler
             // Save compiled CSS
             file_put_contents($outputFile, $css);
 
-            return $outputFile;
+            return $this->compiledPaths[$themeName] = $outputFile;
         } catch (\Exception $e) {
             $this->logger?->error('SCSS compilation failed for theme "{theme}": {error}', [
                 'theme' => $themeName,
                 'error' => $e->getMessage(),
             ]);
 
-            return null;
+            return $this->compiledPaths[$themeName] = null;
         }
     }
 
@@ -206,25 +213,16 @@ class ThemeScssCompiler
         $files = $this->fileManager->getScssFiles($themeName);
 
         foreach ($files as $file) {
-            // Check custom file first, then original
-            $customPath = $this->fileManager->getCustomFilePath($file['path']);
+            $customMtime = @filemtime($this->fileManager->getCustomFilePath($file['path']));
 
-            if ($this->filesystem->exists($customPath)) {
-                $fileMtime = filemtime($customPath);
-
-                if ($fileMtime !== false && $fileMtime > $outputMtime) {
-                    return true;
-                }
+            if ($customMtime !== false && $customMtime > $outputMtime) {
+                return true;
             }
 
-            $originalPath = $this->fileManager->getOriginalFilePath($themeName, $file['path']);
+            $originalMtime = @filemtime($this->fileManager->getOriginalFilePath($themeName, $file['path']));
 
-            if ($this->filesystem->exists($originalPath)) {
-                $fileMtime = filemtime($originalPath);
-
-                if ($fileMtime !== false && $fileMtime > $outputMtime) {
-                    return true;
-                }
+            if ($originalMtime !== false && $originalMtime > $outputMtime) {
+                return true;
             }
         }
 

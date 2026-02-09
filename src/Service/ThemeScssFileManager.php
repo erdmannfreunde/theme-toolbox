@@ -19,6 +19,9 @@ class ThemeScssFileManager
 {
     private const SCSS_DIR = 'scss';
 
+    /** @var array<string, array<int, array{path: string, name: string, directory: string, isCustom: bool, hasCustom: bool, isCustomOnly: bool}>> */
+    private array $scssFilesCache = [];
+
     public function __construct(
         private readonly string $projectDir,
         private readonly Filesystem $filesystem,
@@ -99,6 +102,10 @@ class ThemeScssFileManager
      */
     public function getScssFiles(string $themeName): array
     {
+        if (isset($this->scssFilesCache[$themeName])) {
+            return $this->scssFilesCache[$themeName];
+        }
+
         $files = [];
         $seenPaths = [];
 
@@ -158,7 +165,7 @@ class ThemeScssFileManager
         // Sort all files by path
         usort($files, fn ($a, $b) => strcmp($a['path'], $b['path']));
 
-        return $files;
+        return $this->scssFilesCache[$themeName] = $files;
     }
 
     /**
