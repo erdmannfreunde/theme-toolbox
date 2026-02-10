@@ -20,6 +20,17 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 #[AsEventListener(event: 'kernel.request', priority: 1000)]
 class BackendModuleRedirectListener
 {
+    private const MODULE_ROUTES = [
+        'themeFileEditor' => [
+            'route' => 'theme_file_editor_index',
+            'params' => ['theme', 'file'],
+        ],
+        'themeUpdate' => [
+            'route' => 'theme_update_index',
+            'params' => [],
+        ],
+    ];
+
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
@@ -34,17 +45,20 @@ class BackendModuleRedirectListener
             return;
         }
 
-        // Check if this is a backend request with our module
+        // Check if this is a backend request with one of our modules
         $path = $request->getPathInfo();
+        $module = $request->query->get('do', '');
 
-        if (!str_starts_with($path, '/contao') || $request->query->get('do') !== 'themeFileEditor') {
+        if (!str_starts_with($path, '/contao') || !isset(self::MODULE_ROUTES[$module])) {
             return;
         }
 
-        // Redirect to our controller route (whitelist allowed parameters)
-        $params = array_intersect_key($request->query->all(), array_flip(['theme', 'file']));
+        $config = self::MODULE_ROUTES[$module];
 
-        $url = $this->urlGenerator->generate('theme_file_editor_index', $params);
+        // Redirect to our controller route (whitelist allowed parameters)
+        $params = $config['params'] ? array_intersect_key($request->query->all(), array_flip($config['params'])) : [];
+
+        $url = $this->urlGenerator->generate($config['route'], $params);
 
         $event->setResponse(new RedirectResponse($url));
     }

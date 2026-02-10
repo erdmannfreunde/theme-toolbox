@@ -1,0 +1,80 @@
+{% extends '@Contao/be_main.html.twig' %}
+
+{% block main %}
+    <main id="main" aria-labelledby="main_headline">
+        <h1 id="main_headline">{{ headline }}</h1>
+
+        <div class="theme-update content">
+            {% if error is defined and error %}
+                <div class="tl_message">
+                    <p class="tl_error">{{ error }}</p>
+                </div>
+            {% endif %}
+
+            {% if success is defined and success %}
+                <div class="tl_message">
+                    <p class="tl_confirm">
+                        {{ 'updateSuccess'|trans({}, 'contao_tl_theme_update')|replace({'THEME_NAME': result.themeName}) }}
+                    </p>
+                </div>
+
+                <div class="tl_listing_container">
+                    <table class="tl_listing">
+                        <thead>
+                            <tr>
+                                <th>{{ 'statsCategory'|trans({}, 'contao_tl_theme_update') }}</th>
+                                <th>{{ 'statsCount'|trans({}, 'contao_tl_theme_update') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ 'statsLayoutCopied'|trans({}, 'contao_tl_theme_update') }}</td>
+                                <td>{{ result.stats.layoutCopied }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ 'statsLayoutDeleted'|trans({}, 'contao_tl_theme_update') }}</td>
+                                <td>{{ result.stats.layoutDeleted }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ 'statsFilesCopied'|trans({}, 'contao_tl_theme_update') }}</td>
+                                <td>{{ result.stats.filesCopied }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ 'statsTemplatesCopied'|trans({}, 'contao_tl_theme_update') }}</td>
+                                <td>{{ result.stats.templatesCopied }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <p class="tl_help">
+                        {{ 'backupCreated'|trans({}, 'contao_tl_theme_update')|replace({'BACKUP_PATH': result.backupPath}) }}
+                    </p>
+                </div>
+            {% endif %}
+
+            <form action="{{ path('theme_update_upload') }}" method="post" enctype="multipart/form-data" class="tl_form">
+                <input type="hidden" name="REQUEST_TOKEN" value="{{ csrf_token }}">
+
+                <div class="tl_formbody_edit">
+                    <fieldset class="tl_box">
+                        <legend>{{ 'uploadLegend'|trans({}, 'contao_tl_theme_update') }}</legend>
+
+                        <div class="widget">
+                            <h3>
+                                <label for="theme_zip">{{ 'selectZipFile'|trans({}, 'contao_tl_theme_update') }}</label>
+                            </h3>
+                            <input type="file" name="theme_zip" id="theme_zip" class="tl_upload" accept=".zip" required>
+                            <p class="tl_help tl_tip">{{ 'selectZipHelp'|trans({}, 'contao_tl_theme_update') }}</p>
+                        </div>
+                    </fieldset>
+                </div>
+
+                <div class="tl_formbody_submit">
+                    <div class="tl_submit_container">
+                        <button type="submit" class="tl_submit">{{ 'startUpdate'|trans({}, 'contao_tl_theme_update') }}</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+{% endblock %}

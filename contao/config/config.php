@@ -24,6 +24,7 @@ if (false !== $offset) {
 
 $GLOBALS['BE_MOD']['themeToolbox']['toolboxEditor'] = ['tables' => ['tl_toolbox_editor', 'tl_toolbox_editor_css']];
 $GLOBALS['BE_MOD']['themeToolbox']['themeFileEditor'] = [];
+$GLOBALS['BE_MOD']['themeToolbox']['themeUpdate'] = [];
 
 array_unshift(
     $GLOBALS['TL_MAINTENANCE'],

@@ -16,6 +16,12 @@
       <trans-unit id="MOD.themeFileEditor.1">
         <source>Edit and customize theme files</source>
       </trans-unit>
+      <trans-unit id="MOD.themeUpdate.0">
+        <source>Theme Updates</source>
+      </trans-unit>
+      <trans-unit id="MOD.themeUpdate.1">
+        <source>Upload and install theme updates</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

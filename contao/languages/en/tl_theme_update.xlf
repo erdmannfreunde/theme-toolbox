@@ -1,0 +1,63 @@
+<?xml version="1.0" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_theme_update.php" source-language="en">
+    <body>
+      <trans-unit id="uploadLegend">
+        <source>Theme Update</source>
+      </trans-unit>
+      <trans-unit id="selectZipFile">
+        <source>ZIP archive</source>
+      </trans-unit>
+      <trans-unit id="selectZipHelp">
+        <source>Select a theme update ZIP archive. The archive must contain the theme structure with layout/, files/ and templates/ directories.</source>
+      </trans-unit>
+      <trans-unit id="startUpdate">
+        <source>Start update</source>
+      </trans-unit>
+      <trans-unit id="noFileUploaded">
+        <source>Please select a ZIP file to upload.</source>
+      </trans-unit>
+      <trans-unit id="invalidFileType">
+        <source>Only ZIP files are allowed.</source>
+      </trans-unit>
+      <trans-unit id="invalidZip">
+        <source>The uploaded file is not a valid ZIP archive.</source>
+      </trans-unit>
+      <trans-unit id="noThemeDetected">
+        <source>Could not detect a theme name in the ZIP archive. Please check the directory structure.</source>
+      </trans-unit>
+      <trans-unit id="themeNotFound">
+        <source>The theme was not found in the layout directory.</source>
+      </trans-unit>
+      <trans-unit id="invalidStructure">
+        <source>The ZIP archive does not have the expected directory structure.</source>
+      </trans-unit>
+      <trans-unit id="updateFailed">
+        <source>The update process failed.</source>
+      </trans-unit>
+      <trans-unit id="updateSuccess">
+        <source>Theme "THEME_NAME" has been updated successfully.</source>
+      </trans-unit>
+      <trans-unit id="statsCategory">
+        <source>Category</source>
+      </trans-unit>
+      <trans-unit id="statsCount">
+        <source>Count</source>
+      </trans-unit>
+      <trans-unit id="statsLayoutCopied">
+        <source>Layout files copied/updated</source>
+      </trans-unit>
+      <trans-unit id="statsLayoutDeleted">
+        <source>Layout files removed</source>
+      </trans-unit>
+      <trans-unit id="statsFilesCopied">
+        <source>Files copied/updated</source>
+      </trans-unit>
+      <trans-unit id="statsTemplatesCopied">
+        <source>New templates added</source>
+      </trans-unit>
+      <trans-unit id="backupCreated">
+        <source>A backup has been created at: BACKUP_PATH</source>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

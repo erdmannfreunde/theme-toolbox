@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?><xliff version="1.1">
+  <file datatype="php" original="src/Resources/contao/languages/en/tl_theme_update.php" source-language="en" target-language="de">
+    <body>
+      <trans-unit id="uploadLegend">
+        <source>Theme Update</source>
+        <target>Theme Update</target>
+      </trans-unit>
+      <trans-unit id="selectZipFile">
+        <source>ZIP archive</source>
+        <target>ZIP-Archiv</target>
+      </trans-unit>
+      <trans-unit id="selectZipHelp">
+        <source>Select a theme update ZIP archive. The archive must contain the theme structure with layout/, files/ and templates/ directories.</source>
+        <target>W&#228;hlen Sie ein Theme-Update-ZIP-Archiv aus. Das Archiv muss die Theme-Struktur mit den Verzeichnissen layout/, files/ und templates/ enthalten.</target>
+      </trans-unit>
+      <trans-unit id="startUpdate">
+        <source>Start update</source>
+        <target>Update starten</target>
+      </trans-unit>
+      <trans-unit id="noFileUploaded">
+        <source>Please select a ZIP file to upload.</source>
+        <target>Bitte w&#228;hlen Sie eine ZIP-Datei zum Hochladen aus.</target>
+      </trans-unit>
+      <trans-unit id="invalidFileType">
+        <source>Only ZIP files are allowed.</source>
+        <target>Es sind nur ZIP-Dateien erlaubt.</target>
+      </trans-unit>
+      <trans-unit id="invalidZip">
+        <source>The uploaded file is not a valid ZIP archive.</source>
+        <target>Die hochgeladene Datei ist kein g&#252;ltiges ZIP-Archiv.</target>
+      </trans-unit>
+      <trans-unit id="noThemeDetected">
+        <source>Could not detect a theme name in the ZIP archive. Please check the directory structure.</source>
+        <target>Es konnte kein Theme-Name im ZIP-Archiv erkannt werden. Bitte &#252;berpr&#252;fen Sie die Verzeichnisstruktur.</target>
+      </trans-unit>
+      <trans-unit id="themeNotFound">
+        <source>The theme was not found in the layout directory.</source>
+        <target>Das Theme wurde im Layout-Verzeichnis nicht gefunden.</target>
+      </trans-unit>
+      <trans-unit id="invalidStructure">
+        <source>The ZIP archive does not have the expected directory structure.</source>
+        <target>Das ZIP-Archiv hat nicht die erwartete Verzeichnisstruktur.</target>
+      </trans-unit>
+      <trans-unit id="updateFailed">
+        <source>The update process failed.</source>
+        <target>Der Update-Prozess ist fehlgeschlagen.</target>
+      </trans-unit>
+      <trans-unit id="updateSuccess">
+        <source>Theme "THEME_NAME" has been updated successfully.</source>
+        <target>Theme &#8222;THEME_NAME&#8220; wurde erfolgreich aktualisiert.</target>
+      </trans-unit>
+      <trans-unit id="statsCategory">
+        <source>Category</source>
+        <target>Kategorie</target>
+      </trans-unit>
+      <trans-unit id="statsCount">
+        <source>Count</source>
+        <target>Anzahl</target>
+      </trans-unit>
+      <trans-unit id="statsLayoutCopied">
+        <source>Layout files copied/updated</source>
+        <target>Layout-Dateien kopiert/aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="statsLayoutDeleted">
+        <source>Layout files removed</source>
+        <target>Layout-Dateien entfernt</target>
+      </trans-unit>
+      <trans-unit id="statsFilesCopied">
+        <source>Files copied/updated</source>
+        <target>Dateien kopiert/aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="statsTemplatesCopied">
+        <source>New templates added</source>
+        <target>Neue Templates hinzugef&#252;gt</target>
+      </trans-unit>
+      <trans-unit id="backupCreated">
+        <source>A backup has been created at: BACKUP_PATH</source>
+        <target>Ein Backup wurde erstellt unter: BACKUP_PATH</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

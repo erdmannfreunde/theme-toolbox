@@ -71,6 +71,21 @@ services:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
     public: true
 
+  ErdmannFreunde\ThemeToolboxBundle\Service\ThemeUpdateService:
+    arguments:
+      - '%kernel.project_dir%'
+      - '@filesystem'
+      - '%erdmann_freunde_theme_toolbox.layout_dir%'
+
+  ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeUpdateController:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeUpdateService'
+      - '@contao.csrf.token_manager'
+      - '@translator'
+    calls:
+      - [setContainer, ['@service_container']]
+    tags: ['controller.service_arguments']
+
   ErdmannFreunde\ThemeToolboxBundle\EventListener\BackendModuleRedirectListener:
     arguments:
       - '@router'

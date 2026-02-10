@@ -21,6 +21,14 @@
         <source>Edit and customize theme files</source>
         <target>Theme-Dateien bearbeiten und anpassen</target>
       </trans-unit>
+      <trans-unit id="MOD.themeUpdate.0">
+        <source>Theme Updates</source>
+        <target>Theme Updates</target>
+      </trans-unit>
+      <trans-unit id="MOD.themeUpdate.1">
+        <source>Upload and install theme updates</source>
+        <target>Theme-Updates hochladen und installieren</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
