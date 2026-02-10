@@ -39,6 +39,9 @@ class ThemeFileEditorController extends AbstractBackendController
     {
         $this->initializeContaoFramework();
 
+        // Load backend CSS
+        $GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_file_editor.css';
+
         System::loadLanguageFile('default');
         System::loadLanguageFile('modules');
         System::loadLanguageFile('tl_theme_file_editor');

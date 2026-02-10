@@ -30,6 +30,3 @@ array_unshift(
     $GLOBALS['TL_MAINTENANCE'],
     BypassScriptCache::class,
 );
-
-// Backend CSS for Theme File Editor
-$GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_file_editor.css';
