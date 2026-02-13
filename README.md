@@ -11,13 +11,27 @@ Dieses Paket enthält hilfreiche Tools zur Arbeit mit den [Contao Themes][1] von
 
 Wenn du deinen Kunden keine Liste von Klassennamen für Varianten und spezifische Stile geben möchtest, kannst du die Theme-Toolbox verwenden, um menschenlesbare Stile zu Elementen, Modulen und Artikeln hinzuzufügen. Im Toolbox-Editor kannst du CSS-Klassen und deren Übersetzungen hinzufügen und auswählen, wo diese Styles sichtbar sein sollen.
 
-## 2. SCSS-Cache umgehen
+## 2. Theme Editor
+
+Der Theme Editor ermöglicht das direkte Bearbeiten von SCSS-Dateien aus dem Contao Backend. Du kannst Original-Theme-Dateien überschreiben, indem du individuelle Versionen erstellst, umbenennen oder neue SCSS-Dateien anlegen.
+
+### Optionale Konfiguration
+
+Theme und Anpassungen liegen standardmäßig unter `layout/theme` und `layout/custom`. Du kannst die Verzeichnisse für Layouts und Custom-SCSS aber über die `config/config.yaml` anpassen:
+
+```yaml
+theme_toolbox:
+  layout_dir: 'layout' # Basis-Verzeichnis für Theme-Layouts
+  custom_dir: 'layout/custom' # Verzeichnis für Custom-SCSS-Overrides
+```
+
+## 3. SCSS-Cache umgehen
 
 Der SCSS-Compiler in Contao erkennt Änderungen in SCSS-Partials nicht, sodass der Cache nicht aktualisiert wird. Wenn du "Script-Cache umgehen" in den Contao-Wartungseinstellungen aktivierst, werden die SCSS-Dateien nicht zwischengespeichert, sondern bei jeden Aufruf gelöscht.
 
 **Wichtig: Bitte stelle sicher, dass du das Umgehen des Script-Caches deaktivierst, nachdem du deine Arbeit an den SCSS-Dateien abgeschlossen hast, da das Deaktivieren des Script-Caches große Leistungsprobleme verursachen kann!**
 
-## 3. Header- und Footer-Klassen
+## 4. Header- und Footer-Klassen
 
 Im Seitenlayout lassen sich eigene Header- und Footer-Klassen im Seitenlayout vergeben und über Template-Anpassungen nutzen. Das `fe_page.html.twig` Template könnte folgendermaßen aussehen:
 

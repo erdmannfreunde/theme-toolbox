@@ -42,8 +42,8 @@ services:
     arguments:
       - '%kernel.project_dir%'
       - '@filesystem'
-      - '%erdmann_freunde_theme_toolbox.layout_dir%'
-      - '%erdmann_freunde_theme_toolbox.custom_dir%'
+      - '%theme_toolbox.layout_dir%'
+      - '%theme_toolbox.custom_dir%'
 
   ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler:
     arguments:
@@ -75,7 +75,7 @@ services:
     arguments:
       - '%kernel.project_dir%'
       - '@filesystem'
-      - '%erdmann_freunde_theme_toolbox.layout_dir%'
+      - '%theme_toolbox.layout_dir%'
 
   ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeUpdateController:
     arguments:

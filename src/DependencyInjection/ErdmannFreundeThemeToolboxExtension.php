@@ -27,10 +27,15 @@ class ErdmannFreundeThemeToolboxExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $container->setParameter('erdmann_freunde_theme_toolbox.layout_dir', $config['layout_dir']);
-        $container->setParameter('erdmann_freunde_theme_toolbox.custom_dir', $config['custom_dir']);
+        $container->setParameter('theme_toolbox.layout_dir', $config['layout_dir']);
+        $container->setParameter('theme_toolbox.custom_dir', $config['custom_dir']);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yml');
+    }
+
+    public function getAlias(): string
+    {
+        return 'theme_toolbox';
     }
 }

@@ -19,7 +19,7 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('erdmann_freunde_theme_toolbox');
+        $treeBuilder = new TreeBuilder('theme_toolbox');
 
         $treeBuilder->getRootNode()
             ->children()
