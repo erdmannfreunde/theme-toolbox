@@ -314,6 +314,44 @@ class ThemeScssFileManager
     }
 
     /**
+     * Get asset directories (fonts, img) for a theme, including custom overrides.
+     *
+     * @return array<string, list<string>> Map of asset type to source directories (theme first, custom second)
+     */
+    public function getThemeAssetDirs(string $themeName): array
+    {
+        $dirs = [];
+
+        foreach (['fonts', 'img'] as $type) {
+            $sources = [];
+
+            // Theme directory first
+            $themePath = $this->getThemePath($themeName);
+
+            if ($themePath) {
+                $dir = $themePath . '/' . $type;
+
+                if (is_dir($dir)) {
+                    $sources[] = $dir;
+                }
+            }
+
+            // Custom directory second (overrides theme files)
+            $customDir = $this->projectDir . '/' . $this->customDir . '/' . $type;
+
+            if (is_dir($customDir)) {
+                $sources[] = $customDir;
+            }
+
+            if ($sources) {
+                $dirs[$type] = $sources;
+            }
+        }
+
+        return $dirs;
+    }
+
+    /**
      * Get the default.scss path for a theme (checking custom first).
      */
     public function getDefaultScssPath(string $themeName): ?string

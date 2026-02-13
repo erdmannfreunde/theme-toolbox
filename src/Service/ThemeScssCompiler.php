@@ -16,10 +16,11 @@ use Psr\Log\LoggerInterface;
 use ScssPhp\ScssPhp\Compiler;
 use ScssPhp\ScssPhp\OutputStyle;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class ThemeScssCompiler
 {
-    private const OUTPUT_DIR = 'assets/css';
+    private const ASSETS_DIR = 'assets';
 
     /** @var array<string, string|null> */
     private array $compiledPaths = [];
@@ -48,7 +49,7 @@ class ThemeScssCompiler
             return $this->compiledPaths[$themeName] = null;
         }
 
-        $outputDir = $this->projectDir . '/' . self::OUTPUT_DIR;
+        $outputDir = $this->getThemeCssDir($themeName);
         $outputFile = $outputDir . '/' . $themeName . '.css';
 
         // Check if recompilation is needed using file modification times
@@ -81,6 +82,9 @@ class ThemeScssCompiler
 
             // Save compiled CSS
             file_put_contents($outputFile, $css);
+
+            // Sync font and image assets
+            $this->syncThemeAssets($themeName);
 
             return $this->compiledPaths[$themeName] = $outputFile;
         } catch (\Exception $e) {
@@ -200,6 +204,23 @@ class ThemeScssCompiler
     }
 
     /**
+     * Sync font and image assets from theme and custom directories to the output directory.
+     */
+    private function syncThemeAssets(string $themeName): void
+    {
+        $assetDirs = $this->fileManager->getThemeAssetDirs($themeName);
+
+        foreach ($assetDirs as $type => $sourceDirs) {
+            $targetDir = $this->getThemeAssetsDir($themeName) . '/' . $type;
+
+            foreach ($sourceDirs as $sourceDir) {
+                // mirror() copies all files; custom dir runs second and overwrites theme files
+                $this->filesystem->mirror($sourceDir, $targetDir, null, ['override' => true]);
+            }
+        }
+    }
+
+    /**
      * Check if recompilation is needed based on file modification times.
      */
     private function needsRecompilation(string $themeName, string $outputFile): bool
@@ -237,6 +258,38 @@ class ThemeScssCompiler
             }
         }
 
+        // Check asset directories (fonts, img) for changes
+        $assetDirs = $this->fileManager->getThemeAssetDirs($themeName);
+
+        foreach ($assetDirs as $sourceDirs) {
+            foreach ($sourceDirs as $sourceDir) {
+                if ($this->hasNewerFiles($sourceDir, $outputMtime)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if a directory contains files newer than the given timestamp.
+     */
+    private function hasNewerFiles(string $directory, int $referenceTime): bool
+    {
+        if (!is_dir($directory)) {
+            return false;
+        }
+
+        $finder = new Finder();
+        $finder->files()->in($directory);
+
+        foreach ($finder as $file) {
+            if ($file->getMTime() > $referenceTime) {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -245,10 +298,10 @@ class ThemeScssCompiler
      */
     public function clearCache(string $themeName): void
     {
-        $cssFile = $this->projectDir . '/' . self::OUTPUT_DIR . '/' . $themeName . '.css';
+        $themeAssetsDir = $this->getThemeAssetsDir($themeName);
 
-        if ($this->filesystem->exists($cssFile)) {
-            $this->filesystem->remove($cssFile);
+        if ($this->filesystem->exists($themeAssetsDir)) {
+            $this->filesystem->remove($themeAssetsDir);
         }
     }
 
@@ -257,16 +310,26 @@ class ThemeScssCompiler
      */
     public function clearAllCache(): void
     {
-        $outputDir = $this->projectDir . '/' . self::OUTPUT_DIR;
-
-        if (!is_dir($outputDir)) {
-            return;
-        }
-
         $themes = $this->fileManager->getAvailableThemes();
 
         foreach (array_keys($themes) as $themeName) {
             $this->clearCache($themeName);
         }
+    }
+
+    /**
+     * Get the base assets directory for a theme: assets/[theme]/
+     */
+    private function getThemeAssetsDir(string $themeName): string
+    {
+        return $this->projectDir . '/' . self::ASSETS_DIR . '/' . $themeName;
+    }
+
+    /**
+     * Get the CSS output directory for a theme: assets/[theme]/css/
+     */
+    private function getThemeCssDir(string $themeName): string
+    {
+        return $this->getThemeAssetsDir($themeName) . '/css';
     }
 }
