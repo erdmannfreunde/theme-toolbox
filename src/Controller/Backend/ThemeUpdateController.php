@@ -49,9 +49,17 @@ class ThemeUpdateController extends AbstractBackendController
         $error = null;
         $result = null;
 
+        $suggestCustom = null;
+        $customResult = null;
+        $dedupResult = null;
+
         if ($session instanceof FlashBagAwareSessionInterface) {
-            $error = $session->getFlashBag()->get('theme_update_error')[0] ?? null;
-            $result = $session->getFlashBag()->get('theme_update_result')[0] ?? null;
+            $flashBag = $session->getFlashBag();
+            $error = $flashBag->get('theme_update_error')[0] ?? null;
+            $result = $flashBag->get('theme_update_result')[0] ?? null;
+            $suggestCustom = $flashBag->get('theme_update_suggest_custom')[0] ?? null;
+            $customResult = $flashBag->get('theme_update_custom_result')[0] ?? null;
+            $dedupResult = $flashBag->get('theme_update_dedup_result')[0] ?? null;
         }
 
         return $this->render('@ErdmannFreundeThemeToolbox/backend/theme_update/index.html.twig', [
@@ -60,6 +68,9 @@ class ThemeUpdateController extends AbstractBackendController
             'error' => $error,
             'success' => null !== $result,
             'result' => $result,
+            'suggestCustom' => $suggestCustom,
+            'customResult' => $customResult,
+            'dedupResult' => $dedupResult,
         ]);
     }
 
@@ -99,6 +110,70 @@ class ThemeUpdateController extends AbstractBackendController
         }
 
         $this->addFlash('theme_update_result', $result);
+
+        return new RedirectResponse($this->generateUrl('theme_update_index'));
+    }
+
+    #[Route('/continue', name: 'theme_update_continue', methods: ['POST'])]
+    public function continueStep(Request $request): RedirectResponse
+    {
+        $this->initializeContaoFramework();
+
+        $themeName = $request->request->getString('theme_name');
+        $backupPath = $request->request->getString('backup_path');
+        $updateStats = $request->request->getString('update_stats');
+
+        $this->addFlash('theme_update_suggest_custom', [
+            'themeName' => $themeName,
+            'backupPath' => $backupPath,
+            'updateStats' => $updateStats,
+        ]);
+
+        return new RedirectResponse($this->generateUrl('theme_update_index'));
+    }
+
+    #[Route('/copyCustomLayout', name: 'theme_update_copy_custom', methods: ['POST'])]
+    public function copyCustomLayout(Request $request): RedirectResponse
+    {
+        $this->initializeContaoFramework();
+
+        $themeName = $request->request->getString('theme_name');
+        $backupPath = $request->request->getString('backup_path');
+        $updateStats = $request->request->getString('update_stats');
+        $copied = $this->updateService->copyToCustomLayout();
+
+        $this->addFlash('theme_update_custom_result', [
+            'copied' => $copied,
+            'themeName' => $themeName,
+            'backupPath' => $backupPath,
+            'updateStats' => $updateStats,
+        ]);
+
+        return new RedirectResponse($this->generateUrl('theme_update_index'));
+    }
+
+    #[Route('/deduplicateCustomLayout', name: 'theme_update_deduplicate', methods: ['POST'])]
+    public function deduplicateCustomLayout(Request $request): RedirectResponse
+    {
+        $this->initializeContaoFramework();
+
+        $themeName = $request->request->getString('theme_name');
+        $backupPath = $request->request->getString('backup_path');
+        $updateStatsJson = $request->request->getString('update_stats');
+        $removedFiles = $this->updateService->removeDuplicateFiles($themeName);
+
+        $updateStats = [];
+        if ('' !== $updateStatsJson) {
+            $updateStats = json_decode($updateStatsJson, true) ?? [];
+        }
+
+        $this->addFlash('theme_update_dedup_result', [
+            'removedFiles' => $removedFiles,
+            'removed' => \count($removedFiles),
+            'themeName' => $themeName,
+            'backupPath' => $backupPath,
+            'updateStats' => $updateStats,
+        ]);
 
         return new RedirectResponse($this->generateUrl('theme_update_index'));
     }

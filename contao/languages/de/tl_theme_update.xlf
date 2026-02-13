@@ -77,6 +77,46 @@
         <source>A backup has been created at: BACKUP_PATH</source>
         <target>Ein Backup wurde erstellt unter: BACKUP_PATH</target>
       </trans-unit>
+      <trans-unit id="continueButton">
+        <source>Continue</source>
+        <target>Weiter</target>
+      </trans-unit>
+      <trans-unit id="skipButton">
+        <source>Skip</source>
+        <target>&#220;berspringen</target>
+      </trans-unit>
+      <trans-unit id="updateStatisticsHeadline">
+        <source>Update statistics</source>
+        <target>Update-Statistik</target>
+      </trans-unit>
+      <trans-unit id="customLayoutSuggestion">
+        <source>An existing theme was found in files/theme/. Would you like to copy files to layout/custom?</source>
+        <target>Ein bestehendes Theme wurde in files/theme/ gefunden. Möchten Sie Dateien nach layout/custom kopieren?</target>
+      </trans-unit>
+      <trans-unit id="copyToCustomLayout">
+        <source>Copy to layout/custom</source>
+        <target>Nach layout/custom kopieren</target>
+      </trans-unit>
+      <trans-unit id="customLayoutCopied">
+        <source>COUNT files have been copied to layout/custom.</source>
+        <target>COUNT Dateien wurden nach layout/custom kopiert.</target>
+      </trans-unit>
+      <trans-unit id="dedupSuggestion">
+        <source>Would you like to check which files in layout/custom are identical to their counterparts in the theme directory and can be removed?</source>
+        <target>M&#246;chten Sie pr&#252;fen, welche Dateien in layout/custom identisch mit dem Pendant aus dem Theme-Verzeichnis sind und gel&#246;scht werden k&#246;nnen?</target>
+      </trans-unit>
+      <trans-unit id="startDedup">
+        <source>Check and remove duplicates</source>
+        <target>Duplikate pr&#252;fen und entfernen</target>
+      </trans-unit>
+      <trans-unit id="dedupFileName">
+        <source>Removed file</source>
+        <target>Entfernte Datei</target>
+      </trans-unit>
+      <trans-unit id="dedupComplete">
+        <source>COUNT identical files have been removed from layout/custom.</source>
+        <target>COUNT identische Dateien wurden aus layout/custom entfernt.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

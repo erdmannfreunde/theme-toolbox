@@ -58,6 +58,36 @@
       <trans-unit id="backupCreated">
         <source>A backup has been created at: BACKUP_PATH</source>
       </trans-unit>
+      <trans-unit id="continueButton">
+        <source>Continue</source>
+      </trans-unit>
+      <trans-unit id="skipButton">
+        <source>Skip</source>
+      </trans-unit>
+      <trans-unit id="updateStatisticsHeadline">
+        <source>Update statistics</source>
+      </trans-unit>
+      <trans-unit id="customLayoutSuggestion">
+        <source>An existing theme was found in files/theme/. Would you like to copy files to layout/custom?</source>
+      </trans-unit>
+      <trans-unit id="copyToCustomLayout">
+        <source>Copy to layout/custom</source>
+      </trans-unit>
+      <trans-unit id="customLayoutCopied">
+        <source>COUNT files have been copied to layout/custom.</source>
+      </trans-unit>
+      <trans-unit id="dedupSuggestion">
+        <source>Would you like to check which files in layout/custom are identical to their counterparts in the theme directory and can be removed?</source>
+      </trans-unit>
+      <trans-unit id="startDedup">
+        <source>Check and remove duplicates</source>
+      </trans-unit>
+      <trans-unit id="dedupFileName">
+        <source>Removed file</source>
+      </trans-unit>
+      <trans-unit id="dedupComplete">
+        <source>COUNT identical files have been removed from layout/custom.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

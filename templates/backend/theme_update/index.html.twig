@@ -11,6 +11,7 @@
                 </div>
             {% endif %}
 
+            {# Step 1: Update statistics #}
             {% if success is defined and success %}
                 <div class="tl_message">
                     <p class="tl_confirm">
@@ -50,8 +51,98 @@
                         {{ 'backupCreated'|trans({}, 'contao_tl_theme_update')|replace({'BACKUP_PATH': result.backupPath}) }}
                     </p>
                 </div>
+
+                {% if result.suggestCustomLayout is defined and result.suggestCustomLayout %}
+                    <form action="{{ path('theme_update_continue') }}" method="post" class="tl_form">
+                        <input type="hidden" name="REQUEST_TOKEN" value="{{ csrf_token }}">
+                        <input type="hidden" name="theme_name" value="{{ result.themeName }}">
+                        <input type="hidden" name="backup_path" value="{{ result.backupPath }}">
+                        <input type="hidden" name="update_stats" value="{{ result.stats|json_encode|e('html_attr') }}">
+                        <div class="tl_formbody_submit">
+                            <div class="tl_submit_container">
+                                <button type="submit" class="tl_submit">{{ 'continueButton'|trans({}, 'contao_tl_theme_update') }}</button>
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
             {% endif %}
 
+            {# Step 2: Custom layout suggestion #}
+            {% if suggestCustom is defined and suggestCustom %}
+                <div class="tl_message">
+                    <p class="tl_info">{{ 'customLayoutSuggestion'|trans({}, 'contao_tl_theme_update') }}</p>
+                </div>
+
+                <form action="{{ path('theme_update_copy_custom') }}" method="post" class="tl_form">
+                    <input type="hidden" name="REQUEST_TOKEN" value="{{ csrf_token }}">
+                    <input type="hidden" name="theme_name" value="{{ suggestCustom.themeName }}">
+                    <input type="hidden" name="backup_path" value="{{ suggestCustom.backupPath }}">
+                    <input type="hidden" name="update_stats" value="{{ suggestCustom.updateStats|default('')|e('html_attr') }}">
+                    <div class="tl_formbody_submit">
+                        <div class="tl_submit_container">
+                            <button type="submit" class="tl_submit">{{ 'copyToCustomLayout'|trans({}, 'contao_tl_theme_update') }}</button>
+                            <a href="{{ path('theme_update_index') }}" class="tl_submit">{{ 'skipButton'|trans({}, 'contao_tl_theme_update') }}</a>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+
+            {# Step 3: Dedup suggestion #}
+            {% if customResult is defined and customResult %}
+                <div class="tl_message">
+                    <p class="tl_confirm">
+                        {{ 'customLayoutCopied'|trans({}, 'contao_tl_theme_update')|replace({'COUNT': customResult.copied}) }}
+                    </p>
+                </div>
+
+                <div class="tl_message">
+                    <p class="tl_info">{{ 'dedupSuggestion'|trans({}, 'contao_tl_theme_update') }}</p>
+                </div>
+
+                <form action="{{ path('theme_update_deduplicate') }}" method="post" class="tl_form">
+                    <input type="hidden" name="REQUEST_TOKEN" value="{{ csrf_token }}">
+                    <input type="hidden" name="theme_name" value="{{ customResult.themeName }}">
+                    <input type="hidden" name="backup_path" value="{{ customResult.backupPath }}">
+                    <input type="hidden" name="update_stats" value="{{ customResult.updateStats|default('')|e('html_attr') }}">
+                    <div class="tl_formbody_submit">
+                        <div class="tl_submit_container">
+                            <button type="submit" class="tl_submit">{{ 'startDedup'|trans({}, 'contao_tl_theme_update') }}</button>
+                            <a href="{{ path('theme_update_index') }}" class="tl_submit">{{ 'skipButton'|trans({}, 'contao_tl_theme_update') }}</a>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+
+            {# Step 4: Dedup result #}
+            {% if dedupResult is defined and dedupResult %}
+                <div class="tl_message">
+                    <p class="tl_confirm">
+                        {{ 'dedupComplete'|trans({}, 'contao_tl_theme_update')|replace({'COUNT': dedupResult.removed}) }}
+                    </p>
+                </div>
+
+                {% if dedupResult.removedFiles is defined and dedupResult.removedFiles|length > 0 %}
+                    <div class="tl_listing_container">
+                        <table class="tl_listing">
+                            <thead>
+                                <tr>
+                                    <th>{{ 'dedupFileName'|trans({}, 'contao_tl_theme_update') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in dedupResult.removedFiles %}
+                                    <tr>
+                                        <td>{{ file }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            {# Upload form (only when no wizard step is active) #}
+            {% if not (success is defined and success) and not (suggestCustom is defined and suggestCustom) and not (customResult is defined and customResult) and not (dedupResult is defined and dedupResult) %}
             <form action="{{ path('theme_update_upload') }}" method="post" enctype="multipart/form-data" class="tl_form">
                 <input type="hidden" name="REQUEST_TOKEN" value="{{ csrf_token }}">
 
@@ -75,6 +166,7 @@
                     </div>
                 </div>
             </form>
+            {% endif %}
         </div>
     </main>
 {% endblock %}

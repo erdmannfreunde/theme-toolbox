@@ -111,7 +111,72 @@ class ThemeUpdateService
             'themeName' => $themeName,
             'backupPath' => $backupPath,
             'stats' => $stats,
+            'suggestCustomLayout' => $this->shouldSuggestCustomLayout(),
         ];
+    }
+
+    public function shouldSuggestCustomLayout(): bool
+    {
+        $filesThemeScssDir = $this->projectDir . '/files/theme/scss';
+        $customLayoutDir = $this->projectDir . '/' . $this->layoutDir . '/custom';
+
+        return is_dir($filesThemeScssDir) && !is_dir($customLayoutDir);
+    }
+
+    public function copyToCustomLayout(): int
+    {
+        $sourceDir = $this->projectDir . '/files/theme/scss';
+        $targetDir = $this->projectDir . '/' . $this->layoutDir . '/custom/scss';
+
+        return $this->copyDirectory($sourceDir, $targetDir);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function findDuplicateFiles(string $themeName): array
+    {
+        $customDir = $this->projectDir . '/' . $this->layoutDir . '/custom';
+        $themeDir = $this->projectDir . '/' . $this->layoutDir . '/' . $themeName;
+
+        $duplicates = [];
+
+        if (!is_dir($customDir) || !is_dir($themeDir)) {
+            return $duplicates;
+        }
+
+        $finder = new Finder();
+        $finder->files()->in($customDir);
+
+        foreach ($finder as $file) {
+            $relativePath = $file->getRelativePathname();
+            $themePath = $themeDir . '/' . $relativePath;
+
+            if (file_exists($themePath) && hash_file('sha256', $file->getRealPath()) === hash_file('sha256', $themePath)) {
+                $duplicates[] = $relativePath;
+            }
+        }
+
+        return $duplicates;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function removeDuplicateFiles(string $themeName): array
+    {
+        $duplicates = $this->findDuplicateFiles($themeName);
+        $customDir = $this->projectDir . '/' . $this->layoutDir . '/custom';
+
+        foreach ($duplicates as $relativePath) {
+            $this->filesystem->remove($customDir . '/' . $relativePath);
+        }
+
+        if (is_dir($customDir)) {
+            $this->removeEmptyDirectories($customDir);
+        }
+
+        return $duplicates;
     }
 
     private function detectThemeName(\ZipArchive $zip): ?string

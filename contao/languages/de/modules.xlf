@@ -22,8 +22,8 @@
         <target>Theme-Dateien bearbeiten und anpassen</target>
       </trans-unit>
       <trans-unit id="MOD.themeUpdate.0">
-        <source>Theme Updates</source>
-        <target>Theme Updates</target>
+        <source>Updates</source>
+        <target>Updates</target>
       </trans-unit>
       <trans-unit id="MOD.themeUpdate.1">
         <source>Upload and install theme updates</source>
