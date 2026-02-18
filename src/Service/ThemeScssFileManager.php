@@ -314,7 +314,7 @@ class ThemeScssFileManager
     }
 
     /**
-     * Get asset directories (fonts, img) for a theme, including custom overrides.
+     * Get asset directories (fonts, img, js) for a theme, including custom overrides.
      *
      * @return array<string, list<string>> Map of asset type to source directories (theme first, custom second)
      */
@@ -322,7 +322,7 @@ class ThemeScssFileManager
     {
         $dirs = [];
 
-        foreach (['fonts', 'img'] as $type) {
+        foreach (['fonts', 'img', 'js'] as $type) {
             $sources = [];
 
             // Theme directory first
