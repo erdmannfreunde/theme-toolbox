@@ -65,6 +65,7 @@ services:
   ErdmannFreunde\ThemeToolboxBundle\EventListener\ThemeScssGeneratePageListener:
     arguments:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
 
   ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\LayoutThemeScssOptionsCallback:
     arguments:

@@ -27,15 +27,13 @@ class LayoutThemeScssOptionsCallback
     public function __invoke(): array
     {
         $themes = $this->fileManager->getAvailableThemes();
-        $options = [];
 
-        foreach ($themes as $name => $path) {
-            // Check if default.scss exists
-            if ($this->fileManager->getDefaultScssPath($name)) {
-                $options[$name] = $name;
-            }
+        if (empty($themes)) {
+            return [];
         }
 
-        return $options;
+        $themeName = array_key_first($themes);
+
+        return $this->fileManager->getEntryPointFiles($themeName);
     }
 }

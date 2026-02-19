@@ -352,22 +352,83 @@ class ThemeScssFileManager
     }
 
     /**
-     * Get the default.scss path for a theme (checking custom first).
+     * Get all non-partial (entry point) SCSS files for a theme.
+     * Returns files without leading underscore at depth 0 from both theme and custom directory.
+     *
+     * @return array<string, string>
      */
-    public function getDefaultScssPath(string $themeName): ?string
+    public function getEntryPointFiles(string $themeName): array
     {
-        $customPath = $this->getCustomFilePath('default.scss');
+        $files = [];
+
+        // From theme directory (depth 0 only)
+        $themePath = $this->getThemePath($themeName);
+
+        if ($themePath) {
+            $scssPath = $themePath . '/' . self::SCSS_DIR;
+
+            if (is_dir($scssPath)) {
+                $finder = new Finder();
+                $finder->files()->in($scssPath)->name('*.scss')->depth(0)->sortByName();
+
+                foreach ($finder as $file) {
+                    if (!str_starts_with($file->getFilename(), '_') && $file->getFilename() !== 'tinymce.scss') {
+                        $name = $file->getFilenameWithoutExtension();
+                        $files[$name] = $name;
+                    }
+                }
+            }
+        }
+
+        // From custom directory (depth 0 only) — adds new files and overrides theme files with same name
+        $customScssPath = $this->getCustomDirPath();
+
+        if (is_dir($customScssPath)) {
+            $finder = new Finder();
+            $finder->files()->in($customScssPath)->name('*.scss')->depth(0)->sortByName();
+
+            foreach ($finder as $file) {
+                if (!str_starts_with($file->getFilename(), '_') && $file->getFilename() !== 'tinymce.scss') {
+                    $name = $file->getFilenameWithoutExtension();
+                    $files[$name] = $name;
+                }
+            }
+        }
+
+        ksort($files);
+
+        return $files;
+    }
+
+    /**
+     * Get the path for a given entry point SCSS file (checking custom first).
+     */
+    public function getEntryPointPath(string $themeName, string $fileName): ?string
+    {
+        if (!str_ends_with($fileName, '.scss')) {
+            $fileName .= '.scss';
+        }
+
+        $customPath = $this->getCustomFilePath($fileName);
 
         if ($this->filesystem->exists($customPath)) {
             return $customPath;
         }
 
-        $originalPath = $this->getOriginalFilePath($themeName, 'default.scss');
+        $originalPath = $this->getOriginalFilePath($themeName, $fileName);
 
         if ($this->filesystem->exists($originalPath)) {
             return $originalPath;
         }
 
         return null;
+    }
+
+    /**
+     * Get the default.scss path for a theme (checking custom first).
+     */
+    public function getDefaultScssPath(string $themeName): ?string
+    {
+        return $this->getEntryPointPath($themeName, 'default.scss');
     }
 }

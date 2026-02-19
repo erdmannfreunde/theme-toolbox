@@ -49,8 +49,8 @@ $GLOBALS['TL_DCA']['tl_layout']['fields']['footerClass'] = [
 
 // Theme Styles
 PaletteManipulator::create()
-    ->addLegend('theme_styles_legend', 'style_legend', PaletteManipulator::POSITION_AFTER)
-    ->addField('themeScss', 'theme_styles_legend', PaletteManipulator::POSITION_APPEND)
+    ->addLegend('theme_toolbox_legend', 'style_legend', PaletteManipulator::POSITION_AFTER)
+    ->addField('themeScss', 'theme_toolbox_legend', PaletteManipulator::POSITION_APPEND)
     ->applyToPalette('default', 'tl_layout')
 ;
 

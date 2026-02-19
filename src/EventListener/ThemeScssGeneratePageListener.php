@@ -16,24 +16,33 @@ use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\LayoutModel;
 use Contao\PageModel;
 use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler;
+use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
 
 #[AsHook('generatePage')]
 class ThemeScssGeneratePageListener
 {
     public function __construct(
         private readonly ThemeScssCompiler $compiler,
+        private readonly ThemeScssFileManager $fileManager,
     ) {
     }
 
     public function __invoke(PageModel $pageModel, LayoutModel $layout): void
     {
-        $themeName = $layout->themeScss ?? '';
+        $entryFile = $layout->themeScss ?? '';
 
-        if (!$themeName) {
+        if (!$entryFile) {
             return;
         }
 
-        $cssPath = $this->compiler->getWebPath($themeName);
+        $themes = $this->fileManager->getAvailableThemes();
+
+        if (empty($themes)) {
+            return;
+        }
+
+        $themeName = array_key_first($themes);
+        $cssPath = $this->compiler->getWebPath($themeName, $entryFile);
 
         if (!$cssPath) {
             return;

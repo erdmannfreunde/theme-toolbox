@@ -25,6 +25,11 @@ class ThemeScssCompiler
     /** @var array<string, string|null> */
     private array $compiledPaths = [];
 
+    private function cacheKey(string $themeName, string $entryFile): string
+    {
+        return $themeName . ':' . $entryFile;
+    }
+
     public function __construct(
         private readonly ThemeScssFileManager $fileManager,
         private readonly string $projectDir,
@@ -35,26 +40,29 @@ class ThemeScssCompiler
     }
 
     /**
-     * Compile the default.scss for a theme and return the path to the compiled CSS.
+     * Compile a given entry point SCSS file for a theme and return the path to the compiled CSS.
      */
-    public function compile(string $themeName): ?string
+    public function compile(string $themeName, string $entryFile = 'default'): ?string
     {
-        if (\array_key_exists($themeName, $this->compiledPaths)) {
-            return $this->compiledPaths[$themeName];
+        $cacheKey = $this->cacheKey($themeName, $entryFile);
+
+        if (\array_key_exists($cacheKey, $this->compiledPaths)) {
+            return $this->compiledPaths[$cacheKey];
         }
 
-        $defaultScssPath = $this->fileManager->getDefaultScssPath($themeName);
+        $defaultScssPath = $this->fileManager->getEntryPointPath($themeName, $entryFile);
 
         if (!$defaultScssPath) {
-            return $this->compiledPaths[$themeName] = null;
+            return $this->compiledPaths[$cacheKey] = null;
         }
 
         $outputDir = $this->getThemeCssDir($themeName);
-        $outputFile = $outputDir . '/' . $themeName . '.css';
+        $entryBaseName = pathinfo($entryFile, PATHINFO_FILENAME);
+        $outputFile = $outputDir . '/' . $entryBaseName . '.css';
 
         // Check if recompilation is needed using file modification times
         if ($this->filesystem->exists($outputFile) && !$this->needsRecompilation($themeName, $outputFile)) {
-            return $this->compiledPaths[$themeName] = $outputFile;
+            return $this->compiledPaths[$cacheKey] = $outputFile;
         }
 
         // Ensure output directory exists
@@ -86,23 +94,23 @@ class ThemeScssCompiler
             // Sync font and image assets
             $this->syncThemeAssets($themeName);
 
-            return $this->compiledPaths[$themeName] = $outputFile;
+            return $this->compiledPaths[$cacheKey] = $outputFile;
         } catch (\Exception $e) {
             $this->logger?->error('SCSS compilation failed for theme "{theme}": {error}', [
                 'theme' => $themeName,
                 'error' => $e->getMessage(),
             ]);
 
-            return $this->compiledPaths[$themeName] = null;
+            return $this->compiledPaths[$cacheKey] = null;
         }
     }
 
     /**
      * Get the web-accessible path for the compiled CSS.
      */
-    public function getWebPath(string $themeName): ?string
+    public function getWebPath(string $themeName, string $entryFile = 'default'): ?string
     {
-        $compiledPath = $this->compile($themeName);
+        $compiledPath = $this->compile($themeName, $entryFile);
 
         if (!$compiledPath) {
             return null;
