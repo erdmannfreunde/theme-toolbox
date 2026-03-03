@@ -5,7 +5,12 @@
         <h1 id="main_headline">{{ headline }}</h1>
 
         <div class="theme-file-editor content">
-            
+
+            {% if themes is empty %}
+                <div class="tl_info">
+                    Es konnte kein Theme gefunden werden. Kompatible Contao Themes findest du unter <a href="https://www.flow-contao-themes.de" target="_blank" rel="noreferrer noopener">https://www.flow-contao-themes.de</a>
+                </div>
+            {% else %}
 
             <div class="theme-file-editor__container">
                 <div class="theme-file-editor__sidebar">
@@ -99,8 +104,11 @@
                     {% endif %}
                 </div>
             </div>
+
+            {% endif %}
         </div>
 
+        {% if themes is not empty %}
         <script src="{{ asset('assets/ace/js/ace.js') }}"></script>
         <script>
         var ThemeFileEditor = {
@@ -900,5 +908,6 @@
             ThemeFileEditor.init();
         });
         </script>
+        {% endif %}
     </main>
 {% endblock %}
