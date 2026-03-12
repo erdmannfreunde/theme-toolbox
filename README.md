@@ -59,6 +59,39 @@ Im Seitenlayout lassen sich eigene Header- und Footer-Klassen im Seitenlayout ve
 {% endblock %}
 ```
 
+## 5. Twig-Funktionen für Theme-Assets
+
+Die Theme Toolbox stellt drei Twig-Funktionen bereit, um kompilierte CSS-, JavaScript- und Bild-Dateien in Twig-Templates einzubinden:
+
+### `theme_css(entry)`
+
+Gibt den Pfad zur kompilierten CSS-Datei zurück. Der Parameter `entry` entspricht dem Namen der Entry-Datei (Standard: `'default'`).
+
+```twig
+<link rel="stylesheet" href="{{ theme_css('default') }}">
+{# Ausgabe: /assets/theme-name/css/default.css #}
+```
+
+Varianten wie `variant-1.scss` können dementsprechend über den Entry-Parameter `variant-1` ausgegeben werden.
+
+### `theme_js(file)`
+
+Gibt den Pfad zu einer JavaScript-Datei des Themes zurück.
+
+```twig
+<script src="{{ theme_js('main.js') }}"></script>
+{# Ausgabe: /assets/theme-name/js/main.js #}
+```
+
+### `theme_img(file)`
+
+Gibt den Pfad zu einer Bild-Datei des Themes zurück.
+
+```twig
+<img src="{{ theme_img('logo.svg') }}" alt="Logo">
+{# Ausgabe: /assets/theme-name/img/logo.svg #}
+```
+
 ## Development notes
 
 ### Code style (ECS)

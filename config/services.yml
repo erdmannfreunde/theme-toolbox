@@ -90,3 +90,9 @@ services:
   ErdmannFreunde\ThemeToolboxBundle\EventListener\BackendModuleRedirectListener:
     arguments:
       - '@router'
+
+  ErdmannFreunde\ThemeToolboxBundle\Twig\ThemeToolboxTwigExtension:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '%kernel.project_dir%'
