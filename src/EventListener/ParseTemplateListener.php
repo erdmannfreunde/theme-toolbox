@@ -44,13 +44,19 @@ class ParseTemplateListener
     #[AsHook('getContentElement')]
     public function onGetContentElement(mixed $element, string $buffer): string
     {
-        if (!\is_object($element) || 'alias' !== ($element->type ?? null) || !($element->toolbox_classes ?? null)) {
+        if (!\is_object($element) || !($element->toolbox_classes ?? null)) {
             return $buffer;
         }
 
+        if (!\in_array($element->type ?? null, ['alias', 'module'], true)) {
+            return $buffer;
+        }
+
+        $classes = $this->uniqueClasses((string) $element->toolbox_classes);
+
         return preg_replace(
             '/class="(.+?)"/',
-            \sprintf('class="$1 %s"', $this->uniqueClasses((string) $element->toolbox_classes)),
+            \sprintf('class="$1 %s"', $classes),
             $buffer,
             1,
         ) ?? $buffer;
