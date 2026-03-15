@@ -69,12 +69,22 @@ class ParseTemplateListener
             return $buffer;
         }
 
-        return preg_replace(
-            '/class="(.+?)"/',
-            \sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)),
+        $classes = $this->uniqueClasses($widget->toolbox_classes);
+
+        // First try to append to an existing class attribute (including class="").
+        $updated = preg_replace(
+            '/class="([^"]*)"/',
+            \sprintf('class="$1 %s"', $classes),
             $buffer,
             1,
         );
+
+        if (null !== $updated && $updated !== $buffer) {
+            return str_replace('class=" "', 'class="'.$classes.'"', $updated);
+        }
+
+        // Fallback: inject class attribute into first HTML tag.
+        return preg_replace('/^<([a-zA-Z0-9:-]+)/', '<$1 class="'.$classes.'"', $buffer, 1) ?? $buffer;
     }
 
     private function uniqueClasses(string $classes): string
