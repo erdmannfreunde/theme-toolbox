@@ -41,6 +41,21 @@ class ParseTemplateListener
         $template->class .= ' '.$this->uniqueClasses($template->toolbox_classes);
     }
 
+    #[AsHook('getContentElement')]
+    public function onGetContentElement(mixed $element, string $buffer): string
+    {
+        if (!\is_object($element) || 'alias' !== ($element->type ?? null) || !($element->toolbox_classes ?? null)) {
+            return $buffer;
+        }
+
+        return preg_replace(
+            '/class="(.+?)"/',
+            \sprintf('class="$1 %s"', $this->uniqueClasses((string) $element->toolbox_classes)),
+            $buffer,
+            1,
+        ) ?? $buffer;
+    }
+
     #[AsHook('parseWidget')]
     public function onParseWidget(string $buffer, Widget $widget): string
     {
