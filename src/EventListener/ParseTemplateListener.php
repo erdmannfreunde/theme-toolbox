@@ -101,6 +101,26 @@ class ParseTemplateListener
 
     private function uniqueClasses(string $classes): string
     {
-        return implode(' ', array_unique(StringUtil::trimsplit(' ', $classes)));
+        // Split into tokens, trim, and remove duplicates.
+        $tokens = array_unique(StringUtil::trimsplit(' ', $classes));
+
+        // Remove empty tokens and strip unsafe characters from each class name.
+        $sanitizedTokens = [];
+        foreach ($tokens as $token) {
+            $token = trim((string) $token);
+            if ('' === $token) {
+                continue;
+            }
+
+            // Allow only a safe subset of characters in class names.
+            // This prevents breaking out of the class attribute and avoids injection.
+            $clean = preg_replace('/[^a-zA-Z0-9_-]+/', '', $token);
+
+            if ('' !== $clean) {
+                $sanitizedTokens[] = $clean;
+            }
+        }
+
+        return implode(' ', $sanitizedTokens);
     }
 }
