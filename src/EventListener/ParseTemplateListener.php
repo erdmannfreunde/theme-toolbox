@@ -76,15 +76,23 @@ class ParseTemplateListener
         }
 
         // First try to append to an existing class attribute (including class="").
-        $updated = preg_replace(
+        $updated = preg_replace_callback(
             '/class="([^"]*)"/',
-            \sprintf('class="$1 %s"', $classes),
+            static function (array $matches) use ($classes): string {
+                $existing = trim($matches[1]);
+
+                if ('' === $existing) {
+                    return 'class="'.$classes.'"';
+                }
+
+                return 'class="'.$existing.' '.$classes.'"';
+            },
             $buffer,
             1,
         );
 
         if (null !== $updated && $updated !== $buffer) {
-            return str_replace('class=" "', 'class="'.$classes.'"', $updated);
+            return $updated;
         }
 
         // Fallback: inject class attribute into first HTML tag.
