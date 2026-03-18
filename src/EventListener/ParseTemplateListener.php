@@ -48,16 +48,58 @@ class ParseTemplateListener
             return $buffer;
         }
 
-        return preg_replace(
-            '/class="(.+?)"/',
-            \sprintf('class="$1 %s"', $this->uniqueClasses($widget->toolbox_classes)),
+        $classes = $this->uniqueClasses($widget->toolbox_classes);
+
+        if ($classes === '') {
+            return $buffer;
+        }
+
+        // First try to append to an existing class attribute (including class="").
+        $updated = preg_replace_callback(
+            '/class="([^"]*)"/',
+            static function (array $matches) use ($classes): string {
+                $existing = trim($matches[1]);
+
+                if ('' === $existing) {
+                    return 'class="'.$classes.'"';
+                }
+
+                return 'class="'.$existing.' '.$classes.'"';
+            },
             $buffer,
             1,
         );
+
+        if (null !== $updated && $updated !== $buffer) {
+            return $updated;
+        }
+
+        // Fallback: inject class attribute into first HTML tag.
+        return preg_replace('/^<([a-zA-Z0-9:-]+)/', '<$1 class="'.$classes.'"', $buffer, 1) ?? $buffer;
     }
 
     private function uniqueClasses(string $classes): string
     {
-        return implode(' ', array_unique(StringUtil::trimsplit(' ', $classes)));
+        // Split into tokens, trim, and remove duplicates.
+        $tokens = array_unique(StringUtil::trimsplit(' ', $classes));
+
+        // Remove empty tokens and strip unsafe characters from each class name.
+        $sanitizedTokens = [];
+        foreach ($tokens as $token) {
+            $token = trim((string) $token);
+            if ('' === $token) {
+                continue;
+            }
+
+            // Allow only a safe subset of characters in class names.
+            // This prevents breaking out of the class attribute and avoids injection.
+            $clean = preg_replace('/[^a-zA-Z0-9_-]+/', '', $token);
+
+            if ('' !== $clean) {
+                $sanitizedTokens[] = $clean;
+            }
+        }
+
+        return implode(' ', $sanitizedTokens);
     }
 }
