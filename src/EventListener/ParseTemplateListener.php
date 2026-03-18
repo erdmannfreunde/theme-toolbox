@@ -50,6 +50,10 @@ class ParseTemplateListener
 
         $classes = $this->uniqueClasses($widget->toolbox_classes);
 
+        if ($classes === '') {
+            return $buffer;
+        }
+
         // First try to append to an existing class attribute (including class="").
         $updated = preg_replace(
             '/class="([^"]*)"/',
