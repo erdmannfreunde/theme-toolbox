@@ -13,7 +13,22 @@ Wenn du deinen Kunden keine Liste von Klassennamen für Varianten und spezifisch
 
 ## 2. Theme Editor
 
-Der Theme Editor ermöglicht das direkte Bearbeiten von SCSS-Dateien aus dem Contao Backend. Du kannst Original-Theme-Dateien überschreiben, indem du individuelle Versionen erstellst, umbenennen oder neue SCSS-Dateien anlegen.
+Der Theme Editor ermöglicht ab Version 4 das direkte Bearbeiten von Theme-Assets aus dem Contao Backend.
+
+### 2.1 Styles
+
+Der Theme Editor ermöglicht das direkte Bearbeiten von SCSS-Dateien aus dem Contao Backend. Du kannst Original-Theme-Dateien überschreiben, indem du individuelle Varianten erstellst, Dateien umbenennen oder neue SCSS-Dateien anlegen.
+
+Über eine Vergleichsansicht lassen sich Varianten und Original zeilenweise vergleichen und so Theme-Updates schneller nachvollziehen.
+
+### 2.2 Webfonts
+
+Im Tab „Webfonts" können Schriftarten für das Theme verwaltet werden. Es stehen zwei Wege zur Verfügung:
+
+- **Google Fonts Katalog:** Schriften können direkt aus dem Google Webfont Katalog ausgewählt werden. Die Schriftdateien werden automatisch heruntergeladen und im Theme unter `layout/custom/fonts` abgelegt. Die zugehörige `@font-face`-Deklaration wird automatisch in `base/_fonts.scss` ergänzt.
+- **Manueller Upload:** Alternativ können Schriftdateien (woff2, ttf, woff) auch manuell hochgeladen werden — z. B. für Schriften, die nicht bei Google Fonts verfügbar sind.
+
+**Hinweis:** Nach dem Import oder Upload müssen die Schriftarten noch händisch in der `_variables.scss` eingetragen werden, damit sie im Theme verwendet werden. Nicht mehr benötigte Schriftarten lassen sich über den Button **„Ungenutzte @font-face bereinigen"** entfernen.
 
 ### Optionale Konfiguration
 
