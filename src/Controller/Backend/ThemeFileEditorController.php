@@ -15,7 +15,9 @@ namespace ErdmannFreunde\ThemeToolboxBundle\Controller\Backend;
 use Contao\CoreBundle\Controller\AbstractBackendController;
 use Contao\CoreBundle\Csrf\ContaoCsrfTokenManager;
 use Contao\System;
+use ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService;
 use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +31,7 @@ class ThemeFileEditorController extends AbstractBackendController
 
     public function __construct(
         private readonly ThemeScssFileManager $fileManager,
+        private readonly GoogleFontsService $googleFontsService,
         private readonly ContaoCsrfTokenManager $csrfTokenManager,
         private readonly TranslatorInterface $translator,
     ) {
@@ -45,6 +48,16 @@ class ThemeFileEditorController extends AbstractBackendController
         System::loadLanguageFile('default');
         System::loadLanguageFile('modules');
         System::loadLanguageFile('tl_theme_file_editor');
+
+        $activeTab = $request->query->get('tab', 'styles');
+
+        if (!\in_array($activeTab, ['styles', 'webfonts'], true)) {
+            $activeTab = 'styles';
+        }
+
+        if ('webfonts' === $activeTab) {
+            $GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_webfonts.css';
+        }
 
         $themes = $this->fileManager->getAvailableThemes();
         $selectedTheme = $request->query->get('theme', array_key_first($themes) ?? '');
@@ -71,6 +84,7 @@ class ThemeFileEditorController extends AbstractBackendController
         return $this->render('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/index.html.twig', [
             'headline' => $GLOBALS['TL_LANG']['MOD']['themeFileEditor'][0] ?? 'Theme SCSS Editor',
             'back_url' => $this->generateUrl('contao_backend'),
+            'active_tab' => $activeTab,
             'themes' => $themes,
             'selected_theme' => $selectedTheme,
             'selected_file' => $selectedFile,
@@ -199,6 +213,153 @@ class ThemeFileEditorController extends AbstractBackendController
                 ? $this->translator->trans('created', [], self::TRANSLATION_DOMAIN)
                 : $this->translator->trans('createError', [], self::TRANSLATION_DOMAIN),
             'filePath' => $filePath,
+        ]);
+    }
+
+    #[Route('/upload-font', name: 'theme_file_editor_upload_font', methods: ['POST'])]
+    public function uploadFont(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $family = trim((string) $request->request->get('family', ''));
+        $weight = trim((string) $request->request->get('weight', '400'));
+        $style = strtolower(trim((string) $request->request->get('style', 'normal')));
+
+        /** @var array<int, UploadedFile>|UploadedFile|null $uploaded */
+        $uploaded = $request->files->get('files');
+        $files = $uploaded instanceof UploadedFile ? [$uploaded] : (is_array($uploaded) ? $uploaded : []);
+
+        if (!$this->isValidTheme($theme) || '' === $family || [] === $files) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        if (!preg_match('/^[1-9]00$/', $weight)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFontWeight', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        if (!\in_array($style, ['normal', 'italic'], true)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFontStyle', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        try {
+            $result = $this->fileManager->saveUploadedFonts($family, $files);
+            $scssBlock = $this->fileManager->appendFontFaceToCustomScss($theme, $family, $weight, $style, $result['files']);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $this->translator->trans('fontUploaded', [], self::TRANSLATION_DOMAIN),
+            'scssBlock' => $scssBlock,
+            'targetFile' => 'base/_fonts.scss',
+            'files' => $result['files'],
+        ]);
+    }
+
+    #[Route('/google-fonts-catalog', name: 'theme_file_editor_google_fonts_catalog', defaults: ['_token_check' => false], methods: ['GET'])]
+    public function googleFontsCatalog(Request $request): JsonResponse
+    {
+        $search = trim((string) $request->query->get('search', ''));
+        $category = trim((string) $request->query->get('category', ''));
+        $limit = max(1, min(100, (int) $request->query->get('limit', 25)));
+
+        try {
+            $fonts = $this->googleFontsService->getCatalog($search, $category, $limit);
+        } catch (\RuntimeException $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'fonts' => $fonts,
+        ]);
+    }
+
+    #[Route('/import-google-font', name: 'theme_file_editor_import_google_font', methods: ['POST'])]
+    public function importGoogleFont(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $family = trim((string) $request->request->get('family', ''));
+        $weight = trim((string) $request->request->get('weight', '400'));
+        $style = strtolower(trim((string) $request->request->get('style', 'normal')));
+
+        if (!$this->isValidTheme($theme) || '' === $family) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        if (!preg_match('/^[1-9]00$/', $weight)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFontWeight', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        if (!\in_array($style, ['normal', 'italic'], true)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFontStyle', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        try {
+            if ($this->fileManager->hasFontFaceDefinition($theme, $family, $weight, $style)) {
+                return new JsonResponse([
+                    'success' => true,
+                    'message' => 'Dieser Schriftschnitt ist bereits vorhanden.',
+                    'scssBlock' => '',
+                    'targetFile' => 'base/_fonts.scss',
+                    'files' => [],
+                ]);
+            }
+
+            $downloaded = $this->googleFontsService->downloadFontFiles($family, $weight, $style);
+            $result = $this->fileManager->saveBinaryFonts($family, $downloaded['files']);
+            $scssBlock = $this->fileManager->appendFontFaceToCustomScss($theme, $family, $weight, $style, $result['files']);
+        } catch (\RuntimeException|\InvalidArgumentException $e) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $this->translator->trans('fontUploaded', [], self::TRANSLATION_DOMAIN),
+            'scssBlock' => $scssBlock,
+            'targetFile' => 'base/_fonts.scss',
+            'files' => $result['files'],
+        ]);
+    }
+
+    #[Route('/cleanup-unused-font-faces', name: 'theme_file_editor_cleanup_unused_font_faces', methods: ['POST'])]
+    public function cleanupUnusedFontFaces(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+
+        if (!$this->isValidTheme($theme)) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        try {
+            $result = $this->fileManager->cleanupUnusedFontFaces($theme);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'removedBlocks' => $result['removedBlocks'],
+            'removedFamilies' => $result['removedFamilies'],
+            'keptBlocks' => $result['keptBlocks'],
         ]);
     }
 

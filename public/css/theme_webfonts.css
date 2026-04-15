@@ -1,0 +1,230 @@
+.theme-webfonts__search {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.theme-webfonts__result-wrap {
+  overflow: auto;
+}
+
+.theme-webfonts__result-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-webfonts__result-item {
+  border-bottom: 1px solid var(--border);
+}
+
+.theme-webfonts__result-button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.theme-webfonts__result-button small {
+  color: var(--gray);
+}
+
+.theme-webfonts__result-button:hover,
+.theme-webfonts__result-button.is-active {
+  background: var(--nav-bg-hover);
+}
+
+.theme-webfonts__result-loading,
+.theme-webfonts__result-empty,
+.theme-webfonts__result-error {
+  padding: 10px 12px;
+}
+
+.theme-webfonts__result-error {
+  color: var(--red);
+}
+
+.theme-webfonts__title {
+  margin: 0 0 8px;
+}
+
+.theme-webfonts__meta {
+  margin-bottom: 12px;
+  color: var(--gray);
+}
+
+.theme-webfonts__variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.theme-webfonts__variant {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  background: var(--form-bg);
+  padding: 6px 8px;
+}
+
+.theme-webfonts__actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.theme-webfonts__selection-info {
+  color: var(--gray);
+}
+
+/* Font upload modal */
+.font-upload-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.font-upload-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.font-upload-modal__dialog {
+  position: relative;
+  width: 680px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.font-upload-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--body-bg);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.font-upload-modal__header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.font-upload-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+
+.font-upload-modal__close:hover {
+  opacity: 1;
+}
+
+.font-upload-modal__body {
+  padding: 16px;
+}
+
+.font-upload-panel__field {
+  margin-bottom: 12px;
+}
+
+.font-upload-panel__field label {
+  display: block;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.font-upload-panel__field input {
+  max-width: 300px;
+}
+
+.font-upload-panel__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.font-upload-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.font-upload-panel__row-fields {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.font-upload-panel__weight {
+  width: 160px;
+}
+
+.font-upload-panel__style {
+  width: 100px;
+}
+
+.font-upload-panel__remove-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+
+.font-upload-panel__remove-row:hover {
+  opacity: 1;
+}
+
+.font-upload-panel__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.font-upload-panel__add-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.font-upload-panel__add-row:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,599 @@
+    {% if themes is empty %}
+        <div class="tl_info">Kein kompatibles Theme gefunden.</div>
+    {% else %}
+
+        <div id="fontUploadModal" class="font-upload-modal" style="display:none">
+            <div class="font-upload-modal__backdrop" onclick="ThemeWebfonts.toggleUploadPanel()"></div>
+            <div class="font-upload-modal__dialog">
+                <div class="font-upload-modal__header">
+                    <h3>Schriften manuell hochladen</h3>
+                    <button type="button" class="font-upload-modal__close" onclick="ThemeWebfonts.toggleUploadPanel()">
+                        <img src="/system/themes/flexible/icons/close.svg" alt="" width="16" height="16">
+                    </button>
+                </div>
+                <div class="font-upload-modal__body">
+                    <div class="font-upload-panel__field">
+                        <label for="fontUploadFamily">Font-Family</label>
+                        <input type="text" id="fontUploadFamily" class="tl_text" placeholder="z. B. Helvetica Neue">
+                    </div>
+                    <div id="fontUploadRows" class="font-upload-panel__rows">
+                        <div class="font-upload-panel__row">
+                            <div class="font-upload-panel__row-fields">
+                                <select class="tl_select font-upload-panel__weight">
+                                    <option value="100">100 (Thin)</option>
+                                    <option value="200">200 (Extra Light)</option>
+                                    <option value="300">300 (Light)</option>
+                                    <option value="400" selected>400 (Regular)</option>
+                                    <option value="500">500 (Medium)</option>
+                                    <option value="600">600 (Semi Bold)</option>
+                                    <option value="700">700 (Bold)</option>
+                                    <option value="800">800 (Extra Bold)</option>
+                                    <option value="900">900 (Black)</option>
+                                </select>
+                                <select class="tl_select font-upload-panel__style">
+                                    <option value="normal">normal</option>
+                                    <option value="italic">italic</option>
+                                </select>
+                                <input type="file" class="font-upload-panel__file" accept=".woff2,.ttf,.woff" multiple>
+                            </div>
+                            <button type="button" class="font-upload-panel__remove-row" onclick="ThemeWebfonts.removeUploadRow(this)" title="Zeile entfernen">
+                                <img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">
+                            </button>
+                        </div>
+                        <div class="font-upload-panel__row">
+                            <div class="font-upload-panel__row-fields">
+                                <select class="tl_select font-upload-panel__weight">
+                                    <option value="100">100 (Thin)</option>
+                                    <option value="200">200 (Extra Light)</option>
+                                    <option value="300">300 (Light)</option>
+                                    <option value="400">400 (Regular)</option>
+                                    <option value="500">500 (Medium)</option>
+                                    <option value="600">600 (Semi Bold)</option>
+                                    <option value="700" selected>700 (Bold)</option>
+                                    <option value="800">800 (Extra Bold)</option>
+                                    <option value="900">900 (Black)</option>
+                                </select>
+                                <select class="tl_select font-upload-panel__style">
+                                    <option value="normal">normal</option>
+                                    <option value="italic">italic</option>
+                                </select>
+                                <input type="file" class="font-upload-panel__file" accept=".woff2,.ttf,.woff" multiple>
+                            </div>
+                            <button type="button" class="font-upload-panel__remove-row" onclick="ThemeWebfonts.removeUploadRow(this)" title="Zeile entfernen">
+                                <img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">
+                            </button>
+                        </div>
+                        <div class="font-upload-panel__row">
+                            <div class="font-upload-panel__row-fields">
+                                <select class="tl_select font-upload-panel__weight">
+                                    <option value="100">100 (Thin)</option>
+                                    <option value="200">200 (Extra Light)</option>
+                                    <option value="300">300 (Light)</option>
+                                    <option value="400" selected>400 (Regular)</option>
+                                    <option value="500">500 (Medium)</option>
+                                    <option value="600">600 (Semi Bold)</option>
+                                    <option value="700">700 (Bold)</option>
+                                    <option value="800">800 (Extra Bold)</option>
+                                    <option value="900">900 (Black)</option>
+                                </select>
+                                <select class="tl_select font-upload-panel__style">
+                                    <option value="normal">normal</option>
+                                    <option value="italic" selected>italic</option>
+                                </select>
+                                <input type="file" class="font-upload-panel__file" accept=".woff2,.ttf,.woff" multiple>
+                            </div>
+                            <button type="button" class="font-upload-panel__remove-row" onclick="ThemeWebfonts.removeUploadRow(this)" title="Zeile entfernen">
+                                <img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">
+                            </button>
+                        </div>
+                    </div>
+                    <div class="font-upload-panel__footer">
+                        <button type="button" class="font-upload-panel__add-row" onclick="ThemeWebfonts.addUploadRow()">
+                            <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12">
+                            Weiteren Schnitt hinzufügen
+                        </button>
+                        <button type="button" class="tl_submit" onclick="ThemeWebfonts.uploadFonts()">Hochladen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="webfontsMessage"></div>
+
+        <div class="theme-file-editor__container">
+            <div class="theme-file-editor__sidebar">
+                <div class="theme-file-editor__toolbar">
+                    <div class="theme-file-editor__theme-select">
+                        <label for="themeSelect">Theme:</label>
+                        <select id="themeSelect" class="tl_select" onchange="ThemeWebfonts.changeTheme(this.value)">
+                            {% for name, path in themes %}
+                                <option value="{{ name }}"{{ name == selected_theme ? ' selected' : '' }}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="theme-webfonts__search">
+                        <input type="text" id="webfontSearch" class="tl_text" placeholder="Suche (z. B. Inter)">
+                        <button type="button" class="tl_submit" onclick="ThemeWebfonts.loadFonts()">Suchen</button>
+                    </div>
+                </div>
+
+                <div class="theme-webfonts__result-wrap">
+                    <ul id="webfontResultList" class="theme-webfonts__result-list"></ul>
+                </div>
+            </div>
+
+            <div class="theme-file-editor__main">
+                <h2 id="selectedFontTitle" class="theme-webfonts__title">Bitte links eine Schrift auswählen</h2>
+                <div id="selectedFontMeta" class="theme-webfonts__meta"></div>
+
+                <div id="variantList" class="theme-webfonts__variants"></div>
+
+                <div class="theme-webfonts__actions">
+                    <button id="importWebfontsBtn" type="button" class="tl_submit" onclick="ThemeWebfonts.importSelectedVariants()" disabled>Importieren</button>
+                    <small id="selectionInfo" class="theme-webfonts__selection-info"></small>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% if themes is not empty %}
+    <script>
+        var ThemeWebfonts = {
+            theme: '{{ selected_theme|e('js') }}',
+            csrfToken: '{{ csrf_token|e('js') }}',
+            fonts: [],
+            selectedFont: null,
+            searchDebounce: null,
+            initialized: false,
+
+            init: function() {
+                var search = document.getElementById('webfontSearch');
+                if (!search) {
+                    return;
+                }
+
+                if (!this.initialized) {
+                    search.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            ThemeWebfonts.loadFonts();
+                        }
+                    });
+
+                    search.addEventListener('input', function() {
+                        if (ThemeWebfonts.searchDebounce) {
+                            clearTimeout(ThemeWebfonts.searchDebounce);
+                        }
+
+                        ThemeWebfonts.searchDebounce = setTimeout(function() {
+                            ThemeWebfonts.loadFonts();
+                        }, 250);
+                    });
+
+                    this.initialized = true;
+                }
+
+                this.loadFonts();
+            },
+
+            changeTheme: function(theme) {
+                window.location.href = '{{ path('theme_file_editor_index', {tab: 'webfonts'}) }}' + '&theme=' + encodeURIComponent(theme);
+            },
+
+            showMessage: function(type, text) {
+                var container = document.getElementById('webfontsMessage');
+                if (!container) return;
+                container.innerHTML = '';
+                var node = document.createElement('div');
+                node.className = type === 'error' ? 'tl_error' : 'tl_confirm';
+                node.textContent = text;
+                container.appendChild(node);
+            },
+
+            parseVariant: function(variant) {
+                var v = (variant || '').toString().toLowerCase();
+                if (v === 'regular') return { weight: '400', style: 'normal', label: '400 normal' };
+                if (v === 'italic') return { weight: '400', style: 'italic', label: '400 italic' };
+
+                var style = v.indexOf('italic') !== -1 ? 'italic' : 'normal';
+                var weight = (v.match(/\d+/) || ['400'])[0];
+
+                return { weight: weight, style: style, label: weight + ' ' + style };
+            },
+
+            getVariantKey: function(parsed) {
+                return (parsed.weight || '400') + ':' + (parsed.style || 'normal');
+            },
+
+            loadFonts: function() {
+                var search = (document.getElementById('webfontSearch') || {}).value || '';
+                var list = document.getElementById('webfontResultList');
+                if (!list) return;
+
+                list.innerHTML = '<li class="theme-webfonts__result-loading">Lade …</li>';
+
+                fetch('{{ path('theme_file_editor_google_fonts_catalog') }}?search=' + encodeURIComponent(search) + '&limit=80')
+                    .then(function(response) {
+                        return response.text().then(function(text) {
+                            var data = null;
+                            try { data = JSON.parse(text); } catch (e) { data = null; }
+                            return { ok: response.ok, status: response.status, data: data, text: text };
+                        });
+                    })
+                    .then(function(payload) {
+                        if (!payload.ok || !payload.data || !payload.data.success || !payload.data.fonts) {
+                            ThemeWebfonts.fonts = [];
+                            var details = payload.data && payload.data.error
+                                ? payload.data.error
+                                : ('HTTP ' + payload.status + (payload.text ? ' – ' + payload.text.substring(0, 120) : ''));
+                            list.innerHTML = '<li class="theme-webfonts__result-error">Font-Katalog konnte nicht geladen werden. ' + details + '</li>';
+                            ThemeWebfonts.showMessage('error', 'Font-Katalog konnte nicht geladen werden. ' + details);
+                            ThemeWebfonts.clearSelection();
+                            return;
+                        }
+
+                        ThemeWebfonts.fonts = payload.data.fonts;
+                        ThemeWebfonts.renderResults();
+                        if (ThemeWebfonts.fonts.length > 0) {
+                            ThemeWebfonts.selectFont(ThemeWebfonts.fonts[0].family);
+                        } else {
+                            ThemeWebfonts.clearSelection();
+                        }
+                    })
+                    .catch(function(error) {
+                        ThemeWebfonts.fonts = [];
+                        list.innerHTML = '<li class="theme-webfonts__result-error">Font-Katalog konnte nicht geladen werden. ' + (error && error.message ? error.message : '') + '</li>';
+                        ThemeWebfonts.showMessage('error', 'Font-Katalog konnte nicht geladen werden. ' + (error && error.message ? error.message : ''));
+                        ThemeWebfonts.clearSelection();
+                    });
+            },
+
+            renderResults: function() {
+                var list = document.getElementById('webfontResultList');
+                if (!list) return;
+
+                if (!this.fonts.length) {
+                    list.innerHTML = '<li class="theme-webfonts__result-empty">Keine Treffer.</li>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                this.fonts.forEach(function(font) {
+                    var li = document.createElement('li');
+                    li.className = 'theme-webfonts__result-item';
+
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'theme-webfonts__result-button';
+                    btn.dataset.family = font.family;
+                    btn.innerHTML = '<strong>' + font.family + '</strong><br><small>' + (font.category || '') + ' · ' + ((font.variants || []).length) + ' Varianten</small>';
+                    btn.onclick = function() {
+                        ThemeWebfonts.selectFont(font.family);
+                    };
+
+                    li.appendChild(btn);
+                    list.appendChild(li);
+                });
+            },
+
+            clearSelection: function() {
+                this.selectedFont = null;
+                document.getElementById('selectedFontTitle').textContent = 'Bitte links eine Schrift auswählen';
+                document.getElementById('selectedFontMeta').textContent = '';
+                document.getElementById('variantList').innerHTML = '';
+                document.getElementById('selectionInfo').textContent = '';
+                document.getElementById('importWebfontsBtn').disabled = true;
+            },
+
+            selectFont: function(family) {
+                this.selectedFont = this.fonts.find(function(f) { return f.family === family; }) || null;
+                if (!this.selectedFont) {
+                    this.clearSelection();
+                    return;
+                }
+
+                document.getElementById('selectedFontTitle').textContent = this.selectedFont.family;
+                document.getElementById('selectedFontMeta').textContent = (this.selectedFont.category || '') + ' · ' + (this.selectedFont.variants || []).length + ' verfügbare Schnitte';
+
+                var variantList = document.getElementById('variantList');
+                variantList.innerHTML = '';
+
+                var variants = this.selectedFont.variants || [];
+                var seenVariantKeys = {};
+                var uniqueVariants = [];
+
+                variants.forEach(function(variant) {
+                    var parsed = ThemeWebfonts.parseVariant(variant);
+                    var key = ThemeWebfonts.getVariantKey(parsed);
+                    if (seenVariantKeys[key]) {
+                        return;
+                    }
+                    seenVariantKeys[key] = true;
+                    uniqueVariants.push({ raw: variant, parsed: parsed });
+                });
+
+                uniqueVariants.forEach(function(item, index) {
+                    var variant = item.raw;
+                    var parsed = item.parsed;
+                    var id = 'variant_' + index;
+
+                    var label = document.createElement('label');
+                    label.setAttribute('for', id);
+                    label.className = 'theme-webfonts__variant';
+
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = id;
+                    checkbox.value = variant;
+                    checkbox.dataset.weight = parsed.weight;
+                    checkbox.dataset.style = parsed.style;
+                    checkbox.onchange = function() { ThemeWebfonts.updateSelectionInfo(); };
+
+                    var text = document.createElement('span');
+                    text.textContent = parsed.label;
+
+                    label.appendChild(checkbox);
+                    label.appendChild(text);
+                    variantList.appendChild(label);
+                });
+
+                this.updateSelectionInfo();
+
+                var listButtons = document.querySelectorAll('#webfontResultList button[data-family]');
+                listButtons.forEach(function(btn) {
+                    btn.classList.toggle('is-active', btn.dataset.family === family);
+                });
+            },
+
+            getSelectedVariants: function() {
+                var checked = document.querySelectorAll('#variantList input[type="checkbox"]:checked');
+                var items = [];
+                checked.forEach(function(input) {
+                    items.push({
+                        weight: input.dataset.weight,
+                        style: input.dataset.style,
+                        label: input.value
+                    });
+                });
+                return items;
+            },
+
+            updateSelectionInfo: function() {
+                var selected = this.getSelectedVariants();
+                var info = document.getElementById('selectionInfo');
+                var btn = document.getElementById('importWebfontsBtn');
+
+                if (!this.selectedFont) {
+                    info.textContent = '';
+                    btn.disabled = true;
+                    return;
+                }
+
+                info.textContent = selected.length > 0 ? (selected.length + ' Schnitt(e) ausgewählt') : 'Keine Schnitte ausgewählt';
+                btn.disabled = selected.length === 0;
+            },
+
+            importOneVariant: function(family, variant) {
+                var form = new FormData();
+                form.append('theme', this.theme);
+                form.append('family', family);
+                form.append('weight', variant.weight);
+                form.append('style', variant.style);
+                form.append('REQUEST_TOKEN', this.csrfToken);
+
+                return fetch('{{ path('theme_file_editor_import_google_font') }}', {
+                    method: 'POST',
+                    body: form
+                }).then(function(response) {
+                    return response.json();
+                });
+            },
+
+            cleanupUnusedFontFaces: function() {
+                if (!confirm('Ungenutzte @font-face-Blöcke in custom/scss/base/_fonts.scss wirklich entfernen?')) {
+                    return;
+                }
+
+                var form = new FormData();
+                form.append('theme', this.theme);
+                form.append('REQUEST_TOKEN', this.csrfToken);
+
+                fetch('{{ path('theme_file_editor_cleanup_unused_font_faces') }}', {
+                    method: 'POST',
+                    body: form
+                })
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (!data.success) {
+                            ThemeWebfonts.showMessage('error', data.error || 'Bereinigung fehlgeschlagen.');
+                            return;
+                        }
+
+                        if ((data.removedBlocks || 0) === 0) {
+                            ThemeWebfonts.showMessage('success', 'Keine ungenutzten @font-face-Blöcke gefunden.');
+                            return;
+                        }
+
+                        ThemeWebfonts.showMessage('success', 'Bereinigt: ' + data.removedBlocks + ' ungenutzte @font-face-Blöcke entfernt.');
+                    })
+                    .catch(function() {
+                        ThemeWebfonts.showMessage('error', 'Bereinigung fehlgeschlagen.');
+                    });
+            },
+
+            importSelectedVariants: function() {
+                if (!this.selectedFont) return;
+
+                var selected = this.getSelectedVariants();
+                if (selected.length === 0) {
+                    this.showMessage('error', 'Bitte mindestens einen Schnitt auswählen.');
+                    return;
+                }
+
+                var btn = document.getElementById('importWebfontsBtn');
+                btn.disabled = true;
+                btn.textContent = 'Import läuft …';
+                this.showMessage('success', 'Import gestartet: ' + this.selectedFont.family + ' (' + selected.length + ' Schnitte)');
+
+                var self = this;
+                var ok = 0;
+                var fail = [];
+
+                (async function() {
+                    for (var i = 0; i < selected.length; i++) {
+                        var variant = selected[i];
+                        try {
+                            var data = await self.importOneVariant(self.selectedFont.family, variant);
+                            if (data && data.success) {
+                                ok++;
+                            } else {
+                                fail.push(variant.label + (data && data.error ? ' (' + data.error + ')' : ''));
+                            }
+                        } catch (e) {
+                            fail.push(variant.label);
+                        }
+                    }
+
+                    btn.textContent = 'Importieren';
+                    self.updateSelectionInfo();
+
+                    if (fail.length === 0) {
+                        self.showMessage('success', 'Import erfolgreich: ' + ok + ' Schnitt(e) hinzugefügt. Importiert nach layout/custom/fonts und @font-face in base/_fonts.scss ergänzt.');
+                    } else if (ok > 0) {
+                        self.showMessage('error', 'Teilweise erfolgreich: ' + ok + ' ok, ' + fail.length + ' fehlgeschlagen.');
+                    } else {
+                        self.showMessage('error', 'Import fehlgeschlagen.');
+                    }
+                })();
+            },
+
+            toggleUploadPanel: function() {
+                var modal = document.getElementById('fontUploadModal');
+                if (!modal) return;
+                modal.style.display = modal.style.display === 'none' ? '' : 'none';
+            },
+
+            addUploadRow: function() {
+                var container = document.getElementById('fontUploadRows');
+                if (!container) return;
+
+                var row = document.createElement('div');
+                row.className = 'font-upload-panel__row';
+                row.innerHTML = '<div class="font-upload-panel__row-fields">' +
+                    '<select class="tl_select font-upload-panel__weight">' +
+                    '<option value="100">100 (Thin)</option>' +
+                    '<option value="200">200 (Extra Light)</option>' +
+                    '<option value="300">300 (Light)</option>' +
+                    '<option value="400" selected>400 (Regular)</option>' +
+                    '<option value="500">500 (Medium)</option>' +
+                    '<option value="600">600 (Semi Bold)</option>' +
+                    '<option value="700">700 (Bold)</option>' +
+                    '<option value="800">800 (Extra Bold)</option>' +
+                    '<option value="900">900 (Black)</option>' +
+                    '</select>' +
+                    '<select class="tl_select font-upload-panel__style">' +
+                    '<option value="normal">normal</option>' +
+                    '<option value="italic">italic</option>' +
+                    '</select>' +
+                    '<input type="file" class="font-upload-panel__file" accept=".woff2,.ttf,.woff" multiple>' +
+                    '</div>' +
+                    '<button type="button" class="font-upload-panel__remove-row" onclick="ThemeWebfonts.removeUploadRow(this)" title="Zeile entfernen">' +
+                    '<img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">' +
+                    '</button>';
+
+                container.appendChild(row);
+            },
+
+            removeUploadRow: function(btn) {
+                var row = btn.closest('.font-upload-panel__row');
+                var container = document.getElementById('fontUploadRows');
+                if (!row || !container) return;
+
+                if (container.querySelectorAll('.font-upload-panel__row').length <= 1) return;
+                row.remove();
+            },
+
+            uploadFonts: function() {
+                var family = (document.getElementById('fontUploadFamily') || {}).value || '';
+                family = family.trim();
+
+                if (!family) {
+                    this.showMessage('error', 'Bitte einen Font-Family-Namen angeben.');
+                    return;
+                }
+
+                var rows = document.querySelectorAll('#fontUploadRows .font-upload-panel__row');
+                var uploads = [];
+
+                rows.forEach(function(row) {
+                    var fileInput = row.querySelector('.font-upload-panel__file');
+                    if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
+
+                    uploads.push({
+                        weight: row.querySelector('.font-upload-panel__weight').value,
+                        style: row.querySelector('.font-upload-panel__style').value,
+                        files: fileInput.files
+                    });
+                });
+
+                if (uploads.length === 0) {
+                    this.showMessage('error', 'Bitte mindestens eine Schriftdatei auswählen.');
+                    return;
+                }
+
+                var self = this;
+                var ok = 0;
+                var fail = [];
+
+                (async function() {
+                    for (var i = 0; i < uploads.length; i++) {
+                        var upload = uploads[i];
+                        var form = new FormData();
+                        form.append('theme', self.theme);
+                        form.append('family', family);
+                        form.append('weight', upload.weight);
+                        form.append('style', upload.style);
+                        form.append('REQUEST_TOKEN', self.csrfToken);
+
+                        for (var f = 0; f < upload.files.length; f++) {
+                            form.append('files[]', upload.files[f]);
+                        }
+
+                        try {
+                            var response = await fetch('{{ path('theme_file_editor_upload_font') }}', {
+                                method: 'POST',
+                                body: form
+                            });
+                            var data = await response.json();
+
+                            if (data && data.success) {
+                                ok++;
+                            } else {
+                                fail.push(upload.weight + ' ' + upload.style + (data && data.error ? ' (' + data.error + ')' : ''));
+                            }
+                        } catch (e) {
+                            fail.push(upload.weight + ' ' + upload.style);
+                        }
+                    }
+
+                    if (fail.length === 0) {
+                        self.showMessage('success', 'Upload erfolgreich: ' + ok + ' Schnitt(e) hochgeladen nach layout/custom/fonts. @font-face in base/_fonts.scss ergänzt.');
+                    } else if (ok > 0) {
+                        self.showMessage('error', 'Teilweise erfolgreich: ' + ok + ' ok, ' + fail.length + ' fehlgeschlagen.');
+                    } else {
+                        self.showMessage('error', 'Upload fehlgeschlagen: ' + fail.join(', '));
+                    }
+                })();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ThemeWebfonts.init();
+        });
+
+        document.addEventListener('turbo:load', function() {
+            ThemeWebfonts.init();
+        });
+    </script>
+{% endif %}

@@ -1,0 +1,896 @@
+    {% if themes is empty %}
+        <div class="tl_info">
+            Es konnte kein Theme gefunden werden. Kompatible Contao Themes findest du unter <a href="https://www.flow-contao-themes.de" target="_blank" rel="noreferrer noopener">https://www.flow-contao-themes.de</a>
+        </div>
+    {% else %}
+
+    <div class="theme-file-editor__container">
+        <div class="theme-file-editor__sidebar">
+            <div class="theme-file-editor__toolbar">
+                <div class="theme-file-editor__theme-select">
+                    <label for="themeSelect">{{ 'selectTheme'|trans({}, 'contao_tl_theme_file_editor') }}:</label>
+                    <select id="themeSelect" class="tl_select" onchange="ThemeFileEditor.changeTheme(this.value)">
+                        {% for name, path in themes %}
+                            <option value="{{ name }}"{{ name == selected_theme ? ' selected' : '' }}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="theme-file-editor__files">
+                <div class="theme-file-editor__file-tree">
+                    {{ include('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/_file_tree.html.twig', {tree: files, selected_file: selected_file}) }}
+
+                    <button type="button" class="theme-file-editor__tree-folder-add theme-file-editor__tree-folder-add-end" onclick="ThemeFileEditor.showCreateInput('', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_file_editor') }}">
+                        <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12"> {{ 'createFile'|trans({}, 'contao_tl_theme_file_editor') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="theme-file-editor__main">
+            {% if selected_file %}
+                <div id="editorWrapper" class="theme-file-editor__editors">
+                    <div class="theme-file-editor__editor-panel theme-file-editor__editor-panel--custom">
+                        <div class="theme-file-editor__panel-header">
+                            <span id="fileNameDisplay" class="theme-file-editor__file-name">{{ selected_file }}</span>
+                            <input type="text" id="fileNameInput" class="theme-file-editor__file-name-input" value="{{ selected_file }}" style="display:none">
+                            <button type="button" id="renameBtn" class="theme-file-editor__rename-btn" onclick="ThemeFileEditor.toggleRename()" title="{{ 'rename'|trans({}, 'contao_tl_theme_file_editor') }}">
+                                <img src="/system/themes/flexible/icons/edit.svg" alt="" width="14" height="14">
+                            </button>
+                            <button type="button" id="confirmRenameBtn" class="theme-file-editor__rename-confirm" onclick="ThemeFileEditor.confirmRename()" style="display:none" title="{{ 'confirmRename'|trans({}, 'contao_tl_theme_file_editor') }}">
+                                <img src="/system/themes/flexible/icons/ok.svg" alt="" width="14" height="14">
+                            </button>
+                            <button type="button" id="cancelRenameBtn" class="theme-file-editor__rename-cancel" onclick="ThemeFileEditor.cancelRename()" style="display:none" title="{{ 'cancelRename'|trans({}, 'contao_tl_theme_file_editor') }}">
+                                <img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">
+                            </button>
+                            {% if is_custom_only %}
+                                <span class="theme-file-editor__custom-only-badge">{{ 'customOnly'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            {% elseif is_custom %}
+                                <span class="theme-file-editor__custom-badge">{{ 'customized'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="theme-file-editor__editor-container">
+                            <div id="scssEditor" class="theme-file-editor__editor">{{ file_content }}</div>
+                        </div>
+                    </div>
+
+                    <div id="originalPanel" class="theme-file-editor__editor-panel theme-file-editor__editor-panel--original" style="display:none">
+                        <div class="theme-file-editor__panel-header theme-file-editor__panel-header--original">
+                            <span class="theme-file-editor__file-name">{{ 'originalFile'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                        </div>
+                        <div class="theme-file-editor__editor-container">
+                            <div id="originalEditor" class="theme-file-editor__editor theme-file-editor__editor--readonly">{{ original_content }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="theme-file-editor__empty">
+                    <p>{{ 'selectFile'|trans({}, 'contao_tl_theme_file_editor') }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% endif %}
+
+{% if themes is not empty %}
+<script src="{{ asset('assets/ace/js/ace.js') }}"></script>
+<script>
+var ThemeFileEditor = {
+    editor: null,
+    originalEditor: null,
+    theme: '{{ selected_theme|e('js') }}',
+    file: '{{ selected_file|e('js') }}',
+    csrfToken: '{{ csrf_token|e('js') }}',
+    isCustom: {{ is_custom ? 'true' : 'false' }},
+    showingDiff: false,
+    originalContent: {{ original_content|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }},
+    diffMarkers: [],
+    // Store actual custom content when in diff mode (without placeholders)
+    actualCustomContent: null,
+    // Track which lines in custom editor are placeholders
+    customPlaceholderLines: [],
+
+    init: function() {
+        var editorEl = document.getElementById('scssEditor');
+        if (editorEl) {
+            this.editor = ace.edit('scssEditor');
+            this.editor.setTheme((document.documentElement.dataset.colorScheme === 'dark' ? 'ace/theme/twilight' : 'ace/theme/clouds'));
+            this.editor.session.setMode('ace/mode/scss');
+            this.editor.setOptions({
+                fontSize: '14px',
+                showPrintMargin: false,
+                tabSize: 2,
+                useSoftTabs: true,
+                fixedWidthGutter: true
+            });
+            this.fixGutterWidth(this.editor);
+
+            this.editor.commands.addCommand({
+                name: 'save',
+                bindKey: {win: 'Ctrl-S', mac: 'Ctrl-Option-S'},
+                exec: function() { ThemeFileEditor.save(); }
+            });
+
+            // Track placeholder index changes during diff editing
+            this.editor.session.on('change', function(delta) {
+                if (!ThemeFileEditor.showingDiff || ThemeFileEditor._updatingDiff) return;
+
+                var startRow = delta.start.row;
+                var endRow = delta.end.row;
+                var linesChanged = endRow - startRow;
+
+                var newPlaceholders = [];
+                for (var i = 0; i < ThemeFileEditor.customPlaceholderLines.length; i++) {
+                    var idx = ThemeFileEditor.customPlaceholderLines[i];
+
+                    if (delta.action === 'insert') {
+                        if (idx === startRow) {
+                            continue; // User typed on placeholder - no longer a placeholder
+                        } else if (idx > startRow) {
+                            newPlaceholders.push(idx + linesChanged);
+                        } else {
+                            newPlaceholders.push(idx);
+                        }
+                    } else if (delta.action === 'remove') {
+                        if (idx >= startRow && idx <= endRow) {
+                            continue; // Placeholder in removed range
+                        } else if (idx > endRow) {
+                            newPlaceholders.push(idx - linesChanged);
+                        } else {
+                            newPlaceholders.push(idx);
+                        }
+                    }
+                }
+                ThemeFileEditor.customPlaceholderLines = newPlaceholders;
+                ThemeFileEditor._diffContentDirty = true;
+            });
+
+            editorEl.classList.add('theme-file-editor__editor--ready');
+        }
+
+        var originalEditorEl = document.getElementById('originalEditor');
+        if (originalEditorEl) {
+            this.originalEditor = ace.edit('originalEditor');
+            this.originalEditor.setTheme((document.documentElement.dataset.colorScheme === 'dark' ? 'ace/theme/twilight' : 'ace/theme/clouds'));
+            this.originalEditor.session.setMode('ace/mode/scss');
+            this.originalEditor.setReadOnly(true);
+            this.originalEditor.setOptions({
+                fontSize: '14px',
+                showPrintMargin: false,
+                tabSize: 2,
+                fixedWidthGutter: true
+            });
+            this.fixGutterWidth(this.originalEditor);
+
+            originalEditorEl.classList.add('theme-file-editor__editor--ready');
+        }
+
+        // Keyboard support for rename input
+        var renameInput = document.getElementById('fileNameInput');
+        if (renameInput) {
+            renameInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ThemeFileEditor.confirmRename();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    ThemeFileEditor.cancelRename();
+                }
+            });
+        }
+
+    },
+
+    fixGutterWidth: function(editor) {
+        var apply = function() {
+            var totalLines = editor.session.getLength();
+            var digits = totalLines.toString().length;
+            if (digits < 3) digits = 3;
+            var charWidth = editor.renderer.characterWidth || 8;
+            editor.renderer.$gutterLayer.$fixedWidth = (digits + 1) * charWidth;
+            editor.renderer.$gutterLayer.$padding = null;
+            editor.renderer.$loop.schedule(editor.renderer.CHANGE_GUTTER);
+        };
+        // Defer to ensure renderer has measured character width
+        editor.renderer.once('afterRender', apply);
+    },
+
+    changeTheme: function(theme) {
+        window.location.href = '{{ path('theme_file_editor_index') }}?theme=' + encodeURIComponent(theme);
+    },
+
+    selectFile: function(file) {
+        window.location.href = '{{ path('theme_file_editor_index') }}?theme=' + encodeURIComponent(this.theme) + '&file=' + encodeURIComponent(file);
+    },
+
+    save: function() {
+        var content;
+        if (this.showingDiff) {
+            content = this.extractRealContent();
+            this.actualCustomContent = content;
+        } else {
+            content = this.editor.getValue();
+        }
+        var btn = document.getElementById('saveBtn');
+        var btnText = btn.querySelector('span');
+        btn.disabled = true;
+        btnText.textContent = '{{ 'saving'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+
+        fetch('{{ path('theme_file_editor_save') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&file=' + encodeURIComponent(this.file) +
+                  '&content=' + encodeURIComponent(content) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btnText.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+            if (data.success) {
+                ThemeFileEditor.showMessage(data.message, 'success');
+                if (data.isCustom && !ThemeFileEditor.isCustom) {
+                    ThemeFileEditor.isCustom = true;
+                    ThemeFileEditor.updateUI();
+                }
+                if (ThemeFileEditor.showingDiff) {
+                    ThemeFileEditor.prepareAlignedDiff();
+                }
+            } else {
+                ThemeFileEditor.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(error) {
+            btn.disabled = false;
+            btnText.textContent = '{{ 'save'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+            ThemeFileEditor.showMessage('Error: ' + error, 'error');
+        });
+    },
+
+    revert: function() {
+        if (!confirm('{{ 'confirmRevert'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}')) {
+            return;
+        }
+
+        fetch('{{ path('theme_file_editor_revert') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&file=' + encodeURIComponent(this.file) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                ThemeFileEditor.showMessage(data.message, 'success');
+                ThemeFileEditor.editor.setValue(data.content, -1);
+                ThemeFileEditor.isCustom = false;
+                ThemeFileEditor.updateUI();
+                ThemeFileEditor.clearDiffMarkers();
+            } else {
+                ThemeFileEditor.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(error) {
+            ThemeFileEditor.showMessage('Error: ' + error, 'error');
+        });
+    },
+
+    toggleDiff: function() {
+        var wrapper = document.getElementById('editorWrapper');
+        var originalPanel = document.getElementById('originalPanel');
+        var btn = document.getElementById('showDiffBtn');
+        var btnText = btn ? btn.querySelector('span') : null;
+
+        this.showingDiff = !this.showingDiff;
+
+        if (this.showingDiff) {
+            wrapper.classList.add('theme-file-editor__editors--diff');
+            originalPanel.style.display = 'flex';
+            if (btnText) btnText.textContent = '{{ 'hideDiff'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+
+            setTimeout(function() {
+                ThemeFileEditor.editor.resize();
+                ThemeFileEditor.originalEditor.resize();
+                ThemeFileEditor.prepareAlignedDiff();
+                ThemeFileEditor.syncScroll();
+            }, 50);
+        } else {
+            wrapper.classList.remove('theme-file-editor__editors--diff');
+            originalPanel.style.display = 'none';
+            if (btnText) btnText.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+            this.clearDiffMarkers();
+            // Restore original content
+            this.originalEditor.setValue(this.originalContent || '', -1);
+
+            setTimeout(function() {
+                ThemeFileEditor.editor.resize();
+            }, 50);
+        }
+    },
+
+    syncScroll: function() {
+        var self = this;
+        this.editor.session.on('changeScrollTop', function(scrollTop) {
+            if (self.showingDiff && self.originalEditor) {
+                self.originalEditor.session.setScrollTop(scrollTop);
+            }
+        });
+        this.originalEditor.session.on('changeScrollTop', function(scrollTop) {
+            if (self.showingDiff && self.editor) {
+                self.editor.session.setScrollTop(scrollTop);
+            }
+        });
+    },
+
+    // Compute LCS (Longest Common Subsequence) for proper diff
+    computeLCS: function(a, b) {
+        var m = a.length, n = b.length;
+        var dp = [];
+        for (var i = 0; i <= m; i++) {
+            dp[i] = [];
+            for (var j = 0; j <= n; j++) {
+                if (i === 0 || j === 0) {
+                    dp[i][j] = 0;
+                } else if (a[i - 1] === b[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
+            }
+        }
+        return dp;
+    },
+
+    // Backtrack to find the diff operations
+    computeDiff: function(originalLines, customLines) {
+        var dp = this.computeLCS(originalLines, customLines);
+        var diff = [];
+        var i = originalLines.length, j = customLines.length;
+
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && originalLines[i - 1] === customLines[j - 1]) {
+                // Lines match - prefer earlier matches for common tokens like }
+                if (dp[i][j - 1] === dp[i][j]) {
+                    // Same LCS without this custom line - skip to find earlier match
+                    diff.unshift({ type: 'added', customLine: j - 1 });
+                    j--;
+                } else if (dp[i - 1][j] === dp[i][j]) {
+                    diff.unshift({ type: 'removed', origLine: i - 1 });
+                    i--;
+                } else {
+                    // Match is essential - take it
+                    diff.unshift({ type: 'equal', origLine: i - 1, customLine: j - 1 });
+                    i--; j--;
+                }
+            } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                diff.unshift({ type: 'added', customLine: j - 1 });
+                j--;
+            } else if (i > 0) {
+                diff.unshift({ type: 'removed', origLine: i - 1 });
+                i--;
+            }
+        }
+        return diff;
+    },
+
+    // Line number mapping for editors (visual row -> actual line number or null)
+    originalLineMap: [],
+    customLineMap: [],
+
+    // Prepare aligned diff with placeholder lines for synchronization
+    prepareAlignedDiff: function() {
+        this._updatingDiff = true;
+        this.clearDiffMarkers();
+        // Re-assert after clearDiffMarkers resets it to false,
+        // so setValue() below won't trigger the change listener
+        this._updatingDiff = true;
+
+        // Store actual custom content before adding placeholders
+        this.actualCustomContent = this.editor.getValue();
+        this._diffContentDirty = false;
+        var customLines = this.actualCustomContent.split('\n');
+        var originalLines = this.originalContent ? this.originalContent.split('\n') : [];
+        var Range = ace.require('ace/range').Range;
+
+        var rawDiff = this.computeDiff(originalLines, customLines);
+
+        // Merge consecutive removed+added blocks into "changed" pairs
+        var diff = [];
+        var d = 0;
+        while (d < rawDiff.length) {
+            // Collect block of consecutive 'removed'
+            var removedBlock = [];
+            while (d < rawDiff.length && rawDiff[d].type === 'removed') {
+                removedBlock.push(rawDiff[d]);
+                d++;
+            }
+            // Collect block of consecutive 'added'
+            var addedBlock = [];
+            while (d < rawDiff.length && rawDiff[d].type === 'added') {
+                addedBlock.push(rawDiff[d]);
+                d++;
+            }
+            // Pair up as "changed", remaining become pure removed/added
+            var pairs = Math.min(removedBlock.length, addedBlock.length);
+            for (var p = 0; p < pairs; p++) {
+                diff.push({ type: 'changed', origLine: removedBlock[p].origLine, customLine: addedBlock[p].customLine });
+            }
+            for (var ri = pairs; ri < removedBlock.length; ri++) {
+                diff.push(removedBlock[ri]);
+            }
+            for (var ai = pairs; ai < addedBlock.length; ai++) {
+                diff.push(addedBlock[ai]);
+            }
+            // If current item is not removed/added, push it
+            if (d < rawDiff.length && rawDiff[d].type !== 'removed' && rawDiff[d].type !== 'added') {
+                diff.push(rawDiff[d]);
+                d++;
+            }
+        }
+
+        // Build aligned content for BOTH editors
+        var alignedOriginal = [];
+        var alignedCustom = [];
+        this.originalLineMap = [];
+        this.customLineMap = [];
+        var placeholderLinesOriginal = [];
+        var placeholderLinesCustom = [];
+        var addedLines = [];
+        var removedLines = [];
+        var changedLinesOriginal = [];
+        var changedLinesCustom = [];
+        var originalLineNumber = 1;
+        var customLineNumber = 1;
+
+        for (var k = 0; k < diff.length; k++) {
+            var op = diff[k];
+
+            if (op.type === 'equal') {
+                alignedOriginal.push(originalLines[op.origLine]);
+                alignedCustom.push(customLines[op.customLine]);
+                this.originalLineMap.push(originalLineNumber);
+                this.customLineMap.push(customLineNumber);
+                originalLineNumber++;
+                customLineNumber++;
+            } else if (op.type === 'changed') {
+                // Line modified - show both on same row, no placeholders
+                alignedOriginal.push(originalLines[op.origLine]);
+                alignedCustom.push(customLines[op.customLine]);
+                this.originalLineMap.push(originalLineNumber);
+                this.customLineMap.push(customLineNumber);
+                changedLinesOriginal.push(alignedOriginal.length - 1);
+                changedLinesCustom.push(alignedCustom.length - 1);
+                originalLineNumber++;
+                customLineNumber++;
+            } else if (op.type === 'added') {
+                // Line added in custom - placeholder in original
+                alignedOriginal.push('');
+                alignedCustom.push(customLines[op.customLine]);
+                this.originalLineMap.push(null);
+                this.customLineMap.push(customLineNumber);
+                placeholderLinesOriginal.push(alignedOriginal.length - 1);
+                addedLines.push(alignedCustom.length - 1);
+                customLineNumber++;
+            } else if (op.type === 'removed') {
+                // Line removed - in original, placeholder in custom
+                alignedOriginal.push(originalLines[op.origLine]);
+                alignedCustom.push('');
+                this.originalLineMap.push(originalLineNumber);
+                this.customLineMap.push(null);
+                removedLines.push(alignedOriginal.length - 1);
+                placeholderLinesCustom.push(alignedCustom.length - 1);
+                originalLineNumber++;
+            }
+        }
+
+        // Update both editors with aligned content
+        this.originalEditor.setValue(alignedOriginal.join('\n'), -1);
+        this.editor.setValue(alignedCustom.join('\n'), -1);
+
+        // Assign placeholder lines AFTER setValue to prevent change listener interference
+        this.customPlaceholderLines = placeholderLinesCustom.slice();
+
+        // Set custom gutter renderer for original editor
+        var self = this;
+        this.originalEditor.session.gutterRenderer = {
+            getWidth: function(session, lastLineNumber, config) {
+                return (self.originalLineMap.length.toString().length + 1) * config.characterWidth;
+            },
+            getText: function(session, row) {
+                var lineNum = self.originalLineMap[row];
+                return lineNum !== null ? lineNum.toString() : '';
+            }
+        };
+        this.originalEditor.renderer.updateFull();
+
+        // Set custom gutter renderer for custom editor
+        this.editor.session.gutterRenderer = {
+            getWidth: function(session, lastLineNumber, config) {
+                return (self.customLineMap.length.toString().length + 1) * config.characterWidth;
+            },
+            getText: function(session, row) {
+                var lineNum = self.customLineMap[row];
+                return lineNum !== null ? lineNum.toString() : '';
+            }
+        };
+        this.editor.renderer.updateFull();
+
+        // Add markers for placeholders in original (gray)
+        this.placeholderGutterLines = [];
+        for (var p = 0; p < placeholderLinesOriginal.length; p++) {
+            var placeholderMarker = this.originalEditor.session.addMarker(
+                new Range(placeholderLinesOriginal[p], 0, placeholderLinesOriginal[p], 1),
+                'diff-placeholder',
+                'fullLine'
+            );
+            this.diffMarkers.push({editor: this.originalEditor, id: placeholderMarker});
+            this.originalEditor.session.addGutterDecoration(placeholderLinesOriginal[p], 'diff-placeholder-gutter');
+            this.placeholderGutterLines.push({editor: this.originalEditor, line: placeholderLinesOriginal[p]});
+        }
+
+        // Add markers for placeholders in custom (gray)
+        for (var pc = 0; pc < placeholderLinesCustom.length; pc++) {
+            var placeholderMarkerCustom = this.editor.session.addMarker(
+                new Range(placeholderLinesCustom[pc], 0, placeholderLinesCustom[pc], 1),
+                'diff-placeholder',
+                'fullLine'
+            );
+            this.diffMarkers.push({editor: this.editor, id: placeholderMarkerCustom});
+            this.editor.session.addGutterDecoration(placeholderLinesCustom[pc], 'diff-placeholder-gutter');
+            this.placeholderGutterLines.push({editor: this.editor, line: placeholderLinesCustom[pc]});
+        }
+
+        // Add markers for added lines (green) in custom editor
+        for (var a = 0; a < addedLines.length; a++) {
+            var addedMarker = this.editor.session.addMarker(
+                new Range(addedLines[a], 0, addedLines[a], 1),
+                'diff-added',
+                'fullLine'
+            );
+            this.diffMarkers.push({editor: this.editor, id: addedMarker});
+        }
+
+        // Add markers for removed lines (red) in original editor
+        for (var r = 0; r < removedLines.length; r++) {
+            var removedMarker = this.originalEditor.session.addMarker(
+                new Range(removedLines[r], 0, removedLines[r], 1),
+                'diff-removed',
+                'fullLine'
+            );
+            this.diffMarkers.push({editor: this.originalEditor, id: removedMarker});
+        }
+
+        // Add markers for changed lines (red in original, green in custom)
+        for (var c = 0; c < changedLinesOriginal.length; c++) {
+            var changedOrigMarker = this.originalEditor.session.addMarker(
+                new Range(changedLinesOriginal[c], 0, changedLinesOriginal[c], 1),
+                'diff-removed',
+                'fullLine'
+            );
+            this.diffMarkers.push({editor: this.originalEditor, id: changedOrigMarker});
+
+            var changedCustomMarker = this.editor.session.addMarker(
+                new Range(changedLinesCustom[c], 0, changedLinesCustom[c], 1),
+                'diff-added',
+                'fullLine'
+            );
+            this.diffMarkers.push({editor: this.editor, id: changedCustomMarker});
+        }
+        this._updatingDiff = false;
+    },
+
+    placeholderGutterLines: [],
+
+    _updatingDiff: false,
+    _diffContentDirty: false,
+
+    clearDiffMarkers: function() {
+        this._updatingDiff = true;
+        this.diffMarkers.forEach(function(marker) {
+            marker.editor.session.removeMarker(marker.id);
+        });
+        this.diffMarkers = [];
+        // Remove gutter decorations
+        this.placeholderGutterLines.forEach(function(item) {
+            item.editor.session.removeGutterDecoration(item.line, 'diff-placeholder-gutter');
+        });
+        this.placeholderGutterLines = [];
+        // Reset gutter renderer for both editors
+        if (this.originalEditor && this.originalEditor.session) {
+            this.originalEditor.session.gutterRenderer = null;
+            this.originalEditor.renderer.updateFull();
+        }
+        if (this.editor && this.editor.session) {
+            this.editor.session.gutterRenderer = null;
+            this.editor.renderer.updateFull();
+        }
+        // Restore actual custom content (re-extract if edited in diff mode)
+        if (this.actualCustomContent !== null) {
+            if (this._diffContentDirty) {
+                this.actualCustomContent = this.extractRealContent();
+                this._diffContentDirty = false;
+            }
+            this.editor.setValue(this.actualCustomContent, -1);
+            this.actualCustomContent = null;
+        }
+        this.customPlaceholderLines = [];
+        this._updatingDiff = false;
+    },
+
+    extractRealContent: function() {
+        var lines = this.editor.getValue().split('\n');
+        var realLines = [];
+        for (var i = 0; i < lines.length; i++) {
+            if (this.customPlaceholderLines.indexOf(i) === -1) {
+                realLines.push(lines[i]);
+            }
+        }
+        return realLines.join('\n');
+    },
+
+    isRenaming: false,
+
+    toggleRename: function() {
+        this.isRenaming = true;
+        document.getElementById('fileNameDisplay').style.display = 'none';
+        document.getElementById('renameBtn').style.display = 'none';
+        document.getElementById('fileNameInput').style.display = 'inline-block';
+        document.getElementById('confirmRenameBtn').style.display = 'inline-flex';
+        document.getElementById('cancelRenameBtn').style.display = 'inline-flex';
+
+        var input = document.getElementById('fileNameInput');
+        input.focus();
+        input.select();
+    },
+
+    cancelRename: function() {
+        this.isRenaming = false;
+        document.getElementById('fileNameInput').value = this.file;
+        document.getElementById('fileNameDisplay').style.display = 'inline';
+        document.getElementById('renameBtn').style.display = 'inline-flex';
+        document.getElementById('fileNameInput').style.display = 'none';
+        document.getElementById('confirmRenameBtn').style.display = 'none';
+        document.getElementById('cancelRenameBtn').style.display = 'none';
+    },
+
+    confirmRename: function() {
+        var newName = document.getElementById('fileNameInput').value.trim();
+        var oldName = this.file;
+
+        if (!newName || newName === oldName) {
+            this.cancelRename();
+            return;
+        }
+
+        if (!newName.endsWith('.scss')) {
+            newName += '.scss';
+        }
+
+        var self = this;
+
+        fetch('{{ path('theme_file_editor_rename') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&oldName=' + encodeURIComponent(oldName) +
+                  '&newName=' + encodeURIComponent(newName) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(newName);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+                self.cancelRename();
+            }
+        })
+        .catch(function(error) {
+            self.showMessage('Error: ' + error, 'error');
+            self.cancelRename();
+        });
+    },
+
+    deleteFile: function() {
+        if (!confirm('{{ 'confirmDelete'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}')) {
+            return;
+        }
+
+        var self = this;
+
+        fetch('{{ path('theme_file_editor_delete') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&file=' + encodeURIComponent(this.file) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?theme=' + encodeURIComponent(self.theme);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(error) {
+            self.showMessage('Error: ' + error, 'error');
+        });
+    },
+
+    updateUI: function() {
+        var badge = document.querySelector('.theme-file-editor__custom-badge');
+        var revertBtn = document.getElementById('revertBtn');
+        var showDiffBtn = document.getElementById('showDiffBtn');
+
+        if (this.isCustom) {
+            if (!badge) {
+                var header = document.querySelector('.theme-file-editor__panel-header');
+                if (header) {
+                    badge = document.createElement('span');
+                    badge.className = 'theme-file-editor__custom-badge';
+                    badge.textContent = '{{ 'customized'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+                    header.appendChild(badge);
+                }
+            }
+            var actions = document.querySelector('.theme-file-editor__actions');
+            if (actions) {
+                if (!showDiffBtn) {
+                    showDiffBtn = document.createElement('button');
+                    showDiffBtn.type = 'button';
+                    showDiffBtn.className = 'action';
+                    showDiffBtn.id = 'showDiffBtn';
+                    var diffImg = document.createElement('img');
+                    diffImg.src = '/system/themes/flexible/icons/diffTemplate.svg';
+                    diffImg.alt = '';
+                    diffImg.width = 16;
+                    diffImg.height = 16;
+                    var diffSpan = document.createElement('span');
+                    diffSpan.textContent = '{{ 'showDiff'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+                    showDiffBtn.appendChild(diffImg);
+                    showDiffBtn.appendChild(diffSpan);
+                    showDiffBtn.onclick = function() { ThemeFileEditor.toggleDiff(); };
+                    actions.appendChild(showDiffBtn);
+                } else {
+                    showDiffBtn.style.display = '';
+                }
+                if (!revertBtn) {
+                    revertBtn = document.createElement('button');
+                    revertBtn.type = 'button';
+                    revertBtn.className = 'action';
+                    revertBtn.id = 'revertBtn';
+                    var revertImg = document.createElement('img');
+                    revertImg.src = '/system/themes/flexible/icons/undo.svg';
+                    revertImg.alt = '';
+                    revertImg.width = 16;
+                    revertImg.height = 16;
+                    var revertSpan = document.createElement('span');
+                    revertSpan.textContent = '{{ 'revert'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+                    revertBtn.appendChild(revertImg);
+                    revertBtn.appendChild(revertSpan);
+                    revertBtn.onclick = function() { ThemeFileEditor.revert(); };
+                    actions.appendChild(revertBtn);
+                }
+            }
+        } else {
+            if (badge) badge.remove();
+            if (revertBtn) revertBtn.remove();
+            if (showDiffBtn) showDiffBtn.style.display = 'none';
+            if (this.showingDiff) {
+                this.toggleDiff();
+            }
+        }
+    },
+
+    showCreateInput: function(directory, triggerBtn) {
+        // Remove any existing create input
+        var existing = document.querySelector('.theme-file-editor__create-inline');
+        if (existing) existing.remove();
+
+        // Create inline input row
+        var li = document.createElement('li');
+        li.className = 'theme-file-editor__create-inline';
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'theme-file-editor__create-input';
+        input.placeholder = '{{ 'createFilePlaceholder'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+
+        var confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'theme-file-editor__rename-confirm';
+        confirmBtn.title = '{{ 'confirmCreate'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+        confirmBtn.innerHTML = '<img src="/system/themes/flexible/icons/ok.svg" alt="" width="14" height="14">';
+        confirmBtn.onclick = function() { ThemeFileEditor.createFile(directory, input.value); };
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'theme-file-editor__rename-cancel';
+        cancelBtn.title = '{{ 'cancelCreate'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+        cancelBtn.innerHTML = '<img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">';
+        cancelBtn.onclick = function() { li.remove(); };
+
+        li.appendChild(input);
+        li.appendChild(confirmBtn);
+        li.appendChild(cancelBtn);
+
+        // Insert after the folder's name span (inside the folder's UL)
+        var parentFolder = triggerBtn.closest('.theme-file-editor__tree-folder');
+        if (parentFolder) {
+            var ul = parentFolder.querySelector('ul');
+            if (ul) {
+                ul.insertBefore(li, ul.firstChild);
+            }
+        } else {
+            // Root level - insert at top of file tree
+            var tree = document.querySelector('.theme-file-editor__file-tree > ul');
+            if (tree) {
+                tree.insertBefore(li, tree.firstChild);
+            }
+        }
+
+        input.focus();
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                ThemeFileEditor.createFile(directory, input.value);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                li.remove();
+            }
+        });
+    },
+
+    createFile: function(directory, fileName) {
+        fileName = fileName.trim();
+        if (!fileName) return;
+
+        if (!fileName.endsWith('.scss')) {
+            fileName += '.scss';
+        }
+
+        var self = this;
+
+        fetch('{{ path('theme_file_editor_create') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&directory=' + encodeURIComponent(directory) +
+                  '&fileName=' + encodeURIComponent(fileName) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(data.filePath);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(error) {
+            self.showMessage('Error: ' + error, 'error');
+        });
+    },
+
+    showMessage: function(message, type) {
+        var existing = document.querySelector('.theme-file-editor__message');
+        if (existing) existing.remove();
+
+        var msg = document.createElement('div');
+        msg.className = 'theme-file-editor__message theme-file-editor__message--' + type;
+        msg.textContent = message;
+        document.querySelector('.theme-file-editor__actions').prepend(msg);
+
+        setTimeout(function() { msg.remove(); }, 5000);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    ThemeFileEditor.init();
+});
+</script>
+{% endif %}

@@ -23,7 +23,7 @@ class BackendModuleRedirectListener
     private const MODULE_ROUTES = [
         'themeFileEditor' => [
             'route' => 'theme_file_editor_index',
-            'params' => ['theme', 'file'],
+            'params' => ['theme', 'file', 'tab'],
         ],
         'themeUpdate' => [
             'route' => 'theme_update_index',

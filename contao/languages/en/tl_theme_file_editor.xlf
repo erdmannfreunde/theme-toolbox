@@ -101,6 +101,15 @@
       <trans-unit id="fileExists">
         <source>A file with this name already exists</source>
       </trans-unit>
+      <trans-unit id="fontUploaded">
+        <source>Font files uploaded and @font-face added to base/_fonts.scss</source>
+      </trans-unit>
+      <trans-unit id="invalidFontWeight">
+        <source>Invalid font weight (allowed: 100, 200, …, 900)</source>
+      </trans-unit>
+      <trans-unit id="invalidFontStyle">
+        <source>Invalid font style (allowed: normal, italic)</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

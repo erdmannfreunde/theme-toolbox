@@ -1,17 +1,16 @@
 .theme-file-editor {
   margin: 20px 0;
   overflow: hidden;
-  height: calc(100vh - 7rem);
   display: flex;
   flex-direction: column;
 }
 
 .theme-file-editor__toolbar {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 15px;
-  background: var(--panel-bg);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background: var(--body-bg);
+  border-bottom: 1px solid var(--border);
 }
 
 .theme-file-editor__theme-select {
@@ -46,8 +45,8 @@
   background: var(--panel-bg);
   border-right: 1px solid var(--border);
   overflow: hidden;
+  height: calc(100vh - 10rem);
 }
-
 .theme-file-editor__files {
   position: relative;
   overflow: auto;
@@ -116,10 +115,15 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  opacity: 0;
+  opacity: 0.5;
   transition: opacity 0.15s;
   vertical-align: middle;
   margin-left: 4px;
+}
+
+.theme-file-editor__tree-folder-add-end {
+  margin-left: 10px;
+  margin-bottom: 10px;
 }
 
 .theme-file-editor__tree-folder:hover
@@ -210,12 +214,13 @@
   flex-direction: column;
   min-width: 0;
   padding: 12px;
+  position: relative;
 }
 
 .theme-file-editor__actions {
   display: flex;
   gap: 15px;
-  margin: 15px 0;
+  margin: 0;
   justify-content: end;
 }
 
@@ -322,22 +327,21 @@
   opacity: 1;
 }
 
-.theme-file-editor__custom-badge {
-  padding: 2px 4px;
-  font-size: 10px;
-  font-weight: 600;
-  background: var(--orange);
-  color: var(--white);
-  border-radius: var(--border-radius);
-}
-
+.theme-file-editor__custom-badge,
 .theme-file-editor__custom-only-badge {
   padding: 2px 4px;
   font-size: 10px;
   font-weight: 600;
-  background: var(--green);
   color: var(--white);
   border-radius: var(--border-radius);
+}
+
+.theme-file-editor__custom-badge {
+  background: var(--orange);
+}
+
+.theme-file-editor__custom-only-badge {
+  background: var(--green);
 }
 
 .theme-file-editor__editor-container {
@@ -374,9 +378,7 @@
 }
 
 .theme-file-editor__message {
-  position: absolute;
-  padding: 12px 15px;
-  margin-bottom: 15px;
+  padding: 8px 12px;
   border-radius: var(--border-radius);
   font-size: 13px;
 }
@@ -443,4 +445,62 @@ html[data-color-scheme='dark'] .diff-placeholder {
 
 html[data-color-scheme='dark'] .ace_gutter-cell.diff-placeholder-gutter {
   background: rgba(128, 128, 128, 0.15);
+}
+
+/* Operations bar with tab navigation */
+.theme-file-editor-operations {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+#tl_buttons.theme-file-editor-operations ul {
+  display: flex;
+  justify-content: flex-end;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.theme-file-editor-tabs {
+  display: flex;
+}
+
+.theme-file-editor-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.theme-file-editor-tabs__tab:hover {
+  color: var(--text);
+}
+
+.theme-file-editor-tabs__tab--active {
+  color: var(--text);
+  border-bottom-color: var(--green);
+}
+
+@media (max-width: 1100px) {
+  .theme-file-editor__container {
+    flex-direction: column;
+  }
+
+  .theme-file-editor__sidebar {
+    width: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
 }

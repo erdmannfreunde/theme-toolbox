@@ -134,6 +134,18 @@
         <source>A file with this name already exists</source>
         <target>Eine Datei mit diesem Namen existiert bereits</target>
       </trans-unit>
+      <trans-unit id="fontUploaded">
+        <source>Font files uploaded and @font-face added to base/_fonts.scss</source>
+        <target>Schriftdateien hochgeladen und @font-face in base/_fonts.scss ergänzt</target>
+      </trans-unit>
+      <trans-unit id="invalidFontWeight">
+        <source>Invalid font weight (allowed: 100, 200, …, 900)</source>
+        <target>Ungültige Schriftstärke (erlaubt: 100, 200, …, 900)</target>
+      </trans-unit>
+      <trans-unit id="invalidFontStyle">
+        <source>Invalid font style (allowed: normal, italic)</source>
+        <target>Ungültiger Schriftstil (erlaubt: normal, italic)</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

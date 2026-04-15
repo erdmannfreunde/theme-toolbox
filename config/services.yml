@@ -53,9 +53,14 @@ services:
       - '%kernel.debug%'
       - '@?logger'
 
+  ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService:
+    arguments:
+      - '@?logger'
+
   ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeFileEditorController:
     arguments:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService'
       - '@contao.csrf.token_manager'
       - '@translator'
     calls:
@@ -77,6 +82,7 @@ services:
       - '%kernel.project_dir%'
       - '@filesystem'
       - '%theme_toolbox.layout_dir%'
+
 
   ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeUpdateController:
     arguments:
