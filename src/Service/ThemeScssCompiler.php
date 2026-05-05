@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace ErdmannFreunde\ThemeToolboxBundle\Service;
 
+use MatthiasMullie\Minify\JS as JsMinifier;
 use Psr\Log\LoggerInterface;
 use ScssPhp\ScssPhp\Compiler;
 use ScssPhp\ScssPhp\OutputStyle;
@@ -222,8 +223,56 @@ class ThemeScssCompiler
             $targetDir = $this->getThemeAssetsDir($themeName) . '/' . $type;
 
             foreach ($sourceDirs as $sourceDir) {
+                if ('js' === $type && !$this->debugMode) {
+                    $this->syncJsDir($sourceDir, $targetDir);
+                    continue;
+                }
+
                 // mirror() copies all files; custom dir runs second and overwrites theme files
                 $this->filesystem->mirror($sourceDir, $targetDir, null, ['override' => true]);
+            }
+        }
+    }
+
+    /**
+     * Copy JS files from $sourceDir to $targetDir, minifying .js files in the process.
+     * Non-.js files are copied 1:1 (source maps, assets, etc.).
+     */
+    private function syncJsDir(string $sourceDir, string $targetDir): void
+    {
+        if (!is_dir($sourceDir)) {
+            return;
+        }
+
+        if (!is_dir($targetDir)) {
+            $this->filesystem->mkdir($targetDir, 0755);
+        }
+
+        $finder = new Finder();
+        $finder->files()->in($sourceDir);
+
+        foreach ($finder as $file) {
+            $relativePath = $file->getRelativePathname();
+            $target = $targetDir . '/' . $relativePath;
+
+            if (!is_dir(\dirname($target))) {
+                $this->filesystem->mkdir(\dirname($target), 0755);
+            }
+
+            if ('js' !== strtolower($file->getExtension())) {
+                $this->filesystem->copy($file->getPathname(), $target, true);
+                continue;
+            }
+
+            try {
+                $minifier = new JsMinifier($file->getPathname());
+                $minifier->minify($target);
+            } catch (\Exception $e) {
+                $this->logger?->warning('JS minification failed for "{file}": {error} — copying unminified.', [
+                    'file' => $file->getPathname(),
+                    'error' => $e->getMessage(),
+                ]);
+                $this->filesystem->copy($file->getPathname(), $target, true);
             }
         }
     }

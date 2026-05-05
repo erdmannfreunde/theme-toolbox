@@ -57,12 +57,28 @@ services:
     arguments:
       - '@?logger'
 
+  ErdmannFreunde\ThemeToolboxBundle\Service\ThemeImageFileManager:
+    arguments:
+      - '%kernel.project_dir%'
+      - '@filesystem'
+      - '%theme_toolbox.layout_dir%'
+      - '%theme_toolbox.custom_dir%'
+
+  ErdmannFreunde\ThemeToolboxBundle\Service\ThemeJsFileManager:
+    arguments:
+      - '%kernel.project_dir%'
+      - '@filesystem'
+      - '%theme_toolbox.layout_dir%'
+      - '%theme_toolbox.custom_dir%'
+
   ErdmannFreunde\ThemeToolboxBundle\Controller\Backend\ThemeFileEditorController:
     arguments:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService'
       - '@contao.csrf.token_manager'
       - '@translator'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeImageFileManager'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeJsFileManager'
     calls:
       - [setContainer, ['@service_container']]
     tags: ['controller.service_arguments']

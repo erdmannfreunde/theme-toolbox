@@ -9,6 +9,8 @@
                 <nav class="theme-file-editor-tabs">
                     <a href="{{ path('theme_file_editor_index', {theme: selected_theme, tab: 'styles'}) }}" class="theme-file-editor-tabs__tab{{ active_tab == 'styles' ? ' theme-file-editor-tabs__tab--active' : '' }}">Styles</a>
                     <a href="{{ path('theme_file_editor_index', {theme: selected_theme, tab: 'webfonts'}) }}" class="theme-file-editor-tabs__tab{{ active_tab == 'webfonts' ? ' theme-file-editor-tabs__tab--active' : '' }}">Webfonts</a>
+                    <a href="{{ path('theme_file_editor_index', {theme: selected_theme, tab: 'images'}) }}" class="theme-file-editor-tabs__tab{{ active_tab == 'images' ? ' theme-file-editor-tabs__tab--active' : '' }}">Bilder</a>
+                    <a href="{{ path('theme_file_editor_index', {theme: selected_theme, tab: 'javascript'}) }}" class="theme-file-editor-tabs__tab{{ active_tab == 'javascript' ? ' theme-file-editor-tabs__tab--active' : '' }}">JavaScript</a>
                 </nav>
                 {% if active_tab == 'styles' and selected_file %}
                     <div class="theme-file-editor__actions">
@@ -44,11 +46,57 @@
                             <span>Ungenutzte @font-face bereinigen</span>
                         </button>
                     </div>
+                {% elseif active_tab == 'javascript' and selected_file %}
+                    <div class="theme-file-editor__actions">
+                        <button type="button" class="action" id="saveBtn" onclick="ThemeJsEditor.save()">
+                            <img src="/system/themes/flexible/icons/editor.svg" alt="" width="16" height="16">
+                            <span>{{ 'save'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                        </button>
+                        {% if is_custom and not is_custom_only %}
+                            <button type="button" class="action" id="showDiffBtn" onclick="ThemeJsEditor.toggleDiff()">
+                                <img src="/system/themes/flexible/icons/diffTemplate.svg" alt="" width="16" height="16">
+                                <span>{{ 'showDiff'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            </button>
+                            <button type="button" class="action" id="revertBtn" onclick="ThemeJsEditor.revert()">
+                                <img src="/system/themes/flexible/icons/undo.svg" alt="" width="16" height="16">
+                                <span>{{ 'revert'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            </button>
+                        {% endif %}
+                        {% if is_custom_only %}
+                            <button type="button" class="action action--danger" id="deleteBtn" onclick="ThemeJsEditor.deleteFile()">
+                                <img src="/system/themes/flexible/icons/delete.svg" alt="" width="16" height="16">
+                                <span>{{ 'delete'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% elseif active_tab == 'images' and image_selected %}
+                    <div class="theme-file-editor__actions">
+                        <button type="button" class="action" onclick="ThemeImageEditor.triggerReplace()">
+                            <img src="/system/themes/flexible/icons/pickfile.svg" alt="" width="16" height="16">
+                            <span>{{ 'replaceImage'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                        </button>
+                        {% if image_selected.hasCustom and not image_selected.isCustomOnly %}
+                            <button type="button" class="action" onclick="ThemeImageEditor.revert()">
+                                <img src="/system/themes/flexible/icons/undo.svg" alt="" width="16" height="16">
+                                <span>{{ 'revert'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            </button>
+                        {% endif %}
+                        {% if image_selected.isCustomOnly %}
+                            <button type="button" class="action action--danger" onclick="ThemeImageEditor.deleteFile()">
+                                <img src="/system/themes/flexible/icons/delete.svg" alt="" width="16" height="16">
+                                <span>{{ 'delete'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                            </button>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
 
             {% if active_tab == 'webfonts' %}
                 {{ include('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/_webfonts.html.twig') }}
+            {% elseif active_tab == 'images' %}
+                {{ include('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/_images.html.twig') }}
+            {% elseif active_tab == 'javascript' %}
+                {{ include('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/_javascript.html.twig') }}
             {% else %}
                 {{ include('@ErdmannFreundeThemeToolbox/backend/theme_file_editor/_styles.html.twig') }}
             {% endif %}

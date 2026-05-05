@@ -110,6 +110,39 @@
       <trans-unit id="invalidFontStyle">
         <source>Invalid font style (allowed: normal, italic)</source>
       </trans-unit>
+      <trans-unit id="uploadImage">
+        <source>Upload image</source>
+      </trans-unit>
+      <trans-unit id="replaceImage">
+        <source>Replace image</source>
+      </trans-unit>
+      <trans-unit id="imageUploaded">
+        <source>Image uploaded successfully</source>
+      </trans-unit>
+      <trans-unit id="selectImage">
+        <source>Select an image from the sidebar</source>
+      </trans-unit>
+      <trans-unit id="originalImage">
+        <source>Original</source>
+      </trans-unit>
+      <trans-unit id="customImage">
+        <source>Custom</source>
+      </trans-unit>
+      <trans-unit id="createFolder">
+        <source>New folder</source>
+      </trans-unit>
+      <trans-unit id="folderCreated">
+        <source>Folder created</source>
+      </trans-unit>
+      <trans-unit id="folderNamePlaceholder">
+        <source>folder name</source>
+      </trans-unit>
+      <trans-unit id="invalidFolderName">
+        <source>Invalid folder name</source>
+      </trans-unit>
+      <trans-unit id="fileTooLarge">
+        <source>File exceeds maximum upload size of 5 MB.</source>
+      </trans-unit>
     </body>
   </file>
 </xliff>

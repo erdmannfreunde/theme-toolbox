@@ -1,0 +1,430 @@
+{% macro render_image_tree(tree, selected_file, current_path) %}
+    <ul class="theme-file-editor__tree">
+        {% for name, content in tree %}
+            {% if name != '_files' %}
+                {% set dir_path = current_path ? current_path ~ '/' ~ name : name %}
+                <li class="theme-file-editor__tree-folder">
+                    <span class="theme-file-editor__tree-folder-name">
+                        {{ name }}
+                        <button type="button" class="theme-file-editor__tree-folder-add" onclick="ThemeImageEditor.showUploadInput('{{ dir_path|e('js') }}', this)" title="{{ 'uploadImage'|trans({}, 'contao_tl_theme_file_editor') }}">
+                            <img src="/system/themes/flexible/icons/pickfile.svg" alt="" width="12" height="12">
+                        </button>
+                        <button type="button" class="theme-file-editor__tree-folder-add" onclick="ThemeImageEditor.showCreateFolderInput('{{ dir_path|e('js') }}', this)" title="{{ 'createFolder'|trans({}, 'contao_tl_theme_file_editor') }}">
+                            <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12">
+                        </button>
+                    </span>
+                    {{ _self.render_image_tree(content, selected_file, dir_path) }}
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if tree._files is defined %}
+            {% for file in tree._files %}
+                {% set classes = 'theme-file-editor__tree-file' %}
+                {% if file.path == selected_file %}
+                    {% set classes = classes ~ ' theme-file-editor__tree-file--selected' %}
+                {% endif %}
+                {% if file.hasCustom %}
+                    {% set classes = classes ~ ' theme-file-editor__tree-file--custom' %}
+                {% endif %}
+                {% if file.isCustomOnly %}
+                    {% set classes = classes ~ ' theme-file-editor__tree-file--custom-only' %}
+                {% endif %}
+                <li class="{{ classes }}">
+                    <a href="javascript:void(0)" onclick="ThemeImageEditor.selectFile('{{ file.path|e('js') }}')">
+                        {{ file.name }}
+                        {% if file.isCustomOnly %}
+                            <span class="theme-file-editor__custom-only-indicator">+</span>
+                        {% elseif file.hasCustom %}
+                            <span class="theme-file-editor__custom-indicator">*</span>
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
+    </ul>
+{% endmacro %}
+
+{% if themes is empty %}
+    <div class="tl_info">
+        Es konnte kein Theme gefunden werden. Kompatible Contao Themes findest du unter <a href="https://www.flow-contao-themes.de" target="_blank" rel="noreferrer noopener">https://www.flow-contao-themes.de</a>
+    </div>
+{% else %}
+
+<div class="theme-file-editor__container">
+    <div class="theme-file-editor__sidebar">
+        <div class="theme-file-editor__toolbar">
+            <div class="theme-file-editor__theme-select">
+                <label for="themeSelect">{{ 'selectTheme'|trans({}, 'contao_tl_theme_file_editor') }}:</label>
+                <select id="themeSelect" class="tl_select" onchange="ThemeImageEditor.changeTheme(this.value)">
+                    {% for name, path in themes %}
+                        <option value="{{ name }}"{{ name == selected_theme ? ' selected' : '' }}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="theme-file-editor__files">
+            <div class="theme-file-editor__file-tree">
+                {{ _self.render_image_tree(image_tree, selected_file, '') }}
+
+                <button type="button" class="theme-file-editor__tree-folder-add theme-file-editor__tree-folder-add-end" onclick="ThemeImageEditor.showUploadInput('', this)" title="{{ 'uploadImage'|trans({}, 'contao_tl_theme_file_editor') }}">
+                    <img src="/system/themes/flexible/icons/pickfile.svg" alt="" width="12" height="12"> {{ 'uploadImage'|trans({}, 'contao_tl_theme_file_editor') }}
+                </button>
+                <button type="button" class="theme-file-editor__tree-folder-add theme-file-editor__tree-folder-add-end" onclick="ThemeImageEditor.showCreateFolderInput('', this)" title="{{ 'createFolder'|trans({}, 'contao_tl_theme_file_editor') }}">
+                    <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12"> {{ 'createFolder'|trans({}, 'contao_tl_theme_file_editor') }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="theme-file-editor__main">
+        {% if image_selected %}
+            {% set serveParams = {theme: selected_theme, file: image_selected.path} %}
+            <div class="theme-image-editor__panel">
+                <div class="theme-file-editor__panel-header">
+                    <span id="fileNameDisplay" class="theme-file-editor__file-name">{{ image_selected.path }}</span>
+                    <input type="text" id="fileNameInput" class="theme-file-editor__file-name-input" value="{{ image_selected.path }}" style="display:none">
+                    {% if image_selected.isCustomOnly %}
+                        <button type="button" id="renameBtn" class="theme-file-editor__rename-btn" onclick="ThemeImageEditor.toggleRename()" title="{{ 'rename'|trans({}, 'contao_tl_theme_file_editor') }}">
+                            <img src="/system/themes/flexible/icons/edit.svg" alt="" width="14" height="14">
+                        </button>
+                        <button type="button" id="confirmRenameBtn" class="theme-file-editor__rename-confirm" onclick="ThemeImageEditor.confirmRename()" style="display:none" title="{{ 'confirmRename'|trans({}, 'contao_tl_theme_file_editor') }}">
+                            <img src="/system/themes/flexible/icons/ok.svg" alt="" width="14" height="14">
+                        </button>
+                        <button type="button" id="cancelRenameBtn" class="theme-file-editor__rename-cancel" onclick="ThemeImageEditor.cancelRename()" style="display:none" title="{{ 'cancelRename'|trans({}, 'contao_tl_theme_file_editor') }}">
+                            <img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">
+                        </button>
+                    {% endif %}
+                    {% if image_selected.isCustomOnly %}
+                        <span class="theme-file-editor__custom-only-badge">{{ 'customOnly'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                    {% elseif image_selected.hasCustom %}
+                        <span class="theme-file-editor__custom-badge">{{ 'customized'|trans({}, 'contao_tl_theme_file_editor') }}</span>
+                    {% endif %}
+                </div>
+                <div class="theme-image-editor__previews">
+                    <div class="theme-image-editor__preview">
+                        <div class="theme-image-editor__preview-label">
+                            {% if image_selected.hasCustom %}
+                                {{ 'customImage'|trans({}, 'contao_tl_theme_file_editor') }}
+                            {% else %}
+                                {{ 'originalImage'|trans({}, 'contao_tl_theme_file_editor') }}
+                            {% endif %}
+                        </div>
+                        <div class="theme-image-editor__image-box">
+                            <img src="{{ path('theme_image_editor_serve', serveParams|merge({source: 'current', _: 'now'|date('U')})) }}" alt="{{ image_selected.name }}">
+                        </div>
+                    </div>
+                    {% if image_selected.hasCustom and not image_selected.isCustomOnly %}
+                        <div class="theme-image-editor__preview">
+                            <div class="theme-image-editor__preview-label">{{ 'originalImage'|trans({}, 'contao_tl_theme_file_editor') }}</div>
+                            <div class="theme-image-editor__image-box">
+                                <img src="{{ path('theme_image_editor_serve', serveParams|merge({source: 'original'})) }}" alt="{{ image_selected.name }} (original)">
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="theme-file-editor__empty">
+                <p>{{ 'selectImage'|trans({}, 'contao_tl_theme_file_editor') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<input type="file" id="imageReplaceInput" accept=".jpg,.jpeg,.png,.gif,.svg,.webp,.avif" style="display:none">
+
+<script>
+var ThemeImageEditor = {
+    theme: '{{ selected_theme|e('js') }}',
+    file: '{{ image_selected ? image_selected.path|e('js') : '' }}',
+    csrfToken: '{{ csrf_token|e('js') }}',
+    maxBytes: 5 * 1024 * 1024,
+
+    init: function() {
+        var self = this;
+        var replaceInput = document.getElementById('imageReplaceInput');
+        if (replaceInput) {
+            replaceInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    self.uploadFile(self.getDirectory(), e.target.files[0], self.getBaseName());
+                    replaceInput.value = '';
+                }
+            });
+        }
+
+        var renameInput = document.getElementById('fileNameInput');
+        if (renameInput) {
+            renameInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    ThemeImageEditor.confirmRename();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    ThemeImageEditor.cancelRename();
+                }
+            });
+        }
+    },
+
+    getDirectory: function() {
+        var idx = this.file.lastIndexOf('/');
+        return idx === -1 ? '' : this.file.substring(0, idx);
+    },
+
+    getBaseName: function() {
+        var idx = this.file.lastIndexOf('/');
+        return idx === -1 ? this.file : this.file.substring(idx + 1);
+    },
+
+    changeTheme: function(theme) {
+        window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(theme);
+    },
+
+    selectFile: function(file) {
+        window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(this.theme) + '&file=' + encodeURIComponent(file);
+    },
+
+    triggerReplace: function() {
+        document.getElementById('imageReplaceInput').click();
+    },
+
+    uploadFile: function(directory, file, targetName) {
+        if (file.size > this.maxBytes) {
+            this.showMessage('{{ 'fileTooLarge'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}', 'error');
+            return;
+        }
+
+        var form = new FormData();
+        form.append('theme', this.theme);
+        form.append('directory', directory);
+        form.append('file', file);
+        if (targetName) {
+            form.append('targetName', targetName);
+        }
+        form.append('REQUEST_TOKEN', this.csrfToken);
+
+        var self = this;
+        fetch('{{ path('theme_image_editor_upload') }}', {
+            method: 'POST',
+            body: form
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(data.filePath);
+            } else {
+                self.showMessage(data.error || 'Upload failed', 'error');
+            }
+        })
+        .catch(function(err) { self.showMessage('Error: ' + err, 'error'); });
+    },
+
+    revert: function() {
+        if (!confirm('{{ 'confirmRevert'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}')) return;
+        var self = this;
+        fetch('{{ path('theme_image_editor_revert') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&file=' + encodeURIComponent(this.file) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(self.file);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(err) { self.showMessage('Error: ' + err, 'error'); });
+    },
+
+    deleteFile: function() {
+        if (!confirm('{{ 'confirmDelete'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}')) return;
+        var self = this;
+        fetch('{{ path('theme_image_editor_delete') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&file=' + encodeURIComponent(this.file) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(self.theme);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(err) { self.showMessage('Error: ' + err, 'error'); });
+    },
+
+    toggleRename: function() {
+        document.getElementById('fileNameDisplay').style.display = 'none';
+        document.getElementById('renameBtn').style.display = 'none';
+        document.getElementById('fileNameInput').style.display = 'inline-block';
+        document.getElementById('confirmRenameBtn').style.display = 'inline-flex';
+        document.getElementById('cancelRenameBtn').style.display = 'inline-flex';
+        var input = document.getElementById('fileNameInput');
+        input.focus();
+        input.select();
+    },
+
+    cancelRename: function() {
+        document.getElementById('fileNameInput').value = this.file;
+        document.getElementById('fileNameDisplay').style.display = 'inline';
+        document.getElementById('renameBtn').style.display = 'inline-flex';
+        document.getElementById('fileNameInput').style.display = 'none';
+        document.getElementById('confirmRenameBtn').style.display = 'none';
+        document.getElementById('cancelRenameBtn').style.display = 'none';
+    },
+
+    confirmRename: function() {
+        var newName = document.getElementById('fileNameInput').value.trim();
+        if (!newName || newName === this.file) { this.cancelRename(); return; }
+        var self = this;
+        fetch('{{ path('theme_image_editor_rename') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&oldName=' + encodeURIComponent(this.file) +
+                  '&newName=' + encodeURIComponent(newName) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(self.theme) + '&file=' + encodeURIComponent(newName);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+                self.cancelRename();
+            }
+        })
+        .catch(function(err) { self.showMessage('Error: ' + err, 'error'); self.cancelRename(); });
+    },
+
+    showUploadInput: function(directory, triggerBtn) {
+        var existing = document.querySelector('.theme-file-editor__create-inline');
+        if (existing) existing.remove();
+
+        var li = document.createElement('li');
+        li.className = 'theme-file-editor__create-inline';
+
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.className = 'theme-file-editor__create-input';
+        input.accept = '.jpg,.jpeg,.png,.gif,.svg,.webp,.avif';
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'theme-file-editor__rename-cancel';
+        cancelBtn.innerHTML = '<img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">';
+        cancelBtn.onclick = function() { li.remove(); };
+
+        var self = this;
+        input.addEventListener('change', function() {
+            if (input.files && input.files[0]) {
+                self.uploadFile(directory, input.files[0], '');
+            }
+        });
+
+        li.appendChild(input);
+        li.appendChild(cancelBtn);
+        this.insertIntoTree(triggerBtn, li);
+        input.focus();
+    },
+
+    showCreateFolderInput: function(directory, triggerBtn) {
+        var existing = document.querySelector('.theme-file-editor__create-inline');
+        if (existing) existing.remove();
+
+        var li = document.createElement('li');
+        li.className = 'theme-file-editor__create-inline';
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'theme-file-editor__create-input';
+        input.placeholder = '{{ 'folderNamePlaceholder'|trans({}, 'contao_tl_theme_file_editor')|e('js') }}';
+
+        var confirmBtn = document.createElement('button');
+        confirmBtn.type = 'button';
+        confirmBtn.className = 'theme-file-editor__rename-confirm';
+        confirmBtn.innerHTML = '<img src="/system/themes/flexible/icons/ok.svg" alt="" width="14" height="14">';
+
+        var cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'theme-file-editor__rename-cancel';
+        cancelBtn.innerHTML = '<img src="/system/themes/flexible/icons/delete.svg" alt="" width="14" height="14">';
+        cancelBtn.onclick = function() { li.remove(); };
+
+        var self = this;
+        confirmBtn.onclick = function() { self.createFolder(directory, input.value); };
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); self.createFolder(directory, input.value); }
+            else if (e.key === 'Escape') { e.preventDefault(); li.remove(); }
+        });
+
+        li.appendChild(input);
+        li.appendChild(confirmBtn);
+        li.appendChild(cancelBtn);
+        this.insertIntoTree(triggerBtn, li);
+        input.focus();
+    },
+
+    insertIntoTree: function(triggerBtn, li) {
+        var parentFolder = triggerBtn.closest('.theme-file-editor__tree-folder');
+        if (parentFolder) {
+            var ul = parentFolder.querySelector('ul');
+            if (ul) { ul.insertBefore(li, ul.firstChild); return; }
+        }
+        var tree = document.querySelector('.theme-file-editor__file-tree > ul');
+        if (tree) { tree.insertBefore(li, tree.firstChild); }
+    },
+
+    createFolder: function(directory, folderName) {
+        folderName = folderName.trim();
+        if (!folderName) return;
+        var self = this;
+        fetch('{{ path('theme_image_editor_create_folder') }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'theme=' + encodeURIComponent(this.theme) +
+                  '&directory=' + encodeURIComponent(directory) +
+                  '&folderName=' + encodeURIComponent(folderName) +
+                  '&REQUEST_TOKEN=' + encodeURIComponent(this.csrfToken)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                window.location.href = '{{ path('theme_file_editor_index') }}?tab=images&theme=' + encodeURIComponent(self.theme);
+            } else {
+                self.showMessage(data.error || data.message, 'error');
+            }
+        })
+        .catch(function(err) { self.showMessage('Error: ' + err, 'error'); });
+    },
+
+    showMessage: function(message, type) {
+        var existing = document.querySelector('.theme-file-editor__message');
+        if (existing) existing.remove();
+
+        var msg = document.createElement('div');
+        msg.className = 'theme-file-editor__message theme-file-editor__message--' + type;
+        msg.textContent = message;
+        var host = document.querySelector('.theme-file-editor__actions') || document.querySelector('.theme-file-editor-operations');
+        if (host) host.prepend(msg);
+
+        setTimeout(function() { msg.remove(); }, 5000);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    ThemeImageEditor.init();
+});
+</script>
+
+{% endif %}

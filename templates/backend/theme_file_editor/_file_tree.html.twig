@@ -1,4 +1,6 @@
-{% macro render_tree(tree, selected_file, current_path) %}
+{% set editor = editor|default('ThemeFileEditor') %}
+
+{% macro render_tree(tree, selected_file, current_path, editor) %}
     <ul class="theme-file-editor__tree">
         {# First render directories #}
         {% for name, content in tree %}
@@ -7,11 +9,11 @@
                 <li class="theme-file-editor__tree-folder">
                     <span class="theme-file-editor__tree-folder-name">
                         {{ name }}
-                        <button type="button" class="theme-file-editor__tree-folder-add" onclick="ThemeFileEditor.showCreateInput('{{ dir_path|e('js') }}', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_file_editor') }}">
+                        <button type="button" class="theme-file-editor__tree-folder-add" onclick="{{ editor }}.showCreateInput('{{ dir_path|e('js') }}', this)" title="{{ 'createFile'|trans({}, 'contao_tl_theme_file_editor') }}">
                             <img src="/system/themes/flexible/icons/new.svg" alt="" width="12" height="12">
                         </button>
                     </span>
-                    {{ _self.render_tree(content, selected_file, dir_path) }}
+                    {{ _self.render_tree(content, selected_file, dir_path, editor) }}
                 </li>
             {% endif %}
         {% endfor %}
@@ -30,7 +32,7 @@
                     {% set classes = classes ~ ' theme-file-editor__tree-file--custom-only' %}
                 {% endif %}
                 <li class="{{ classes }}">
-                    <a href="javascript:void(0)" onclick="ThemeFileEditor.selectFile('{{ file.path|e('js') }}')">
+                    <a href="javascript:void(0)" onclick="{{ editor }}.selectFile('{{ file.path|e('js') }}')">
                         {{ file.name }}
                         {% if file.isCustomOnly is defined and file.isCustomOnly %}
                             <span class="theme-file-editor__custom-only-indicator">+</span>
@@ -44,4 +46,4 @@
     </ul>
 {% endmacro %}
 
-{{ _self.render_tree(tree, selected_file, '') }}
+{{ _self.render_tree(tree, selected_file, '', editor) }}

@@ -16,7 +16,10 @@ use Contao\CoreBundle\Controller\AbstractBackendController;
 use Contao\CoreBundle\Csrf\ContaoCsrfTokenManager;
 use Contao\System;
 use ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService;
+use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeImageFileManager;
+use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeJsFileManager;
 use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,6 +37,8 @@ class ThemeFileEditorController extends AbstractBackendController
         private readonly GoogleFontsService $googleFontsService,
         private readonly ContaoCsrfTokenManager $csrfTokenManager,
         private readonly TranslatorInterface $translator,
+        private readonly ThemeImageFileManager $imageFileManager,
+        private readonly ThemeJsFileManager $jsFileManager,
     ) {
     }
 
@@ -51,12 +56,20 @@ class ThemeFileEditorController extends AbstractBackendController
 
         $activeTab = $request->query->get('tab', 'styles');
 
-        if (!\in_array($activeTab, ['styles', 'webfonts'], true)) {
+        if (!\in_array($activeTab, ['styles', 'webfonts', 'images', 'javascript'], true)) {
             $activeTab = 'styles';
         }
 
         if ('webfonts' === $activeTab) {
             $GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_webfonts.css';
+        }
+
+        if ('images' === $activeTab) {
+            $GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_image_editor.css';
+        }
+
+        if ('javascript' === $activeTab) {
+            $GLOBALS['TL_CSS'][] = 'bundles/erdmannfreundethemetoolbox/css/theme_file_editor.css';
         }
 
         $themes = $this->fileManager->getAvailableThemes();
@@ -68,16 +81,40 @@ class ThemeFileEditorController extends AbstractBackendController
         $isCustom = false;
         $isCustomOnly = false;
         $originalContent = '';
+        $imageFiles = [];
+        $imageSelected = null;
+        $jsFiles = [];
 
         if ($selectedTheme && isset($themes[$selectedTheme])) {
-            $files = $this->fileManager->getScssFiles($selectedTheme);
+            if ('images' === $activeTab) {
+                $imageFiles = $this->imageFileManager->getImageFiles($selectedTheme);
 
-            if ($selectedFile) {
-                $fileContent = $this->fileManager->getFileContent($selectedTheme, $selectedFile) ?? '';
-                $isCustom = $this->fileManager->hasCustomFile($selectedFile);
-                $originalContent = $this->fileManager->getOriginalFileContent($selectedTheme, $selectedFile) ?? '';
-                // Check if this is a custom-only file (no original exists)
-                $isCustomOnly = $isCustom && $originalContent === '';
+                if ($selectedFile) {
+                    foreach ($imageFiles as $img) {
+                        if ($img['path'] === $selectedFile) {
+                            $imageSelected = $img;
+                            break;
+                        }
+                    }
+                }
+            } elseif ('javascript' === $activeTab) {
+                $jsFiles = $this->jsFileManager->getJsFiles($selectedTheme);
+
+                if ($selectedFile) {
+                    $fileContent = $this->jsFileManager->getFileContent($selectedTheme, $selectedFile) ?? '';
+                    $isCustom = $this->jsFileManager->hasCustomFile($selectedFile);
+                    $originalContent = $this->jsFileManager->getOriginalFileContent($selectedTheme, $selectedFile) ?? '';
+                    $isCustomOnly = $isCustom && $originalContent === '';
+                }
+            } else {
+                $files = $this->fileManager->getScssFiles($selectedTheme);
+
+                if ($selectedFile) {
+                    $fileContent = $this->fileManager->getFileContent($selectedTheme, $selectedFile) ?? '';
+                    $isCustom = $this->fileManager->hasCustomFile($selectedFile);
+                    $originalContent = $this->fileManager->getOriginalFileContent($selectedTheme, $selectedFile) ?? '';
+                    $isCustomOnly = $isCustom && $originalContent === '';
+                }
             }
         }
 
@@ -93,6 +130,10 @@ class ThemeFileEditorController extends AbstractBackendController
             'original_content' => $originalContent,
             'is_custom' => $isCustom,
             'is_custom_only' => $isCustomOnly,
+            'image_files' => $imageFiles,
+            'image_tree' => 'images' === $activeTab ? $this->buildImageTree($imageFiles, $selectedTheme && isset($themes[$selectedTheme]) ? $this->imageFileManager->getImageDirectories($selectedTheme) : []) : [],
+            'image_selected' => $imageSelected,
+            'js_tree' => 'javascript' === $activeTab ? $this->buildImageTree($jsFiles, $selectedTheme && isset($themes[$selectedTheme]) ? $this->jsFileManager->getJsDirectories($selectedTheme) : []) : [],
             'csrf_token' => $this->csrfTokenManager->getDefaultTokenValue(),
         ]);
     }
@@ -403,6 +444,330 @@ class ThemeFileEditorController extends AbstractBackendController
             'originalContent' => $originalContent,
             'isCustom' => $isCustom,
         ]);
+    }
+
+    #[Route('/images/upload', name: 'theme_image_editor_upload', methods: ['POST'])]
+    public function imageUpload(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $directory = trim((string) $request->request->get('directory', ''), '/');
+        $targetName = trim((string) $request->request->get('targetName', ''));
+
+        /** @var UploadedFile|null $file */
+        $file = $request->files->get('file');
+
+        if (!$this->isValidTheme($theme) || !$file instanceof UploadedFile) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        $fileName = '' !== $targetName ? $targetName : $file->getClientOriginalName();
+
+        if (!preg_match('/^[\w\-. ]+\.[A-Za-z0-9]+$/', $fileName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $relativePath = $directory !== '' ? $directory . '/' . $fileName : $fileName;
+
+        try {
+            $this->imageFileManager->saveUploadedImage($relativePath, $file);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $this->translator->trans('imageUploaded', [], self::TRANSLATION_DOMAIN),
+            'filePath' => $relativePath,
+        ]);
+    }
+
+    #[Route('/images/delete', name: 'theme_image_editor_delete', methods: ['POST'])]
+    public function imageDelete(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $file = $request->request->get('file', '');
+
+        if (!$this->isValidTheme($theme) || !$file) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        try {
+            $success = $this->imageFileManager->deleteCustomFile($file);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+        }
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('deleted', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('deleteError', [], self::TRANSLATION_DOMAIN),
+        ]);
+    }
+
+    #[Route('/images/revert', name: 'theme_image_editor_revert', methods: ['POST'])]
+    public function imageRevert(Request $request): JsonResponse
+    {
+        return $this->imageDelete($request);
+    }
+
+    #[Route('/images/rename', name: 'theme_image_editor_rename', methods: ['POST'])]
+    public function imageRename(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $oldName = $request->request->get('oldName', '');
+        $newName = $request->request->get('newName', '');
+
+        if (!$this->isValidTheme($theme) || !$oldName || !$newName) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        if (!preg_match('/^[\w\-. \/]+\.[A-Za-z0-9]+$/', $newName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        try {
+            $success = $this->imageFileManager->renameCustomFile($oldName, $newName);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+        }
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('renamed', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('renameError', [], self::TRANSLATION_DOMAIN),
+            'newName' => $newName,
+        ]);
+    }
+
+    #[Route('/images/create-folder', name: 'theme_image_editor_create_folder', methods: ['POST'])]
+    public function imageCreateFolder(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $directory = trim((string) $request->request->get('directory', ''), '/');
+        $folderName = trim((string) $request->request->get('folderName', ''));
+
+        if (!$this->isValidTheme($theme) || '' === $folderName) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        if (!preg_match('/^[\w\-. ]+$/', $folderName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFolderName', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $relativePath = '' !== $directory ? $directory . '/' . $folderName : $folderName;
+
+        try {
+            $this->imageFileManager->createCustomFolder($relativePath);
+        } catch (\InvalidArgumentException $e) {
+            return new JsonResponse(['success' => false, 'error' => $e->getMessage()], 400);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $this->translator->trans('folderCreated', [], self::TRANSLATION_DOMAIN),
+            'directory' => $relativePath,
+        ]);
+    }
+
+    #[Route('/images/serve', name: 'theme_image_editor_serve', defaults: ['_token_check' => false], methods: ['GET'])]
+    public function imageServe(Request $request): Response
+    {
+        $theme = $request->query->get('theme', '');
+        $file = $request->query->get('file', '');
+        $source = $request->query->get('source', 'current');
+
+        if (!$this->isValidTheme($theme) || !$file) {
+            return new Response('', 404);
+        }
+
+        try {
+            $path = 'original' === $source
+                ? $this->imageFileManager->getOriginalServablePath($theme, $file)
+                : $this->imageFileManager->getServablePath($theme, $file);
+        } catch (\InvalidArgumentException) {
+            return new Response('', 400);
+        }
+
+        if (null === $path) {
+            return new Response('', 404);
+        }
+
+        $response = new BinaryFileResponse($path);
+        $response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+        return $response;
+    }
+
+    #[Route('/js/save', name: 'theme_js_editor_save', methods: ['POST'])]
+    public function jsSave(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $file = $request->request->get('file', '');
+        $content = $request->request->get('content', '');
+
+        if (!$this->isValidTheme($theme) || !$file) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        $success = $this->jsFileManager->saveCustomFile($file, $content);
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('saved', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('saveError', [], self::TRANSLATION_DOMAIN),
+            'isCustom' => true,
+        ]);
+    }
+
+    #[Route('/js/revert', name: 'theme_js_editor_revert', methods: ['POST'])]
+    public function jsRevert(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $file = $request->request->get('file', '');
+
+        if (!$this->isValidTheme($theme) || !$file) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        $success = $this->jsFileManager->deleteCustomFile($file);
+        $originalContent = $this->jsFileManager->getOriginalFileContent($theme, $file);
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('reverted', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('revertError', [], self::TRANSLATION_DOMAIN),
+            'content' => $originalContent,
+            'isCustom' => false,
+        ]);
+    }
+
+    #[Route('/js/rename', name: 'theme_js_editor_rename', methods: ['POST'])]
+    public function jsRename(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $oldName = $request->request->get('oldName', '');
+        $newName = $request->request->get('newName', '');
+
+        if (!$this->isValidTheme($theme) || !$oldName || !$newName) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        if (!preg_match('/^[\w\-\/]+\.js$/', $newName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $success = $this->jsFileManager->renameCustomFile($oldName, $newName);
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('renamed', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('renameError', [], self::TRANSLATION_DOMAIN),
+            'newName' => $newName,
+        ]);
+    }
+
+    #[Route('/js/create', name: 'theme_js_editor_create', methods: ['POST'])]
+    public function jsCreate(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $directory = $request->request->get('directory', '');
+        $fileName = $request->request->get('fileName', '');
+
+        if (!$this->isValidTheme($theme) || !$fileName) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        if (!preg_match('/^[\w\-]+\.js$/', $fileName)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $filePath = $directory ? $directory . '/' . $fileName : $fileName;
+
+        if ($this->jsFileManager->hasCustomFile($filePath)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => $this->translator->trans('fileExists', [], self::TRANSLATION_DOMAIN),
+            ], 400);
+        }
+
+        $success = $this->jsFileManager->saveCustomFile($filePath, '');
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('created', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('createError', [], self::TRANSLATION_DOMAIN),
+            'filePath' => $filePath,
+        ]);
+    }
+
+    #[Route('/js/delete', name: 'theme_js_editor_delete', methods: ['POST'])]
+    public function jsDelete(Request $request): JsonResponse
+    {
+        $theme = $request->request->get('theme', '');
+        $file = $request->request->get('file', '');
+
+        if (!$this->isValidTheme($theme) || !$file) {
+            return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
+        }
+
+        $success = $this->jsFileManager->deleteCustomFile($file);
+
+        return new JsonResponse([
+            'success' => $success,
+            'message' => $success
+                ? $this->translator->trans('deleted', [], self::TRANSLATION_DOMAIN)
+                : $this->translator->trans('deleteError', [], self::TRANSLATION_DOMAIN),
+        ]);
+    }
+
+    /**
+     * Build a tree including empty directories.
+     *
+     * @param array<int, array<string, mixed>> $files
+     * @param list<string>                     $directories
+     *
+     * @return array<string, mixed>
+     */
+    private function buildImageTree(array $files, array $directories): array
+    {
+        $tree = $this->buildFileTree($files);
+
+        foreach ($directories as $dirPath) {
+            $parts = explode('/', $dirPath);
+            $current = &$tree;
+
+            foreach ($parts as $part) {
+                if (!isset($current[$part])) {
+                    $current[$part] = ['_files' => []];
+                }
+                $current = &$current[$part];
+            }
+
+            unset($current);
+        }
+
+        return $tree;
     }
 
     /**

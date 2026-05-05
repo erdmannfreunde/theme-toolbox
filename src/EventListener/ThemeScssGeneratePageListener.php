@@ -50,5 +50,16 @@ class ThemeScssGeneratePageListener
 
         // Add the compiled CSS to the page
         $GLOBALS['TL_CSS'][] = $cssPath . '|static';
+
+        // Also compile all other non-partial entry points so additional CSS files
+        // (e.g. tinymce.css for the editor) are always available without having
+        // to be selected as the layout entry point.
+        foreach (array_keys($this->fileManager->getEntryPointFiles($themeName)) as $name) {
+            if ($name === $entryFile) {
+                continue;
+            }
+
+            $this->compiler->compile($themeName, $name);
+        }
     }
 }

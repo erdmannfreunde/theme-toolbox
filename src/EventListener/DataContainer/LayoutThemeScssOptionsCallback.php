@@ -34,6 +34,9 @@ class LayoutThemeScssOptionsCallback
 
         $themeName = array_key_first($themes);
 
-        return $this->fileManager->getEntryPointFiles($themeName);
+        $entries = $this->fileManager->getEntryPointFiles($themeName);
+        unset($entries['tinymce']);
+
+        return $entries;
     }
 }

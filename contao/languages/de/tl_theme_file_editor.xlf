@@ -146,6 +146,50 @@
         <source>Invalid font style (allowed: normal, italic)</source>
         <target>Ungültiger Schriftstil (erlaubt: normal, italic)</target>
       </trans-unit>
+      <trans-unit id="uploadImage">
+        <source>Upload image</source>
+        <target>Bild hochladen</target>
+      </trans-unit>
+      <trans-unit id="replaceImage">
+        <source>Replace image</source>
+        <target>Bild ersetzen</target>
+      </trans-unit>
+      <trans-unit id="imageUploaded">
+        <source>Image uploaded successfully</source>
+        <target>Bild erfolgreich hochgeladen</target>
+      </trans-unit>
+      <trans-unit id="selectImage">
+        <source>Select an image from the sidebar</source>
+        <target>Wählen Sie ein Bild aus der Seitenleiste</target>
+      </trans-unit>
+      <trans-unit id="originalImage">
+        <source>Original</source>
+        <target>Original</target>
+      </trans-unit>
+      <trans-unit id="customImage">
+        <source>Custom</source>
+        <target>Eigenes Bild</target>
+      </trans-unit>
+      <trans-unit id="createFolder">
+        <source>New folder</source>
+        <target>Neuer Ordner</target>
+      </trans-unit>
+      <trans-unit id="folderCreated">
+        <source>Folder created</source>
+        <target>Ordner erstellt</target>
+      </trans-unit>
+      <trans-unit id="folderNamePlaceholder">
+        <source>folder name</source>
+        <target>Ordnername</target>
+      </trans-unit>
+      <trans-unit id="invalidFolderName">
+        <source>Invalid folder name</source>
+        <target>Ungültiger Ordnername</target>
+      </trans-unit>
+      <trans-unit id="fileTooLarge">
+        <source>File exceeds maximum upload size of 5 MB.</source>
+        <target>Datei überschreitet die maximale Größe von 5 MB.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

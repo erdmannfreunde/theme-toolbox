@@ -717,7 +717,7 @@ class ThemeScssFileManager
                 $finder->files()->in($scssPath)->name('*.scss')->depth(0)->sortByName();
 
                 foreach ($finder as $file) {
-                    if (!str_starts_with($file->getFilename(), '_') && $file->getFilename() !== 'tinymce.scss') {
+                    if (!str_starts_with($file->getFilename(), '_')) {
                         $name = $file->getFilenameWithoutExtension();
                         $files[$name] = $name;
                     }
@@ -733,7 +733,7 @@ class ThemeScssFileManager
             $finder->files()->in($customScssPath)->name('*.scss')->depth(0)->sortByName();
 
             foreach ($finder as $file) {
-                if (!str_starts_with($file->getFilename(), '_') && $file->getFilename() !== 'tinymce.scss') {
+                if (!str_starts_with($file->getFilename(), '_')) {
                     $name = $file->getFilenameWithoutExtension();
                     $files[$name] = $name;
                 }

@@ -30,6 +30,23 @@ Im Tab „Webfonts" können Schriftarten für das Theme verwaltet werden. Es ste
 
 **Hinweis:** Nach dem Import oder Upload müssen die Schriftarten noch händisch in der `_variables.scss` eingetragen werden, damit sie im Theme verwendet werden. Nicht mehr benötigte Schriftarten lassen sich über den Button **„Ungenutzte @font-face bereinigen"** entfernen.
 
+### 2.3 Bilder
+
+Im Tab „Bilder" werden alle Bilddateien des Themes aus dem Verzeichnis `layout/<theme>/img` angezeigt. Erlaubt sind die Formate JPG, JPEG, PNG, GIF, SVG, WebP und AVIF bis zu einer Größe von 5 MB.
+
+- **Ersetzen:** Bestehende Theme-Bilder lassen sich durch eigene Varianten überschreiben. Die neue Datei wird unter `layout/custom/img` abgelegt, das Original bleibt unberührt. In der Vorschau werden Custom und Original nebeneinander dargestellt.
+- **Hinzufügen:** Neue Bilder und Unterordner können direkt im Custom-Bereich angelegt werden.
+- **Umbenennen & Löschen:** Custom-Dateien können umbenannt oder gelöscht werden; beim Löschen einer Überschreibung wird automatisch wieder das Original verwendet.
+
+### 2.4 JavaScript
+
+Im Tab „JavaScript" lassen sich `.js`-Dateien aus `layout/<theme>/js` direkt im Backend bearbeiten — analog zum Styles-Editor mit Ace-Editor, Diff-Ansicht und Revert-Funktion.
+
+- **Überschreiben:** Original-JS-Dateien des Themes können durch Custom-Versionen in `layout/custom/js` überschrieben werden.
+- **Neu anlegen:** Eigene JS-Dateien und Unterordner können im Custom-Bereich angelegt werden.
+- **Diff & Revert:** Unterschiede zum Original lassen sich zeilenweise anzeigen, Änderungen können auf das Original zurückgesetzt werden.
+- **Umbenennen & Löschen:** Custom-Dateien lassen sich umbenennen oder löschen.
+
 ### Optionale Konfiguration
 
 Theme und Anpassungen liegen standardmäßig unter `layout/theme` und `layout/custom`. Du kannst die Verzeichnisse für Layouts und Custom-SCSS aber über die `config/config.yaml` anpassen:

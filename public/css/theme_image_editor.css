@@ -1,0 +1,55 @@
+.theme-image-editor__panel {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 12px;
+  height: 100%;
+  overflow: auto;
+}
+
+.theme-image-editor__previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.theme-image-editor__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  background: var(--form-bg);
+  padding: 10px;
+}
+
+.theme-image-editor__preview-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted, var(--text));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.theme-image-editor__image-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 12px;
+  background: repeating-conic-gradient(#f4f4f4 0 25%, #fff 0 50%) 50% / 20px 20px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border);
+}
+
+.theme-image-editor__image-box img {
+  max-width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+  display: block;
+}
+
+html[data-color-scheme="dark"] .theme-image-editor__image-box {
+  background: repeating-conic-gradient(#2a2a2a 0 25%, #1e1e1e 0 50%) 50% / 20px 20px;
+}
