@@ -50,7 +50,6 @@
 .theme-file-editor__files {
   position: relative;
   overflow: auto;
-  resize: horizontal;
 }
 
 .theme-file-editor__files h3 {
