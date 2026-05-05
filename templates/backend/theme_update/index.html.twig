@@ -2,7 +2,10 @@
 
 {% block main %}
     <main id="main" aria-labelledby="main_headline">
-        <h1 id="main_headline">{{ headline }}</h1>
+        <div class="content-top">
+            <h1 id="main_headline">{{ headline }}</h1>
+            {{ include('@Contao/backend/component/_favorites.html.twig') }}
+        </div>
 
         <div class="theme-update content">
             {% if error is defined and error %}
