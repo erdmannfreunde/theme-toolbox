@@ -48,18 +48,11 @@ class ParseTemplateListener
             return $buffer;
         }
 
-        if (!\in_array($element->type ?? null, ['alias', 'module'], true)) {
+        if (!\in_array($element->type ?? null, ['alias', 'module', 'form'], true)) {
             return $buffer;
         }
 
-        $classes = $this->uniqueClasses((string) $element->toolbox_classes);
-
-        return preg_replace(
-            '/class="(.+?)"/',
-            \sprintf('class="$1 %s"', $classes),
-            $buffer,
-            1,
-        ) ?? $buffer;
+        return $this->appendMissingClassesToBuffer($buffer, (string) $element->toolbox_classes);
     }
 
     #[AsHook('parseWidget')]
@@ -122,5 +115,32 @@ class ParseTemplateListener
         }
 
         return implode(' ', $sanitizedTokens);
+    }
+
+    private function appendMissingClassesToBuffer(string $buffer, string $classes): string
+    {
+        $classes = $this->uniqueClasses($classes);
+
+        if ('' === $classes) {
+            return $buffer;
+        }
+
+        $updated = preg_replace_callback(
+            '/class="([^"]*)"/',
+            function (array $matches) use ($classes): string {
+                $existing = $this->uniqueClasses($matches[1]);
+                $merged = $this->uniqueClasses(trim($existing.' '.$classes));
+
+                return 'class="'.$merged.'"';
+            },
+            $buffer,
+            1,
+        );
+
+        if (null !== $updated && $updated !== $buffer) {
+            return $updated;
+        }
+
+        return preg_replace('/^<([a-zA-Z0-9:-]+)/', '<$1 class="'.$classes.'"', $buffer, 1) ?? $buffer;
     }
 }
