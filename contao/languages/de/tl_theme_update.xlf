@@ -21,6 +21,14 @@
         <source>Please select a ZIP file to upload.</source>
         <target>Bitte w&#228;hlen Sie eine ZIP-Datei zum Hochladen aus.</target>
       </trans-unit>
+      <trans-unit id="fileTooLarge">
+        <source>The selected file is too large. The maximum upload size is %s.</source>
+        <target>Die ausgew&#228;hlte Datei ist zu gro&#223;. Die maximale Upload-Gr&#246;&#223;e betr&#228;gt %s.</target>
+      </trans-unit>
+      <trans-unit id="uploadFailed">
+        <source>The file could not be uploaded.</source>
+        <target>Die Datei konnte nicht hochgeladen werden.</target>
+      </trans-unit>
       <trans-unit id="invalidFileType">
         <source>Only ZIP files are allowed.</source>
         <target>Es sind nur ZIP-Dateien erlaubt.</target>

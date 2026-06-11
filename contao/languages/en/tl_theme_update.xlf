@@ -16,6 +16,12 @@
       <trans-unit id="noFileUploaded">
         <source>Please select a ZIP file to upload.</source>
       </trans-unit>
+      <trans-unit id="fileTooLarge">
+        <source>The selected file is too large. The maximum upload size is %s.</source>
+      </trans-unit>
+      <trans-unit id="uploadFailed">
+        <source>The file could not be uploaded.</source>
+      </trans-unit>
       <trans-unit id="invalidFileType">
         <source>Only ZIP files are allowed.</source>
       </trans-unit>

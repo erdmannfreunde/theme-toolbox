@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace ErdmannFreunde\ThemeToolboxBundle\Controller\Backend;
 
+use Contao\Config;
 use Contao\CoreBundle\Controller\AbstractBackendController;
 use Contao\CoreBundle\Csrf\ContaoCsrfTokenManager;
 use Contao\System;
 use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeUpdateService;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -83,8 +85,35 @@ class ThemeUpdateController extends AbstractBackendController
 
         $file = $request->files->get('theme_zip');
 
-        if (null === $file || !$file->isValid()) {
+        if (null === $file) {
             $this->addFlash('theme_update_error', $this->translator->trans('noFileUploaded', [], self::TRANSLATION_DOMAIN));
+
+            return new RedirectResponse($this->generateUrl('theme_update_index'));
+        }
+
+        if (!$file->isValid()) {
+            $error = match ($file->getError()) {
+                \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => $this->translator->trans(
+                    'fileTooLarge',
+                    [$this->formatBytes((int) UploadedFile::getMaxFilesize())],
+                    self::TRANSLATION_DOMAIN,
+                ),
+                default => $this->translator->trans('uploadFailed', [], self::TRANSLATION_DOMAIN),
+            };
+
+            $this->addFlash('theme_update_error', $error);
+
+            return new RedirectResponse($this->generateUrl('theme_update_index'));
+        }
+
+        $limit = min((int) UploadedFile::getMaxFilesize(), (int) Config::get('maxFileSize'));
+
+        if ($limit > 0 && $file->getSize() > $limit) {
+            $this->addFlash('theme_update_error', $this->translator->trans(
+                'fileTooLarge',
+                [$this->formatBytes($limit)],
+                self::TRANSLATION_DOMAIN,
+            ));
 
             return new RedirectResponse($this->generateUrl('theme_update_index'));
         }
@@ -176,5 +205,14 @@ class ThemeUpdateController extends AbstractBackendController
         ]);
 
         return new RedirectResponse($this->generateUrl('theme_update_index'));
+    }
+
+    private function formatBytes(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $power = $bytes > 0 ? (int) floor(log($bytes, 1024)) : 0;
+        $power = min($power, \count($units) - 1);
+
+        return round($bytes / 1024 ** $power, 1) . ' ' . $units[$power];
     }
 }
