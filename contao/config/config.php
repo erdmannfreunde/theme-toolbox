@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license LGPL-3.0-or-later
  */
 
-use ErdmannFreunde\ThemeToolboxBundle\Backend\Maintenance\BypassScriptCache;
+use ErdmannFreunde\ThemeToolboxBundle\Backend\Maintenance\FrontendThemeEditor;
 
 // Create 'themeToolbox' section right after 'design'
 $offset = array_search('design', array_keys($GLOBALS['BE_MOD']));
@@ -28,5 +28,5 @@ $GLOBALS['BE_MOD']['themeToolbox']['themeUpdate'] = [];
 
 array_unshift(
     $GLOBALS['TL_MAINTENANCE'],
-    BypassScriptCache::class,
+    FrontendThemeEditor::class,
 );

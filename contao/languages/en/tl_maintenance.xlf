@@ -1,14 +1,17 @@
 <?xml version="1.0" ?><xliff version="1.1">
   <file datatype="php" original="src/Resources/contao/languages/en/tl_maintenance.php" source-language="en">
     <body>
-      <trans-unit id="tl_maintenance.bypassScriptCacheMode">
-        <source>Bypass Script Cache (in production mode).</source>
+      <trans-unit id="tl_maintenance.frontendThemeEditorMode">
+        <source>Frontend theme editor</source>
       </trans-unit>
-      <trans-unit id="tl_maintenance.bypassScriptCacheDisable">
-        <source>Disable</source>
+      <trans-unit id="tl_maintenance.frontendThemeEditorEnabled">
+        <source>The frontend theme editor is currently shown to logged-in backend users.</source>
       </trans-unit>
-      <trans-unit id="tl_maintenance.bypassScriptCacheEnable">
-        <source>Enable</source>
+      <trans-unit id="tl_maintenance.frontendThemeEditorEnable">
+        <source>Show frontend editor</source>
+      </trans-unit>
+      <trans-unit id="tl_maintenance.frontendThemeEditorDisable">
+        <source>Hide frontend editor</source>
       </trans-unit>
     </body>
   </file>

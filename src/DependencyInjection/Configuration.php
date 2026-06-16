@@ -31,6 +31,15 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue('layout/custom')
                     ->info('Directory for custom SCSS overrides (relative to project root)')
                 ->end()
+                ->arrayNode('editor')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('public_mode')
+                            ->defaultFalse()
+                            ->info('Run the live editor in public/demo mode (no server writes). Only set true on the public demo.')
+                        ->end()
+                    ->end()
+                ->end()
             ->end()
         ;
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.1">
+  <file datatype="php" original="contao/languages/en/toolbox_editor.php" source-language="en" target-language="de">
+    <body>
+      <trans-unit id="applied">
+        <source>The preset was applied and saved.</source>
+        <target>Das Preset wurde übernommen und gespeichert.</target>
+      </trans-unit>
+      <trans-unit id="error.invalid_preset">
+        <source>Some values were invalid and have been corrected.</source>
+        <target>Einige Werte waren ungültig und wurden korrigiert.</target>
+      </trans-unit>
+      <trans-unit id="error.font_failed">
+        <source>The font could not be loaded. Please choose another.</source>
+        <target>Die Schrift konnte nicht geladen werden. Bitte andere wählen.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

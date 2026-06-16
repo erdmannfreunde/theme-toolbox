@@ -3,3 +3,9 @@ theme_file_editor_controllers:
         path: ../src/Controller/Backend/
         namespace: ErdmannFreunde\ThemeToolboxBundle\Controller\Backend
     type: attribute
+
+theme_live_editor_controllers:
+    resource:
+        path: ../src/Editor/Controller/
+        namespace: ErdmannFreunde\ThemeToolboxBundle\Editor\Controller
+    type: attribute

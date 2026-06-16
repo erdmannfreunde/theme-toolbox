@@ -29,6 +29,10 @@ class ErdmannFreundeThemeToolboxExtension extends Extension
 
         $container->setParameter('theme_toolbox.layout_dir', $config['layout_dir']);
         $container->setParameter('theme_toolbox.custom_dir', $config['custom_dir']);
+        // Pass the value through unchanged: a literal bool stays a bool, while an
+        // %env(bool:…)% placeholder is preserved and resolved at runtime (a (bool)
+        // cast here would turn the placeholder string into a constant true).
+        $container->setParameter('theme_toolbox.editor.public_mode', $config['editor']['public_mode']);
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yml');

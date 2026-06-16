@@ -57,11 +57,59 @@ theme_toolbox:
   custom_dir: 'layout/custom' # Verzeichnis für Custom-SCSS-Overrides
 ```
 
-## 3. SCSS-Cache umgehen
+## 2.5 Live-Editor (Theme-Editor im Frontend)
 
-Der SCSS-Compiler in Contao erkennt Änderungen in SCSS-Partials nicht, sodass der Cache nicht aktualisiert wird. Wenn du "Script-Cache umgehen" in den Contao-Wartungseinstellungen aktivierst, werden die SCSS-Dateien nicht zwischengespeichert, sondern bei jeden Aufruf gelöscht.
+Der **Live-Editor** bearbeitet die Design-Token eines Themes (Farben, Typografie, Abstände, Form, Schrift) als Overlay direkt auf der echten Seite — mit Live-Vorschau. Werte werden zur Laufzeit als CSS Custom Properties ins `:root` geschrieben; erst „Übernehmen" speichert server-seitig. Die Maske wird vollständig aus einer Token-Registry generiert.
 
-**Wichtig: Bitte stelle sicher, dass du das Umgehen des Script-Caches deaktivierst, nachdem du deine Arbeit an den SCSS-Dateien abgeschlossen hast, da das Deaktivieren des Script-Caches große Leistungsprobleme verursachen kann!**
+Ist ein Backend-Benutzer eingeloggt, erscheint auf jeder Frontend-Seite unten mittig die Dock-Pille **„Theme bearbeiten"**. Drei Wege füllen den Editor: manuelle Maske, Vorlagen (Presets aus dem Theme) und — ab Phase 2 mit Pro — ein KI-Seed (in Phase 1 nur als Teaser angelegt).
+
+### Token-Registry & Theme-Token
+
+Die Basis-Registry liegt im Bundle unter `src/Editor/Resources/tokens.json`. Ein Theme kann unter `layout/<theme>/tokens.json` zusätzliche oder überschreibende Token mitliefern; der Editor merged beide. Presets liegen als `layout/<theme>/presets/*.json` im realen Property-Format:
+
+```json
+{
+  "name": "Klarwerk",
+  "description": "Anthrazit & ruhig",
+  "values": { "--color-brand": "#3a4a63", "--color-highlight": "#c08a3e", "--color-text": "#222831" }
+}
+```
+
+Sind keine Presets vorhanden, bleibt der Vorlagen-Tab einfach leer — kein Fehler.
+
+### Speichern
+
+Beim „Übernehmen" ersetzt der Editor die geänderten Variablen **direkt an Ort und Stelle** in der custom `_variables.scss` — die jeweilige `--token: …;`-Zeile wird editiert, genau wie es ein Entwickler tun würde (eine noch nicht vorhandene Property wird in den ersten `:root{}`-Block eingefügt), danach wird das Theme neu kompiliert. Nur tatsächlich geänderte Werte werden geschrieben; unberührte `var()`-Token behalten ihren Ausdruck. Die Wahl ist damit Teil der Theme-Quelle — sichtbar, reviewbar und deploybar; rückgängig machen lässt sie sich im Backend über den **Theme Editor → Styles** (Diff/Revert auf das Original) bzw. die Theme-Versionierung. Eingehende Werte werden gegen die Registry geprüft (unbekannte Properties verworfen, Werte geklemmt) und auf ausreichenden Kontrast abgesichert.
+
+Das Speichern gibt es **nur im eingeloggten Käufer-Modus**. Im öffentlichen Demo-Modus schreibt der Editor nichts server-seitig: Änderungen bleiben rein clientseitig (Live-Vorschau als Inline-Styles auf `:root`) und lassen sich nur per JSON exportieren — kein Besucher verändert das geteilte Theme (alle schreibenden Routen liefern dort 403).
+
+### Schriften (DSGVO)
+
+Der Font-Picker nutzt dieselbe Google-Fonts-Download-Funktion wie der Theme-Editor: Die Schrift wird einmalig server-seitig heruntergeladen, self-hosted abgelegt und per `@font-face` registriert. Der Besucher-Browser lädt ausschließlich die self-hosted Datei — kein Google-Request im Frontend.
+
+### Öffentlicher Demo-Modus
+
+Für eine öffentliche Demo lässt sich der Editor in den Public-Modus schalten. Dann ist der Editor auch ohne Login sichtbar, speichert aber nichts (kein Server-Write, kein Font-Download, kein KI) — nur lokale Vorschau und JSON-Export.
+
+```yaml
+theme_toolbox:
+  editor:
+    public_mode: true # NUR auf der öffentlichen Demo
+```
+
+Für die Demo wird ein Schau-Schriften-Satz einmalig beim Deploy vorab geladen:
+
+```shell
+vendor/bin/contao-console theme-toolbox:editor:preload-demo-fonts
+```
+
+## 3. Frontend-Theme-Editor ein-/ausschalten
+
+Der Live-Editor im Frontend ist ein Werkzeug für die Design-Phase. Über die Contao-Systemwartung („Wartung") lässt er sich mit dem Schalter **„Frontend-Editor anzeigen"** ein- und ausblenden. Solange er aktiviert ist, sehen eingeloggte Backend-Benutzer:innen das Editor-Dock im Frontend; ist er aus, bleibt das Frontend unberührt.
+
+Der Schalter ist **standardmäßig aus**. Nach einer Neuinstallation aktivierst du ihn einmalig in der Systemwartung, wenn du mit dem Gestalten beginnen möchtest; ist die Gestaltung abgeschlossen, schaltest du ihn wieder aus.
+
+Ein separates Umgehen des SCSS-Caches ist nicht mehr nötig: Der Compiler erkennt Änderungen an den SCSS-Dateien automatisch (Vergleich der Datei-Zeitstempel) und kompiliert bei Bedarf neu.
 
 ## 4. Header- und Footer-Klassen
 

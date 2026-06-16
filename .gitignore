@@ -17,3 +17,7 @@ composer.lock
 
 # build
 build/
+
+# internal design docs (not for release)
+spec-toolbox-theme-editor.md
+editor-overlay-mockup.html

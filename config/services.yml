@@ -2,14 +2,6 @@ services:
   _defaults:
     autoconfigure: true
 
-  erdmannfreunde.theme_toolbox.listener.disable_css_caching:
-    class: ErdmannFreunde\ThemeToolboxBundle\EventListener\DisableCssCachingListener
-    public: true
-
-  erdmannfreunde.theme_toolbox.listener.bypass_mode_alert_message:
-    class: ErdmannFreunde\ThemeToolboxBundle\EventListener\BypassModeAlertMessageListener
-    public: true
-
   ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\RegisterFieldsInPaletteListener:
     arguments: ['@database_connection']
     public: true
@@ -118,3 +110,60 @@ services:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
       - '%kernel.project_dir%'
+
+  # ---------------------------------------------------------------------------
+  # Live-Theme-Editor (Phase 1)
+  # ---------------------------------------------------------------------------
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Service\ContrastGuard: ~
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Service\PresetApplier:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\ContrastGuard'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
+      - '@filesystem'
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\EventListener\EditorOverlayListener:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry'
+      - '@contao.security.token_checker'
+      - '@twig'
+      - '@contao.csrf.token_manager'
+      - '@router'
+      - '%theme_toolbox.editor.public_mode%'
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Command\PreloadDemoFontsCommand:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry'
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Controller\FontController:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@translator'
+      - '%theme_toolbox.editor.public_mode%'
+    calls:
+      - [setContainer, ['@service_container']]
+    tags: ['controller.service_arguments']
+
+  ErdmannFreunde\ThemeToolboxBundle\Editor\Controller\PersistController:
+    arguments:
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\PresetApplier'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@translator'
+      - '%theme_toolbox.editor.public_mode%'
+    calls:
+      - [setContainer, ['@service_container']]
+    tags: ['controller.service_arguments']

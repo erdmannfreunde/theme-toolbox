@@ -31,7 +31,8 @@
   "require-dev": {
     "contao/manager-plugin": "^2.1",
     "contao/easy-coding-standard": "^6.0",
-    "contao/rector": "^1.3"
+    "contao/rector": "^1.3",
+    "phpunit/phpunit": "^9.6 || ^10.5"
   },
   "autoload": {
     "psr-4": {
@@ -46,6 +47,11 @@
       "contao/languages/",
       "contao/templates/"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ErdmannFreunde\\ThemeToolboxBundle\\Tests\\": "tests"
+    }
   },
   "extra": {
     "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin"
