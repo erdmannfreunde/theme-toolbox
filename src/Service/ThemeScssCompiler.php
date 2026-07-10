@@ -26,6 +26,8 @@ class ThemeScssCompiler
     /** @var array<string, string|null> */
     private array $compiledPaths = [];
 
+    private ?string $lastError = null;
+
     private function cacheKey(string $themeName, string $entryFile): string
     {
         return $themeName . ':' . $entryFile;
@@ -51,9 +53,14 @@ class ThemeScssCompiler
             return $this->compiledPaths[$cacheKey];
         }
 
+        // Reset before a fresh compile attempt so getLastError() reflects this run.
+        $this->lastError = null;
+
         $defaultScssPath = $this->fileManager->getEntryPointPath($themeName, $entryFile);
 
         if (!$defaultScssPath) {
+            $this->lastError = \sprintf('Entry point "%s" not found for theme "%s".', $entryFile, $themeName);
+
             return $this->compiledPaths[$cacheKey] = null;
         }
 
@@ -97,6 +104,8 @@ class ThemeScssCompiler
 
             return $this->compiledPaths[$cacheKey] = $outputFile;
         } catch (\Exception $e) {
+            $this->lastError = $e->getMessage();
+
             $this->logger?->error('SCSS compilation failed for theme "{theme}": {error}', [
                 'theme' => $themeName,
                 'error' => $e->getMessage(),
@@ -104,6 +113,17 @@ class ThemeScssCompiler
 
             return $this->compiledPaths[$cacheKey] = null;
         }
+    }
+
+    /**
+     * Error message of the most recent compile() call, or null if it succeeded.
+     *
+     * Lets callers (e.g. the API) surface the SCSS error instead of only seeing a
+     * null return value. Reset at the start of every compile attempt.
+     */
+    public function getLastError(): ?string
+    {
+        return $this->lastError;
     }
 
     /**
