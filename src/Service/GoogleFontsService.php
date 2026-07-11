@@ -153,6 +153,49 @@ class GoogleFontsService
     /** @param list<string> $headers */
     private function httpGet(string $url, array $headers = []): string
     {
+        // Prefer curl: it does IPv4/IPv6 fallback ("happy eyeballs"), which avoids the
+        // multi-second hang the stream wrapper hits on hosts with broken IPv6 routing.
+        if (\function_exists('curl_init')) {
+            return $this->httpGetCurl($url, $headers);
+        }
+
+        return $this->httpGetStream($url, $headers);
+    }
+
+    /** @param list<string> $headers */
+    private function httpGetCurl(string $url, array $headers): string
+    {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 20,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+
+        $result = curl_exec($ch);
+        $statusCode = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if (!\is_string($result) || $statusCode >= 400) {
+            $this->logger?->error('Google Fonts HTTP request failed (curl)', [
+                'url' => $url,
+                'status' => $statusCode,
+                'error' => $error,
+                'response_sample' => \is_string($result) ? mb_substr($result, 0, 1000) : null,
+            ]);
+
+            throw new \RuntimeException(sprintf('HTTP-Request fehlgeschlagen (%s): %s', $statusCode ?: 'n/a', $url));
+        }
+
+        return $result;
+    }
+
+    /** @param list<string> $headers */
+    private function httpGetStream(string $url, array $headers = []): string
+    {
         $context = stream_context_create([
             'http' => [
                 'method' => 'GET',
