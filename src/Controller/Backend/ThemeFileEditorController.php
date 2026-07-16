@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 #[Route('/contao/themeFileEditor', defaults: ['_scope' => 'backend', '_token_check' => true])]
 class ThemeFileEditorController extends AbstractBackendController
@@ -39,6 +40,7 @@ class ThemeFileEditorController extends AbstractBackendController
         private readonly TranslatorInterface $translator,
         private readonly ThemeImageFileManager $imageFileManager,
         private readonly ThemeJsFileManager $jsFileManager,
+        private readonly Environment $twig,
     ) {
     }
 
@@ -135,6 +137,7 @@ class ThemeFileEditorController extends AbstractBackendController
             'image_selected' => $imageSelected,
             'js_tree' => 'javascript' === $activeTab ? $this->buildImageTree($jsFiles, $selectedTheme && isset($themes[$selectedTheme]) ? $this->jsFileManager->getJsDirectories($selectedTheme) : []) : [],
             'csrf_token' => $this->csrfTokenManager->getDefaultTokenValue(),
+            'has_favorites' => $this->twig->getLoader()->exists('@Contao/backend/component/_favorites.html.twig'),
         ]);
     }
 
