@@ -41,6 +41,7 @@ class EditorOverlayListener
         private readonly ContaoCsrfTokenManager $csrfTokenManager,
         private readonly UrlGeneratorInterface $router,
         private readonly bool $publicMode = false,
+        private readonly string $previewScript = '',
     ) {
     }
 
@@ -54,8 +55,8 @@ class EditorOverlayListener
 
         // The persisted look comes from the compiled theme SCSS, so there is nothing to
         // inject for normal visitors — only mount the panel when it is visible: in the
-        // public demo always, otherwise for a backend user *and* only when the editor has
-        // been switched on in the system maintenance (Config key, off by default).
+        // public demo always, otherwise for a backend user *and* only when the editor
+        // has been switched on in the system maintenance (Config key, off by default).
         $authenticated = $this->tokenChecker->hasBackendUser();
 
         if (!$this->publicMode && (!$authenticated || !Config::get('frontendThemeEditor'))) {
@@ -74,9 +75,9 @@ class EditorOverlayListener
             'theme' => $theme,
             'registry' => $this->registry->toArray($theme, $this->publicMode),
             'routes' => [
-                'apply' => $this->router->generate('toolbox_editor_apply'),
-                'fontDownload' => $this->router->generate('toolbox_editor_font_download'),
-                'fontCatalog' => $this->router->generate('toolbox_editor_font_catalog'),
+                'apply' => $this->backendUrl('toolbox_editor_apply'),
+                'fontDownload' => $this->backendUrl('toolbox_editor_font_download'),
+                'fontCatalog' => $this->backendUrl('toolbox_editor_font_catalog'),
             ],
             'token' => $this->csrfTokenManager->getDefaultTokenValue(),
         ];
@@ -86,5 +87,26 @@ class EditorOverlayListener
             'public_mode' => $this->publicMode,
             'can_persist' => $data['canPersist'],
         ]);
+    }
+
+    /**
+     * Generate a backend route URL for the editor frontend.
+     *
+     * These routes are backend-scoped and must be hit at their canonical /contao/...
+     * path. In preview mode the URL generator prepends the preview script (e.g.
+     * /preview.php); Contao then 302-redirects that to the canonical path, which
+     * downgrades a POST to a GET — so "Übernehmen" (apply) and the font download
+     * silently failed in the preview. Stripping the preview script makes the URLs
+     * work in preview and live alike.
+     */
+    private function backendUrl(string $route): string
+    {
+        $url = $this->router->generate($route);
+
+        if ('' !== $this->previewScript) {
+            $url = str_replace($this->previewScript, '', $url);
+        }
+
+        return $url;
     }
 }
