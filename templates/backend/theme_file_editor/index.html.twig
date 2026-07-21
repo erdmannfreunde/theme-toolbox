@@ -4,7 +4,9 @@
     <main id="main" aria-labelledby="main_headline">
         <div class="content-top">
             <h1 id="main_headline">{{ headline }}</h1>
-            {{ include('@Contao/backend/component/_favorites.html.twig') }}
+            {% if has_favorites|default(false) %}
+                {{ include('@Contao/backend/component/_favorites.html.twig') }}
+            {% endif %}
         </div>
 
         <div class="theme-file-editor content">

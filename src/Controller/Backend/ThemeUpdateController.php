@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 #[Route('/contao/themeUpdate', defaults: ['_scope' => 'backend', '_token_check' => true])]
 class ThemeUpdateController extends AbstractBackendController
@@ -34,6 +35,7 @@ class ThemeUpdateController extends AbstractBackendController
         private readonly ThemeUpdateService $updateService,
         private readonly ContaoCsrfTokenManager $csrfTokenManager,
         private readonly TranslatorInterface $translator,
+        private readonly Environment $twig,
     ) {
     }
 
@@ -73,6 +75,7 @@ class ThemeUpdateController extends AbstractBackendController
             'suggestCustom' => $suggestCustom,
             'customResult' => $customResult,
             'dedupResult' => $dedupResult,
+            'has_favorites' => $this->twig->getLoader()->exists('@Contao/backend/component/_favorites.html.twig'),
         ]);
     }
 

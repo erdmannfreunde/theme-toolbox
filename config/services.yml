@@ -71,6 +71,7 @@ services:
       - '@translator'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeImageFileManager'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeJsFileManager'
+      - '@twig'
     calls:
       - [setContainer, ['@service_container']]
     tags: ['controller.service_arguments']
@@ -97,6 +98,7 @@ services:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeUpdateService'
       - '@contao.csrf.token_manager'
       - '@translator'
+      - '@twig'
     calls:
       - [setContainer, ['@service_container']]
     tags: ['controller.service_arguments']
