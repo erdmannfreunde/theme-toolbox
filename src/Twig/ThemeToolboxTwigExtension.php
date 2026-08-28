@@ -52,7 +52,7 @@ class ThemeToolboxTwigExtension extends AbstractExtension
 
         $webPath = $this->compiler->getWebPath($themeName, $entryFile);
 
-        return $webPath ? '/' . $webPath : null;
+        return $webPath ? $this->addVersion($webPath) : null;
     }
 
     /**
@@ -92,7 +92,25 @@ class ThemeToolboxTwigExtension extends AbstractExtension
             return null;
         }
 
-        return '/' . $path;
+        return $this->addVersion($path);
+    }
+
+    /**
+     * Prefixes the web root and appends the cache busting parameter.
+     *
+     * Uses the same format as Contao does for files registered via
+     * $GLOBALS['TL_CSS'] / $GLOBALS['TL_JAVASCRIPT'], see
+     * Contao\Template::generateStyleTag() and Contao\Template::generateScriptTag().
+     */
+    private function addVersion(string $path): string
+    {
+        $mtime = @filemtime($this->projectDir . '/' . $path);
+
+        if (!$mtime) {
+            return '/' . $path;
+        }
+
+        return '/' . $path . '?v=' . substr(md5((string) $mtime), 0, 8);
     }
 
     private function getThemeName(): ?string

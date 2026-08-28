@@ -149,7 +149,7 @@ Gibt den Pfad zur kompilierten CSS-Datei zurück. Der Parameter `entry` entspric
 
 ```twig
 <link rel="stylesheet" href="{{ theme_css('default') }}">
-{# Ausgabe: /assets/theme-name/css/default.css #}
+{# Ausgabe: /assets/theme-name/css/default.css?v=0f634686 #}
 ```
 
 Varianten wie `variant-1.scss` können dementsprechend über den Entry-Parameter `variant-1` ausgegeben werden.
@@ -160,7 +160,7 @@ Gibt den Pfad zu einer JavaScript-Datei des Themes zurück.
 
 ```twig
 <script src="{{ theme_js('main.js') }}"></script>
-{# Ausgabe: /assets/theme-name/js/main.js #}
+{# Ausgabe: /assets/theme-name/js/main.js?v=0f634686 #}
 ```
 
 ### `theme_img(file)`
@@ -169,8 +169,17 @@ Gibt den Pfad zu einer Bild-Datei des Themes zurück.
 
 ```twig
 <img src="{{ theme_img('logo.svg') }}" alt="Logo">
-{# Ausgabe: /assets/theme-name/img/logo.svg #}
+{# Ausgabe: /assets/theme-name/img/logo.svg?v=6def5d96 #}
 ```
+
+### Cache Busting
+
+Alle drei Funktionen hängen einen Versionsparameter `?v=<hash>` an, der aus der
+`filemtime()` der ausgelieferten Datei gebildet wird — im selben Format, das Contao
+für Dateien aus `$GLOBALS['TL_CSS']` bzw. `$GLOBALS['TL_JAVASCRIPT']` verwendet
+(`substr(md5($mtime), 0, 8)`). Ändert sich eine Datei, ändert sich die URL und der
+Browser lädt sie neu. Existiert die Datei nicht, geben die Funktionen weiterhin
+`null` zurück.
 
 ## Development notes
 
