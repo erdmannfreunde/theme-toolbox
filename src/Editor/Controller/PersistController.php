@@ -55,11 +55,28 @@ class PersistController extends AbstractBackendController
         }
 
         $result = $this->presetApplier->apply($theme, $preset);
+        $assetBase = $request->getSchemeAndHttpHost().$request->getBasePath().'/assets/'.$theme.'/';
 
         return new JsonResponse([
             'ok' => true,
             'corrected' => $result['corrected'],
             'values' => $result['values'],
+            'fonts' => [
+                'imported' => array_map(
+                    static fn (array $font): array => [
+                        'family' => $font['family'],
+                        'faces' => array_map(
+                            static fn (array $face): array => [
+                                'weight' => $face['weight'],
+                                'url' => $assetBase.ltrim($face['path'], '/'),
+                            ],
+                            $font['faces'],
+                        ),
+                    ],
+                    $result['fonts']['imported'],
+                ),
+                'failed' => $result['fonts']['failed'],
+            ],
             'message' => $result['corrected']
                 ? $this->translator->trans('error.invalid_preset', [], self::TRANSLATION_DOMAIN)
                 : $this->translator->trans('applied', [], self::TRANSLATION_DOMAIN),

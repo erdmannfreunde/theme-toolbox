@@ -942,7 +942,19 @@
                 applyBtn.disabled = false;
                 if (json.ok) {
                     dirty = {};
-                    applyBtn.textContent = json.corrected ? 'Übernommen (korrigiert)' : 'Übernommen ✓';
+                    var fonts = json.fonts || {};
+                    var label = 'Übernommen ✓';
+                    if (fonts.failed && fonts.failed.length) {
+                        label = 'Übernommen, Schrift fehlt: ' + fonts.failed.join(', ');
+                    } else if (json.corrected) {
+                        label = 'Übernommen (korrigiert)';
+                    }
+                    // Register the freshly self-hosted woff2 with the browser, otherwise
+                    // the preview keeps the fallback font until the next reload.
+                    (fonts.imported || []).forEach(function (font) {
+                        loadFontFaces(font.family, font.faces || [], function () {});
+                    });
+                    applyBtn.textContent = label;
                     window.setTimeout(function () { applyBtn.textContent = 'Übernehmen'; }, 1800);
                 } else {
                     applyBtn.textContent = 'Fehler';

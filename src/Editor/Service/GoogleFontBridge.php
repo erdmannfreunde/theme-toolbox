@@ -19,9 +19,8 @@ use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
 /**
  * Adapter onto the existing Google-Fonts download function of the toolbox. The
  * editor never invents a new font mechanism: a chosen Google font is downloaded
- * server-side, stored self-hosted under layout/custom/fonts and registered via.
- *
- * @font-face — exactly like the backend theme file editor. The visitor browser
+ * server-side, stored self-hosted under layout/custom/fonts and registered as a
+ * font face — exactly like the backend theme file editor. The visitor browser
  * only ever sees the self-hosted file (DSGVO by design).
  */
 class GoogleFontBridge

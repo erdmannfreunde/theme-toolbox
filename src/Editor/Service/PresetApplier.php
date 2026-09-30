@@ -30,12 +30,22 @@ class PresetApplier
 
     private const SYSTEM_FONT_STACK = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
+    /**
+     * Keywords that never denote a downloadable family.
+     */
+    private const GENERIC_FAMILIES = [
+        'system-ui', '-apple-system', 'blinkmacsystemfont', 'sans-serif', 'serif',
+        'monospace', 'cursive', 'fantasy', 'ui-sans-serif', 'ui-serif', 'ui-monospace',
+        'ui-rounded', 'inherit', 'initial', 'unset', 'revert',
+    ];
+
     public function __construct(
         private readonly TokenRegistry $registry,
         private readonly ContrastGuard $contrastGuard,
         private readonly ThemeScssFileManager $fileManager,
         private readonly ThemeScssCompiler $compiler,
         private readonly Filesystem $filesystem,
+        private readonly GoogleFontBridge $fontBridge,
     ) {
     }
 
@@ -74,11 +84,12 @@ class PresetApplier
      *
      * @param array<string, mixed> $preset
      *
-     * @return array{values: array<string, string>, corrected: bool}
+     * @return array{values: array<string, string>, corrected: bool, fonts: array{imported: list<array{family: string, faces: list<array{weight: string, path: string}>}>, failed: list<string>}}
      */
     public function apply(string $theme, array $preset): array
     {
         $sanitized = $this->sanitize($preset, $theme);
+        $fonts = ['imported' => [], 'failed' => []];
 
         if ([] !== $sanitized['values']) {
             $content = $this->readVariables($theme) ?? '';
@@ -87,11 +98,80 @@ class PresetApplier
                 $content = $this->setValue($content, $property, $value);
             }
 
+            // Write before importing. A font import compiles the theme itself, and the
+            // compiler memoises per request — a compile placed after it would be a no-op
+            // and the new values would never reach the CSS.
             $this->writeVariables($content);
+
+            $fonts = $this->importFonts($theme, $sanitized['values']);
+
             $this->compiler->compile($theme);
         }
 
-        return $sanitized;
+        return [
+            'values' => $sanitized['values'],
+            'corrected' => $sanitized['corrected'],
+            'fonts' => $fonts,
+        ];
+    }
+
+    /**
+     * Self-host the fonts a preset asks for, the same way the font picker does.
+     *
+     * A family that cannot be fetched must not block the preset: the values are
+     * already written at this point, and the caller gets told which ones are missing.
+     *
+     * @param array<string, string> $values
+     *
+     * @return array{imported: list<array{family: string, faces: list<array{weight: string, path: string}>}>, failed: list<string>}
+     */
+    private function importFonts(string $theme, array $values): array
+    {
+        $imported = [];
+        $failed = [];
+
+        foreach ($this->collectFontFamilies($theme, $values) as $family) {
+            try {
+                $result = $this->fontBridge->import($theme, $family);
+                $imported[] = ['family' => $result['family'], 'faces' => $result['faces']];
+            } catch (\Exception) {
+                $failed[] = $family;
+            }
+        }
+
+        return ['imported' => $imported, 'failed' => $failed];
+    }
+
+    /**
+     * The leading family of every font stack the preset sets, generics dropped.
+     *
+     * Only the first entry is a real choice; everything behind it is the fallback
+     * chain and must never trigger a download.
+     *
+     * @param array<string, string> $values
+     *
+     * @return list<string>
+     */
+    private function collectFontFamilies(string $theme, array $values): array
+    {
+        $map = $this->registry->getTokenMap($theme);
+        $families = [];
+
+        foreach ($values as $property => $value) {
+            if ('font' !== ($map[$property]['type'] ?? null)) {
+                continue;
+            }
+
+            $first = trim(trim(explode(',', $value)[0]), '\'"');
+
+            if ('' === $first || \in_array(strtolower($first), self::GENERIC_FAMILIES, true)) {
+                continue;
+            }
+
+            $families[strtolower($first)] = $first;
+        }
+
+        return array_values($families);
     }
 
     /**

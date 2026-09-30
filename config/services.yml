@@ -129,6 +129,7 @@ services:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
       - '@filesystem'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge'
 
   ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge:
     arguments:
