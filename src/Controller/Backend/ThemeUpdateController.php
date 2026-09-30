@@ -96,7 +96,7 @@ class ThemeUpdateController extends AbstractBackendController
 
         if (!$file->isValid()) {
             $error = match ($file->getError()) {
-                \UPLOAD_ERR_INI_SIZE, \UPLOAD_ERR_FORM_SIZE => $this->translator->trans(
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => $this->translator->trans(
                     'fileTooLarge',
                     [$this->formatBytes((int) UploadedFile::getMaxFilesize())],
                     self::TRANSLATION_DOMAIN,
@@ -133,7 +133,7 @@ class ThemeUpdateController extends AbstractBackendController
             $errorMessage = $this->translator->trans($result['error'], [], self::TRANSLATION_DOMAIN);
 
             if (!empty($result['errorDetail'])) {
-                $errorMessage .= ': ' . $result['errorDetail'];
+                $errorMessage .= ': '.$result['errorDetail'];
             }
 
             $this->addFlash('theme_update_error', $errorMessage);
@@ -216,6 +216,6 @@ class ThemeUpdateController extends AbstractBackendController
         $power = $bytes > 0 ? (int) floor(log($bytes, 1024)) : 0;
         $power = min($power, \count($units) - 1);
 
-        return round($bytes / 1024 ** $power, 1) . ' ' . $units[$power];
+        return round($bytes / 1024 ** $power, 1).' '.$units[$power];
     }
 }

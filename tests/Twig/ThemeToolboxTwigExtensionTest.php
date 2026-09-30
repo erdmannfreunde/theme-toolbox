@@ -108,8 +108,8 @@ class ThemeToolboxTwigExtensionTest extends TestCase
     {
         $before = $this->extension->getThemeJsPath('navigation.js');
 
-        // Age the sources so the compiler skips the recompile (and with it the
-        // asset sync), then stamp the already synced asset with a known mtime.
+        // Age the sources so the compiler skips the recompile (and with it the asset
+        // sync), then stamp the already synced asset with a known mtime.
         $this->ageSources();
         touch($this->tmp.'/assets/mytheme/js/navigation.js', 1700000000);
         clearstatcache();

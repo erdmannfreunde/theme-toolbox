@@ -19,13 +19,16 @@ use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
 /**
  * Adapter onto the existing Google-Fonts download function of the toolbox. The
  * editor never invents a new font mechanism: a chosen Google font is downloaded
- * server-side, stored self-hosted under layout/custom/fonts and registered via
+ * server-side, stored self-hosted under layout/custom/fonts and registered via.
+ *
  * @font-face — exactly like the backend theme file editor. The visitor browser
  * only ever sees the self-hosted file (DSGVO by design).
  */
 class GoogleFontBridge
 {
-    /** Weights pulled for a newly imported family (body + headings coverage). */
+    /**
+     * Weights pulled for a newly imported family (body + headings coverage).
+     */
     private const IMPORT_WEIGHTS = ['400', '700'];
 
     private const SYSTEM_FONT_STACK = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
@@ -49,12 +52,11 @@ class GoogleFontBridge
 
     /**
      * Self-host a Google font family (downloads the regular + bold weights that
-     * exist, registers @font-face) and return the CSS family value to apply plus
-     * the self-hosted woff2 faces so the editor can load them live via the
-     * FontFace API.
+     * exist, registers @font-face) and return the CSS family value to apply plus the
+     * self-hosted woff2 faces so the editor can load them live via the FontFace API.
      *
-     * The @font-face lands in base/_fonts.scss for persistence; recompiling syncs
-     * the woff2 into the public assets/<theme>/fonts directory so it is servable
+     * The @font-face lands in base/_fonts.scss for persistence; recompiling syncs the
+     * woff2 into the public assets/<theme>/fonts directory so it is servable
      * immediately (without waiting for the next page render).
      *
      * @return array{family: string, value: string, weights: list<string>, faces: list<array{weight: string, path: string}>}
@@ -96,13 +98,11 @@ class GoogleFontBridge
         }
 
         if ([] === $imported) {
-            throw new \RuntimeException(
-                $lastError?->getMessage() ?? \sprintf('Font "%s" could not be downloaded.', $family),
-            );
+            throw new \RuntimeException($lastError?->getMessage() ?? \sprintf('Font "%s" could not be downloaded.', $family));
         }
 
-        // Recompile so the new @font-face + woff2 are synced into the public
-        // assets directory (live FontFace load + persistence on the next render).
+        // Recompile so the new @font-face + woff2 are synced into the public assets
+        // directory (live FontFace load + persistence on the next render).
         if ([] !== $faces) {
             $this->compiler->compile($theme);
         }

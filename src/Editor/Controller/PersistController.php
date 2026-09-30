@@ -22,8 +22,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Persist (apply) for the live editor. Backend-scoped and refused in public mode —
- * the public/demo editor never writes server-side (§5.1, G8).
+ * Persist (apply) for the live editor. Backend-scoped and refused in public mode
+ * — the public/demo editor never writes server-side (§5.1, G8).
  */
 #[Route('/contao/themeToolbox/editor', defaults: ['_scope' => 'backend', '_token_check' => true])]
 class PersistController extends AbstractBackendController

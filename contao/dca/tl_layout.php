@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 
 use Contao\CoreBundle\DataContainer\PaletteManipulator;
+use ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\LayoutThemeScssOptionsCallback;
 
 /*
  * This file is part of erdmannfreunde/theme-toolbox.
@@ -57,7 +58,7 @@ PaletteManipulator::create()
 $GLOBALS['TL_DCA']['tl_layout']['fields']['themeScss'] = [
     'exclude' => true,
     'inputType' => 'select',
-    'options_callback' => [ErdmannFreunde\ThemeToolboxBundle\EventListener\DataContainer\LayoutThemeScssOptionsCallback::class, '__invoke'],
+    'options_callback' => [LayoutThemeScssOptionsCallback::class, '__invoke'],
     'eval' => ['includeBlankOption' => true, 'tl_class' => 'w50'],
     'sql' => "varchar(255) NOT NULL default ''",
 ];

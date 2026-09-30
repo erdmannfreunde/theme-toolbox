@@ -106,7 +106,7 @@ class ThemeFileEditorController extends AbstractBackendController
                     $fileContent = $this->jsFileManager->getFileContent($selectedTheme, $selectedFile) ?? '';
                     $isCustom = $this->jsFileManager->hasCustomFile($selectedFile);
                     $originalContent = $this->jsFileManager->getOriginalFileContent($selectedTheme, $selectedFile) ?? '';
-                    $isCustomOnly = $isCustom && $originalContent === '';
+                    $isCustomOnly = $isCustom && '' === $originalContent;
                 }
             } else {
                 $files = $this->fileManager->getScssFiles($selectedTheme);
@@ -115,7 +115,7 @@ class ThemeFileEditorController extends AbstractBackendController
                     $fileContent = $this->fileManager->getFileContent($selectedTheme, $selectedFile) ?? '';
                     $isCustom = $this->fileManager->hasCustomFile($selectedFile);
                     $originalContent = $this->fileManager->getOriginalFileContent($selectedTheme, $selectedFile) ?? '';
-                    $isCustomOnly = $isCustom && $originalContent === '';
+                    $isCustomOnly = $isCustom && '' === $originalContent;
                 }
             }
         }
@@ -139,11 +139,6 @@ class ThemeFileEditorController extends AbstractBackendController
             'csrf_token' => $this->csrfTokenManager->getDefaultTokenValue(),
             'has_favorites' => $this->twig->getLoader()->exists('@Contao/backend/component/_favorites.html.twig'),
         ]);
-    }
-
-    private function isValidTheme(string $theme): bool
-    {
-        return '' !== $theme && isset($this->fileManager->getAvailableThemes()[$theme]);
     }
 
     #[Route('/save', name: 'theme_file_editor_save', methods: ['POST'])]
@@ -204,10 +199,13 @@ class ThemeFileEditorController extends AbstractBackendController
 
         // Validate new name
         if (!preg_match('/^[\w\-\/]+\.scss$/', $newName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         $success = $this->fileManager->renameCustomFile($oldName, $newName);
@@ -234,19 +232,25 @@ class ThemeFileEditorController extends AbstractBackendController
 
         // Validate file name
         if (!preg_match('/^[\w\-]+\.scss$/', $fileName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
-        $filePath = $directory ? $directory . '/' . $fileName : $fileName;
+        $filePath = $directory ? $directory.'/'.$fileName : $fileName;
 
         if ($this->fileManager->hasCustomFile($filePath)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('fileExists', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('fileExists', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         $success = $this->fileManager->saveCustomFile($filePath, '');
@@ -270,34 +274,43 @@ class ThemeFileEditorController extends AbstractBackendController
 
         /** @var array<int, UploadedFile>|UploadedFile|null $uploaded */
         $uploaded = $request->files->get('files');
-        $files = $uploaded instanceof UploadedFile ? [$uploaded] : (is_array($uploaded) ? $uploaded : []);
+        $files = $uploaded instanceof UploadedFile ? [$uploaded] : (\is_array($uploaded) ? $uploaded : []);
 
         if (!$this->isValidTheme($theme) || '' === $family || [] === $files) {
             return new JsonResponse(['success' => false, 'error' => 'Missing parameters'], 400);
         }
 
         if (!preg_match('/^[1-9]00$/', $weight)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFontWeight', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFontWeight', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         if (!\in_array($style, ['normal', 'italic'], true)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFontStyle', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFontStyle', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         try {
             $result = $this->fileManager->saveUploadedFonts($family, $files);
             $scssBlock = $this->fileManager->appendFontFaceToCustomScss($theme, $family, $weight, $style, $result['files']);
         } catch (\InvalidArgumentException $e) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ],
+                400,
+            );
         }
 
         return new JsonResponse([
@@ -341,17 +354,23 @@ class ThemeFileEditorController extends AbstractBackendController
         }
 
         if (!preg_match('/^[1-9]00$/', $weight)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFontWeight', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFontWeight', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         if (!\in_array($style, ['normal', 'italic'], true)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFontStyle', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFontStyle', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         try {
@@ -369,10 +388,13 @@ class ThemeFileEditorController extends AbstractBackendController
             $result = $this->fileManager->saveBinaryFonts($family, $downloaded['files']);
             $scssBlock = $this->fileManager->appendFontFaceToCustomScss($theme, $family, $weight, $style, $result['files']);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $e->getMessage(),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $e->getMessage(),
+                ],
+                400,
+            );
         }
 
         return new JsonResponse([
@@ -466,13 +488,16 @@ class ThemeFileEditorController extends AbstractBackendController
         $fileName = '' !== $targetName ? $targetName : $file->getClientOriginalName();
 
         if (!preg_match('/^[\w\-. ]+\.[A-Za-z0-9]+$/', $fileName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
-        $relativePath = $directory !== '' ? $directory . '/' . $fileName : $fileName;
+        $relativePath = '' !== $directory ? $directory.'/'.$fileName : $fileName;
 
         try {
             $this->imageFileManager->saveUploadedImage($relativePath, $file);
@@ -529,10 +554,13 @@ class ThemeFileEditorController extends AbstractBackendController
         }
 
         if (!preg_match('/^[\w\-. \/]+\.[A-Za-z0-9]+$/', $newName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         try {
@@ -562,13 +590,16 @@ class ThemeFileEditorController extends AbstractBackendController
         }
 
         if (!preg_match('/^[\w\-. ]+$/', $folderName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFolderName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFolderName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
-        $relativePath = '' !== $directory ? $directory . '/' . $folderName : $folderName;
+        $relativePath = '' !== $directory ? $directory.'/'.$folderName : $folderName;
 
         try {
             $this->imageFileManager->createCustomFolder($relativePath);
@@ -669,10 +700,13 @@ class ThemeFileEditorController extends AbstractBackendController
         }
 
         if (!preg_match('/^[\w\-\/]+\.js$/', $newName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         $success = $this->jsFileManager->renameCustomFile($oldName, $newName);
@@ -698,19 +732,25 @@ class ThemeFileEditorController extends AbstractBackendController
         }
 
         if (!preg_match('/^[\w\-]+\.js$/', $fileName)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('invalidFileName', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
-        $filePath = $directory ? $directory . '/' . $fileName : $fileName;
+        $filePath = $directory ? $directory.'/'.$fileName : $fileName;
 
         if ($this->jsFileManager->hasCustomFile($filePath)) {
-            return new JsonResponse([
-                'success' => false,
-                'error' => $this->translator->trans('fileExists', [], self::TRANSLATION_DOMAIN),
-            ], 400);
+            return new JsonResponse(
+                [
+                    'success' => false,
+                    'error' => $this->translator->trans('fileExists', [], self::TRANSLATION_DOMAIN),
+                ],
+                400,
+            );
         }
 
         $success = $this->jsFileManager->saveCustomFile($filePath, '');
@@ -742,6 +782,11 @@ class ThemeFileEditorController extends AbstractBackendController
                 ? $this->translator->trans('deleted', [], self::TRANSLATION_DOMAIN)
                 : $this->translator->trans('deleteError', [], self::TRANSLATION_DOMAIN),
         ]);
+    }
+
+    private function isValidTheme(string $theme): bool
+    {
+        return '' !== $theme && isset($this->fileManager->getAvailableThemes()[$theme]);
     }
 
     /**

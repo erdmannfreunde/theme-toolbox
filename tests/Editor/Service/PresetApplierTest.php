@@ -58,11 +58,6 @@ class PresetApplierTest extends TestCase
         $this->fs->remove($this->tmp);
     }
 
-    private function customContent(): string
-    {
-        return (string) file_get_contents($this->customVariables);
-    }
-
     public function testSanitizeKeepsValidColour(): void
     {
         $result = $this->applier->sanitize(['--color-brand' => '#FF5636'], 'mytheme');
@@ -71,10 +66,13 @@ class PresetApplierTest extends TestCase
 
     public function testSanitizeClampsLength(): void
     {
-        $result = $this->applier->sanitize([
-            '--base-font-size' => '5rem',
-            '--base-border-radius' => '999px',
-        ], 'mytheme');
+        $result = $this->applier->sanitize(
+            [
+                '--base-font-size' => '5rem',
+                '--base-border-radius' => '999px',
+            ],
+            'mytheme',
+        );
 
         $this->assertSame('1.1875rem', $result['values']['--base-font-size']);
         $this->assertSame('24px', $result['values']['--base-border-radius']);
@@ -82,11 +80,14 @@ class PresetApplierTest extends TestCase
 
     public function testSanitizeDropsInvalidAndUnknown(): void
     {
-        $result = $this->applier->sanitize([
-            '--unknown' => '#123456',
-            '--headings-font-weight' => '12345',
-            '--color-text' => 'notacolor',
-        ], 'mytheme');
+        $result = $this->applier->sanitize(
+            [
+                '--unknown' => '#123456',
+                '--headings-font-weight' => '12345',
+                '--color-text' => 'notacolor',
+            ],
+            'mytheme',
+        );
 
         $this->assertArrayNotHasKey('--unknown', $result['values']);
         $this->assertArrayNotHasKey('--headings-font-weight', $result['values']);
@@ -132,5 +133,10 @@ class PresetApplierTest extends TestCase
         $this->assertTrue($result['corrected']);
         $this->assertTrue($this->guard->passes($result['values']['--color-text'], '#ffffff'));
         $this->assertStringContainsString('--color-text: '.$result['values']['--color-text'].';', $this->customContent());
+    }
+
+    private function customContent(): string
+    {
+        return (string) file_get_contents($this->customVariables);
     }
 }

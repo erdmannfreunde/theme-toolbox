@@ -42,7 +42,7 @@ class ThemeToolboxTwigExtension extends AbstractExtension
      *
      * Usage: {{ theme_css('default') }}
      */
-    public function getThemeCssPath(string $entryFile = 'default'): ?string
+    public function getThemeCssPath(string $entryFile = 'default'): string|null
     {
         $themeName = $this->getThemeName();
 
@@ -60,7 +60,7 @@ class ThemeToolboxTwigExtension extends AbstractExtension
      *
      * Usage: {{ theme_img('logo.png') }}
      */
-    public function getThemeImgPath(string $file): ?string
+    public function getThemeImgPath(string $file): string|null
     {
         return $this->getAssetPath('img', $file);
     }
@@ -70,12 +70,12 @@ class ThemeToolboxTwigExtension extends AbstractExtension
      *
      * Usage: {{ theme_js('main.js') }}
      */
-    public function getThemeJsPath(string $file): ?string
+    public function getThemeJsPath(string $file): string|null
     {
         return $this->getAssetPath('js', $file);
     }
 
-    private function getAssetPath(string $type, string $file): ?string
+    private function getAssetPath(string $type, string $file): string|null
     {
         $themeName = $this->getThemeName();
 
@@ -86,9 +86,9 @@ class ThemeToolboxTwigExtension extends AbstractExtension
         // Trigger compilation/sync to ensure assets are up to date
         $this->compiler->compile($themeName);
 
-        $path = self::ASSETS_DIR . '/' . $themeName . '/' . $type . '/' . $file;
+        $path = self::ASSETS_DIR.'/'.$themeName.'/'.$type.'/'.$file;
 
-        if (!file_exists($this->projectDir . '/' . $path)) {
+        if (!file_exists($this->projectDir.'/'.$path)) {
             return null;
         }
 
@@ -100,20 +100,21 @@ class ThemeToolboxTwigExtension extends AbstractExtension
      *
      * Uses the same format as Contao does for files registered via
      * $GLOBALS['TL_CSS'] / $GLOBALS['TL_JAVASCRIPT'], see
-     * Contao\Template::generateStyleTag() and Contao\Template::generateScriptTag().
+     * Contao\Template::generateStyleTag() and
+     * Contao\Template::generateScriptTag().
      */
     private function addVersion(string $path): string
     {
-        $mtime = @filemtime($this->projectDir . '/' . $path);
+        $mtime = @filemtime($this->projectDir.'/'.$path);
 
         if (!$mtime) {
-            return '/' . $path;
+            return '/'.$path;
         }
 
-        return '/' . $path . '?v=' . substr(md5((string) $mtime), 0, 8);
+        return '/'.$path.'?v='.substr(md5((string) $mtime), 0, 8);
     }
 
-    private function getThemeName(): ?string
+    private function getThemeName(): string|null
     {
         $themes = $this->fileManager->getAvailableThemes();
 

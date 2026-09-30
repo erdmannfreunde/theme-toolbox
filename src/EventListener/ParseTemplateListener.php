@@ -64,7 +64,7 @@ class ParseTemplateListener
 
         $classes = $this->uniqueClasses($widget->toolbox_classes);
 
-        if ($classes === '') {
+        if ('' === $classes) {
             return $buffer;
         }
 
@@ -99,14 +99,15 @@ class ParseTemplateListener
 
         // Remove empty tokens and strip unsafe characters from each class name.
         $sanitizedTokens = [];
+
         foreach ($tokens as $token) {
             $token = trim((string) $token);
             if ('' === $token) {
                 continue;
             }
 
-            // Allow only a safe subset of characters in class names.
-            // This prevents breaking out of the class attribute and avoids injection.
+            // Allow only a safe subset of characters in class names. This prevents breaking
+            // out of the class attribute and avoids injection.
             $clean = preg_replace('/[^a-zA-Z0-9_-]+/', '', $token);
 
             if ('' !== $clean) {

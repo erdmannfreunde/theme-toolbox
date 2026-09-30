@@ -56,6 +56,10 @@
   "extra": {
     "contao-manager-plugin": "ErdmannFreunde\\ThemeToolboxBundle\\ContaoManager\\Plugin"
   },
+  "scripts": {
+    "cs": "@php vendor/bin/ecs check --ansi",
+    "cs-fix": "@php vendor/bin/ecs check --fix --ansi"
+  },
   "config": {
     "allow-plugins": {
       "contao-components/installer": true,

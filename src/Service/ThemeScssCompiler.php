@@ -23,29 +23,27 @@ class ThemeScssCompiler
 {
     private const ASSETS_DIR = 'assets';
 
-    /** @var array<string, string|null> */
+    /**
+     * @var array<string, string|null>
+     */
     private array $compiledPaths = [];
 
-    private ?string $lastError = null;
-
-    private function cacheKey(string $themeName, string $entryFile): string
-    {
-        return $themeName . ':' . $entryFile;
-    }
+    private string|null $lastError = null;
 
     public function __construct(
         private readonly ThemeScssFileManager $fileManager,
         private readonly string $projectDir,
         private readonly Filesystem $filesystem,
         private readonly bool $debugMode = false,
-        private readonly ?LoggerInterface $logger = null,
+        private readonly LoggerInterface|null $logger = null,
     ) {
     }
 
     /**
-     * Compile a given entry point SCSS file for a theme and return the path to the compiled CSS.
+     * Compile a given entry point SCSS file for a theme and return the path to the
+     * compiled CSS.
      */
-    public function compile(string $themeName, string $entryFile = 'default'): ?string
+    public function compile(string $themeName, string $entryFile = 'default'): string|null
     {
         $cacheKey = $this->cacheKey($themeName, $entryFile);
 
@@ -66,7 +64,7 @@ class ThemeScssCompiler
 
         $outputDir = $this->getThemeCssDir($themeName);
         $entryBaseName = pathinfo($entryFile, PATHINFO_FILENAME);
-        $outputFile = $outputDir . '/' . $entryBaseName . '.css';
+        $outputFile = $outputDir.'/'.$entryBaseName.'.css';
 
         // Check if recompilation is needed using file modification times
         if ($this->filesystem->exists($outputFile) && !$this->needsRecompilation($themeName, $outputFile)) {
@@ -85,8 +83,8 @@ class ThemeScssCompiler
         // Get the base SCSS directory for the theme
         $scssDir = \dirname($defaultScssPath);
 
-        // Set up import paths - ALL resolution goes through our callback
-        // This ensures custom files are always checked first
+        // Set up import paths - ALL resolution goes through our callback This ensures
+        // custom files are always checked first
         $compiler->setImportPaths([
             fn (string $path) => $this->resolveImportPath($themeName, $path, $scssDir),
         ]);
@@ -106,10 +104,13 @@ class ThemeScssCompiler
         } catch (\Exception $e) {
             $this->lastError = $e->getMessage();
 
-            $this->logger?->error('SCSS compilation failed for theme "{theme}": {error}', [
-                'theme' => $themeName,
-                'error' => $e->getMessage(),
-            ]);
+            $this->logger?->error(
+                'SCSS compilation failed for theme "{theme}": {error}',
+                [
+                    'theme' => $themeName,
+                    'error' => $e->getMessage(),
+                ],
+            );
 
             return $this->compiledPaths[$cacheKey] = null;
         }
@@ -121,7 +122,7 @@ class ThemeScssCompiler
      * Lets callers (e.g. the API) surface the SCSS error instead of only seeing a
      * null return value. Reset at the start of every compile attempt.
      */
-    public function getLastError(): ?string
+    public function getLastError(): string|null
     {
         return $this->lastError;
     }
@@ -129,7 +130,7 @@ class ThemeScssCompiler
     /**
      * Get the web-accessible path for the compiled CSS.
      */
-    public function getWebPath(string $themeName, string $entryFile = 'default'): ?string
+    public function getWebPath(string $themeName, string $entryFile = 'default'): string|null
     {
         $compiledPath = $this->compile($themeName, $entryFile);
 
@@ -138,13 +139,42 @@ class ThemeScssCompiler
         }
 
         // Return relative path from web root
-        return str_replace($this->projectDir . '/', '', $compiledPath);
+        return str_replace($this->projectDir.'/', '', $compiledPath);
+    }
+
+    /**
+     * Clear the cache for a theme.
+     */
+    public function clearCache(string $themeName): void
+    {
+        $themeAssetsDir = $this->getThemeAssetsDir($themeName);
+
+        if ($this->filesystem->exists($themeAssetsDir)) {
+            $this->filesystem->remove($themeAssetsDir);
+        }
+    }
+
+    /**
+     * Clear all compiled CSS files.
+     */
+    public function clearAllCache(): void
+    {
+        $themes = $this->fileManager->getAvailableThemes();
+
+        foreach (array_keys($themes) as $themeName) {
+            $this->clearCache($themeName);
+        }
+    }
+
+    private function cacheKey(string $themeName, string $entryFile): string
+    {
+        return $themeName.':'.$entryFile;
     }
 
     /**
      * Resolve import paths, preferring custom files over originals.
      */
-    private function resolveImportPath(string $themeName, string $path, string $scssDir): ?string
+    private function resolveImportPath(string $themeName, string $path, string $scssDir): string|null
     {
         // Normalize path (add .scss if needed)
         $normalizedPath = $this->normalizeImportPath($path);
@@ -152,13 +182,13 @@ class ThemeScssCompiler
         // Handle relative paths with ../
         if (str_contains($path, '../')) {
             // Resolve relative to the original SCSS directory
-            $absolutePath = realpath($scssDir . '/' . $normalizedPath);
+            $absolutePath = realpath($scssDir.'/'.$normalizedPath);
             if ($absolutePath && $this->filesystem->exists($absolutePath)) {
                 return $absolutePath;
             }
 
             $partialPath = $this->getPartialPath($normalizedPath);
-            $absolutePartialPath = realpath($scssDir . '/' . $partialPath);
+            $absolutePartialPath = realpath($scssDir.'/'.$partialPath);
             if ($absolutePartialPath && $this->filesystem->exists($absolutePartialPath)) {
                 return $absolutePartialPath;
             }
@@ -222,14 +252,14 @@ class ThemeScssCompiler
         $filename = basename($path);
 
         if (!str_starts_with($filename, '_')) {
-            $filename = '_' . $filename;
+            $filename = '_'.$filename;
         }
 
-        if ($dir === '.') {
+        if ('.' === $dir) {
             return $filename;
         }
 
-        return $dir . '/' . $filename;
+        return $dir.'/'.$filename;
     }
 
     /**
@@ -240,7 +270,7 @@ class ThemeScssCompiler
         $assetDirs = $this->fileManager->getThemeAssetDirs($themeName);
 
         foreach ($assetDirs as $type => $sourceDirs) {
-            $targetDir = $this->getThemeAssetsDir($themeName) . '/' . $type;
+            $targetDir = $this->getThemeAssetsDir($themeName).'/'.$type;
 
             foreach ($sourceDirs as $sourceDir) {
                 if ('js' === $type && !$this->debugMode) {
@@ -255,8 +285,8 @@ class ThemeScssCompiler
     }
 
     /**
-     * Copy JS files from $sourceDir to $targetDir, minifying .js files in the process.
-     * Non-.js files are copied 1:1 (source maps, assets, etc.).
+     * Copy JS files from $sourceDir to $targetDir, minifying .js files in the
+     * process. Non-.js files are copied 1:1 (source maps, assets, etc.).
      */
     private function syncJsDir(string $sourceDir, string $targetDir): void
     {
@@ -273,7 +303,7 @@ class ThemeScssCompiler
 
         foreach ($finder as $file) {
             $relativePath = $file->getRelativePathname();
-            $target = $targetDir . '/' . $relativePath;
+            $target = $targetDir.'/'.$relativePath;
 
             if (!is_dir(\dirname($target))) {
                 $this->filesystem->mkdir(\dirname($target), 0755);
@@ -288,10 +318,13 @@ class ThemeScssCompiler
                 $minifier = new JsMinifier($file->getPathname());
                 $minifier->minify($target);
             } catch (\Exception $e) {
-                $this->logger?->warning('JS minification failed for "{file}": {error} — copying unminified.', [
-                    'file' => $file->getPathname(),
-                    'error' => $e->getMessage(),
-                ]);
+                $this->logger?->warning(
+                    'JS minification failed for "{file}": {error} — copying unminified.',
+                    [
+                        'file' => $file->getPathname(),
+                        'error' => $e->getMessage(),
+                    ],
+                );
                 $this->filesystem->copy($file->getPathname(), $target, true);
             }
         }
@@ -304,7 +337,7 @@ class ThemeScssCompiler
     {
         $outputMtime = filemtime($outputFile);
 
-        if ($outputMtime === false) {
+        if (false === $outputMtime) {
             return true;
         }
 
@@ -313,13 +346,13 @@ class ThemeScssCompiler
         foreach ($files as $file) {
             $customMtime = @filemtime($this->fileManager->getCustomFilePath($file['path']));
 
-            if ($customMtime !== false && $customMtime > $outputMtime) {
+            if (false !== $customMtime && $customMtime > $outputMtime) {
                 return true;
             }
 
             $originalMtime = @filemtime($this->fileManager->getOriginalFilePath($themeName, $file['path']));
 
-            if ($originalMtime !== false && $originalMtime > $outputMtime) {
+            if (false !== $originalMtime && $originalMtime > $outputMtime) {
                 return true;
             }
         }
@@ -330,7 +363,7 @@ class ThemeScssCompiler
         if (is_dir($customDir)) {
             $customDirMtime = filemtime($customDir);
 
-            if ($customDirMtime !== false && $customDirMtime > $outputMtime) {
+            if (false !== $customDirMtime && $customDirMtime > $outputMtime) {
                 return true;
             }
         }
@@ -371,42 +404,18 @@ class ThemeScssCompiler
     }
 
     /**
-     * Clear the cache for a theme.
-     */
-    public function clearCache(string $themeName): void
-    {
-        $themeAssetsDir = $this->getThemeAssetsDir($themeName);
-
-        if ($this->filesystem->exists($themeAssetsDir)) {
-            $this->filesystem->remove($themeAssetsDir);
-        }
-    }
-
-    /**
-     * Clear all compiled CSS files.
-     */
-    public function clearAllCache(): void
-    {
-        $themes = $this->fileManager->getAvailableThemes();
-
-        foreach (array_keys($themes) as $themeName) {
-            $this->clearCache($themeName);
-        }
-    }
-
-    /**
-     * Get the base assets directory for a theme: assets/[theme]/
+     * Get the base assets directory for a theme: assets/[theme]/.
      */
     private function getThemeAssetsDir(string $themeName): string
     {
-        return $this->projectDir . '/' . self::ASSETS_DIR . '/' . $themeName;
+        return $this->projectDir.'/'.self::ASSETS_DIR.'/'.$themeName;
     }
 
     /**
-     * Get the CSS output directory for a theme: assets/[theme]/css/
+     * Get the CSS output directory for a theme: assets/[theme]/css/.
      */
     private function getThemeCssDir(string $themeName): string
     {
-        return $this->getThemeAssetsDir($themeName) . '/css';
+        return $this->getThemeAssetsDir($themeName).'/css';
     }
 }

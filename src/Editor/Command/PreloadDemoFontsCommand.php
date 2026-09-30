@@ -33,7 +33,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class PreloadDemoFontsCommand extends Command
 {
-    /** Default showcase set — popular, distinct families covering the demo. */
+    /**
+     * Default showcase set — popular, distinct families covering the demo.
+     */
     private const DEFAULT_FAMILIES = ['Inter', 'Source Sans 3', 'Space Grotesk', 'Merriweather', 'Roboto'];
 
     public function __construct(
@@ -68,22 +70,22 @@ class PreloadDemoFontsCommand extends Command
             ? array_filter(array_map('trim', explode(',', $familiesOption)))
             : self::DEFAULT_FAMILIES;
 
-        $io->title(sprintf('Preloading %d showcase fonts for theme "%s"', \count($families), $theme));
+        $io->title(\sprintf('Preloading %d showcase fonts for theme "%s"', \count($families), $theme));
 
         $failed = 0;
 
         foreach ($families as $family) {
             try {
                 $result = $this->fontBridge->import($theme, $family);
-                $io->writeln(sprintf(' <info>✓</info> %s (weights: %s)', $family, implode(', ', $result['weights'])));
+                $io->writeln(\sprintf(' <info>✓</info> %s (weights: %s)', $family, implode(', ', $result['weights'])));
             } catch (\RuntimeException $e) {
                 ++$failed;
-                $io->writeln(sprintf(' <error>✗</error> %s — %s', $family, $e->getMessage()));
+                $io->writeln(\sprintf(' <error>✗</error> %s — %s', $family, $e->getMessage()));
             }
         }
 
         if ($failed > 0) {
-            $io->warning(sprintf('%d of %d fonts could not be downloaded.', $failed, \count($families)));
+            $io->warning(\sprintf('%d of %d fonts could not be downloaded.', $failed, \count($families)));
 
             return Command::FAILURE;
         }

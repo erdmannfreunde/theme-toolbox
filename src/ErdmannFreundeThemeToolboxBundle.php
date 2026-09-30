@@ -26,7 +26,7 @@ class ErdmannFreundeThemeToolboxBundle extends Bundle
         return \dirname(__DIR__);
     }
 
-    public function getContainerExtension(): ?ExtensionInterface
+    public function getContainerExtension(): ExtensionInterface|null
     {
         if (null === $this->extension) {
             $this->extension = new ErdmannFreundeThemeToolboxExtension();

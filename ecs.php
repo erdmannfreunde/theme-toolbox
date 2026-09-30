@@ -11,8 +11,12 @@ return ECSConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
         __DIR__ . '/contao',
+        __DIR__ . '/tests',
     ])
     ->withConfiguredRule(HeaderCommentFixer::class, [
         'header' => "This file is part of erdmannfreunde/theme-toolbox.\n\n(c) Erdmann & Freunde <https://erdmann-freunde.de>\n\n@license LGPL-3.0-or-later",
     ])
+    // Serial is faster than parallel on a project this size, and a fixer that
+    // blows up reports once instead of once per worker.
+    ->withoutParallel()
 ;

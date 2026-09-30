@@ -17,12 +17,12 @@ use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
- * Validates a preset against the registry, applies the server-side contrast
- * safeguard, and persists it by editing the custom _variables.scss in place —
- * each changed token's value is replaced where it is declared (a property that
- * does not exist yet is added to the first :root{} block), exactly as a developer
- * would edit the file. Only the values the user actually changed are written, so
- * untouched var()-based tokens keep their expression. Applying recompiles the theme.
+ * Validates a preset against the registry, applies the server-side contrast safeguard,
+ * and persists it by editing the custom _variables.scss in place — each changed
+ * token's value is replaced where it is declared (a property that does not exist yet is
+ * added to the first :root{} block), exactly as a developer would edit the file. Only
+ * the values the user actually changed are written, so untouched var()-based tokens
+ * keep their expression. Applying recompiles the theme.
  */
 class PresetApplier
 {

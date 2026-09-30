@@ -9,12 +9,13 @@ use Psr\Log\LoggerInterface;
 class GoogleFontsService
 {
     private const CATALOG_URL = 'https://gwfh.mranftl.com/api/fonts';
+
     private const FONT_DETAIL_URL = 'https://gwfh.mranftl.com/api/fonts/%s?subsets=latin';
 
-    private ?array $catalogCache = null;
+    private array|null $catalogCache = null;
 
     public function __construct(
-        private readonly ?LoggerInterface $logger = null,
+        private readonly LoggerInterface|null $logger = null,
     ) {
     }
 
@@ -66,7 +67,7 @@ class GoogleFontsService
     public function downloadFontFiles(string $family, string $weight, string $style): array
     {
         $familyId = $this->slugify($family);
-        $detailUrl = sprintf(self::FONT_DETAIL_URL, rawurlencode($familyId));
+        $detailUrl = \sprintf(self::FONT_DETAIL_URL, rawurlencode($familyId));
         $json = $this->httpGet($detailUrl, ['Accept: application/json']);
         $detail = json_decode($json, true);
 
@@ -90,7 +91,7 @@ class GoogleFontsService
         }
 
         if (null === $matchedVariant) {
-            throw new \RuntimeException(sprintf('Variante %s für %s nicht verfügbar.', $variantId, $family));
+            throw new \RuntimeException(\sprintf('Variante %s für %s nicht verfügbar.', $variantId, $family));
         }
 
         $downloadTargets = [
@@ -108,7 +109,7 @@ class GoogleFontsService
 
             $content = $this->httpGet($url, ['User-Agent: Mozilla/5.0']);
             $files[] = [
-                'filename' => sprintf('%s-%s-%s.%s', $this->slugify($family), $weight, $style, $target['ext']),
+                'filename' => \sprintf('%s-%s-%s.%s', $this->slugify($family), $weight, $style, $target['ext']),
                 'content' => $content,
                 'format' => $target['cssFormat'],
             ];
@@ -127,7 +128,7 @@ class GoogleFontsService
             return 'italic' === $style ? 'italic' : 'regular';
         }
 
-        return 'italic' === $style ? $weight . 'italic' : $weight;
+        return 'italic' === $style ? $weight.'italic' : $weight;
     }
 
     private function loadCatalog(): array
@@ -140,17 +141,23 @@ class GoogleFontsService
         $data = json_decode($json, true);
 
         if (!\is_array($data)) {
-            $this->logger?->error('Google Fonts catalog JSON decode failed', [
-                'url' => self::CATALOG_URL,
-                'sample' => mb_substr($json, 0, 600),
-            ]);
+            $this->logger?->error(
+                'Google Fonts catalog JSON decode failed',
+                [
+                    'url' => self::CATALOG_URL,
+                    'sample' => mb_substr($json, 0, 600),
+                ],
+            );
+
             throw new \RuntimeException('Google-Fonts-Katalog konnte nicht geladen werden.');
         }
 
         return $this->catalogCache = $data;
     }
 
-    /** @param list<string> $headers */
+    /**
+     * @param list<string> $headers
+     */
     private function httpGet(string $url, array $headers = []): string
     {
         // Prefer curl: it does IPv4/IPv6 fallback ("happy eyeballs"), which avoids the
@@ -162,7 +169,9 @@ class GoogleFontsService
         return $this->httpGetStream($url, $headers);
     }
 
-    /** @param list<string> $headers */
+    /**
+     * @param list<string> $headers
+     */
     private function httpGetCurl(string $url, array $headers): string
     {
         $ch = curl_init($url);
@@ -180,20 +189,25 @@ class GoogleFontsService
         curl_close($ch);
 
         if (!\is_string($result) || $statusCode >= 400) {
-            $this->logger?->error('Google Fonts HTTP request failed (curl)', [
-                'url' => $url,
-                'status' => $statusCode,
-                'error' => $error,
-                'response_sample' => \is_string($result) ? mb_substr($result, 0, 1000) : null,
-            ]);
+            $this->logger?->error(
+                'Google Fonts HTTP request failed (curl)',
+                [
+                    'url' => $url,
+                    'status' => $statusCode,
+                    'error' => $error,
+                    'response_sample' => \is_string($result) ? mb_substr($result, 0, 1000) : null,
+                ],
+            );
 
-            throw new \RuntimeException(sprintf('HTTP-Request fehlgeschlagen (%s): %s', $statusCode ?: 'n/a', $url));
+            throw new \RuntimeException(\sprintf('HTTP-Request fehlgeschlagen (%s): %s', $statusCode ?: 'n/a', $url));
         }
 
         return $result;
     }
 
-    /** @param list<string> $headers */
+    /**
+     * @param list<string> $headers
+     */
     private function httpGetStream(string $url, array $headers = []): string
     {
         $context = stream_context_create([
@@ -214,14 +228,17 @@ class GoogleFontsService
         }
 
         if (false === $result || null === $statusCode || $statusCode >= 400) {
-            $this->logger?->error('Google Fonts HTTP request failed', [
-                'url' => $url,
-                'status' => $statusCode,
-                'response_headers' => $responseHeaders,
-                'response_sample' => \is_string($result) ? mb_substr($result, 0, 1000) : null,
-            ]);
+            $this->logger?->error(
+                'Google Fonts HTTP request failed',
+                [
+                    'url' => $url,
+                    'status' => $statusCode,
+                    'response_headers' => $responseHeaders,
+                    'response_sample' => \is_string($result) ? mb_substr($result, 0, 1000) : null,
+                ],
+            );
 
-            throw new \RuntimeException(sprintf('HTTP-Request fehlgeschlagen (%s): %s', $statusCode ?? 'n/a', $url));
+            throw new \RuntimeException(\sprintf('HTTP-Request fehlgeschlagen (%s): %s', $statusCode ?? 'n/a', $url));
         }
 
         return $result;

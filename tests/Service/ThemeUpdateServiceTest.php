@@ -160,9 +160,9 @@ class ThemeUpdateServiceTest extends TestCase
     }
 
     /**
-     * "solo-theme" starts with "solo", so a glob would pull the other theme's archives
-     * into the same retention pot — and they would even outlive the theme's own ones,
-     * because a digit sorts before a letter.
+     * "solo-theme" starts with "solo", so a glob would pull the other theme's
+     * archives into the same retention pot — and they would even outlive the
+     * theme's own ones, because a digit sorts before a letter.
      */
     public function testPruningIgnoresThemesWhoseNameSharesThePrefix(): void
     {
@@ -173,6 +173,7 @@ class ThemeUpdateServiceTest extends TestCase
         foreach (['2026-01-01_10-00-00', '2026-02-01_10-00-00', '2026-03-01_10-00-00'] as $stamp) {
             file_put_contents($backupDir.'/'.self::THEME.'-variant-'.$stamp.'.zip', 'fremdes theme');
         }
+
         foreach (['2026-01-01_10-00-00', '2026-02-01_10-00-00'] as $stamp) {
             file_put_contents($backupDir.'/'.self::THEME.'-'.$stamp.'.zip', 'eigenes theme');
         }
@@ -314,7 +315,7 @@ class ThemeUpdateServiceTest extends TestCase
      *
      * @param array<string, string>|null $templates
      */
-    private function buildPackage(?array $templates = null): string
+    private function buildPackage(array|null $templates = null): string
     {
         $templates ??= ['backup__20260929203840.sql' => '-- demo dump'];
 

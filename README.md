@@ -187,11 +187,15 @@ Browser lädt sie neu. Existiert die Datei nicht, geben die Funktionen weiterhin
 
 ```shell
 # Prüfen
-vendor/bin/ecs check
+composer cs
 
 # Automatisch korrigieren
-vendor/bin/ecs check --fix
+composer cs-fix
 ```
+
+Geprüft werden `src/`, `contao/` und `tests/` nach dem Contao-Regelsatz
+(`SetList::CONTAO`). Die Scripts rufen `vendor/bin/ecs` auf, das sich bei Bedarf
+auch direkt verwenden lässt.
 
 ### Code-Modernisierung (Rector)
 

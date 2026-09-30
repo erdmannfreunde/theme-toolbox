@@ -13,7 +13,7 @@ declare(strict_types=1);
 use ErdmannFreunde\ThemeToolboxBundle\Backend\Maintenance\FrontendThemeEditor;
 
 // Create 'themeToolbox' section right after 'design'
-$offset = array_search('design', array_keys($GLOBALS['BE_MOD']));
+$offset = array_search('design', array_keys($GLOBALS['BE_MOD']), true);
 if (false !== $offset) {
     $GLOBALS['BE_MOD'] = array_slice($GLOBALS['BE_MOD'], 0, $offset + 1, true)
         + ['themeToolbox' => []]
