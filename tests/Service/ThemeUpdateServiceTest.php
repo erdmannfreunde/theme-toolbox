@@ -296,6 +296,62 @@ class ThemeUpdateServiceTest extends TestCase
         $this->assertFileExists($this->projectDir.'/composer.json');
     }
 
+    // --------------------------------------------- Aufraeumen leerer Ordner
+
+    /**
+     * The mirror deletes the normal files a new package no longer ships, but never
+     * sees dot files. A directory left holding only those must not count as empty
+     * afterwards: Filesystem::remove() works recursively and would take whole dot
+     * directories along.
+     */
+    public function testDirectoryLeftWithOnlyDotContentSurvivesTheLayoutSync(): void
+    {
+        $this->installTheme();
+
+        $own = $this->projectDir.'/layout/'.self::THEME.'/eigenes';
+        $this->fs->mkdir([$own, $own.'/.archiv']);
+        file_put_contents($own.'/notizen.scss', '// meine Notizen');
+        file_put_contents($own.'/.htaccess', 'Deny from all');
+        file_put_contents($own.'/.archiv/stand.scss', '// alter Stand');
+
+        $this->runUpdate($this->buildPackage());
+
+        // The package does not ship it, so the mirror removes it — that part is intended
+        $this->assertFileDoesNotExist($own.'/notizen.scss');
+
+        $this->assertFileExists($own.'/.htaccess');
+        $this->assertFileExists($own.'/.archiv/stand.scss');
+    }
+
+    public function testDeduplicationLeavesDirectoriesHoldingDotContentAlone(): void
+    {
+        $this->fs->mkdir($this->projectDir.'/layout/'.self::THEME.'/scss/komponenten');
+        file_put_contents($this->projectDir.'/layout/'.self::THEME.'/scss/komponenten/teaser.scss', '.teaser{}');
+
+        $custom = $this->projectDir.'/layout/custom/scss/komponenten';
+        $this->fs->mkdir([$custom, $custom.'/.entwuerfe']);
+        file_put_contents($custom.'/teaser.scss', '.teaser{}');
+        file_put_contents($custom.'/.entwuerfe/idee.scss', '// Entwurf');
+
+        $removed = $this->service->removeDuplicateFiles(self::THEME);
+
+        $this->assertSame(['scss/komponenten/teaser.scss'], $removed);
+        $this->assertFileExists($custom.'/.entwuerfe/idee.scss');
+    }
+
+    public function testTrulyEmptyDirectoriesAreStillRemoved(): void
+    {
+        $this->installTheme();
+
+        $stale = $this->projectDir.'/layout/'.self::THEME.'/veraltet';
+        $this->fs->mkdir($stale);
+        file_put_contents($stale.'/weg.scss', '// nicht mehr im Paket');
+
+        $this->runUpdate($this->buildPackage());
+
+        $this->assertDirectoryDoesNotExist($stale);
+    }
+
     // ----------------------------------------------------------- Helfer
 
     /**

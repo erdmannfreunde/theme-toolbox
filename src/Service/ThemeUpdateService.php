@@ -465,7 +465,10 @@ class ThemeUpdateService
         $finder->directories()->in($directory)->sortByName()->reverseSorting();
 
         foreach ($finder as $dir) {
-            if (0 === (new Finder())->in($dir->getRealPath())->depth(0)->count()) {
+            // Dot files count towards the content, otherwise a directory holding nothing but
+            // e.g. a .htaccess would look empty and be removed with everything in it.
+            // remove() works recursively, so that would take whole dot directories along.
+            if (0 === (new Finder())->in($dir->getRealPath())->depth(0)->ignoreDotFiles(false)->count()) {
                 $this->filesystem->remove($dir->getRealPath());
             }
         }
