@@ -52,9 +52,11 @@
                         </tbody>
                     </table>
 
-                    <p class="tl_help">
-                        {{ 'backupCreated'|trans({}, 'contao_tl_theme_update')|replace({'BACKUP_PATH': result.backupPath}) }}
-                    </p>
+                    {% if result.backupPath %}
+                        <p class="tl_help">
+                            {{ 'backupCreated'|trans({}, 'contao_tl_theme_update')|replace({'BACKUP_PATH': result.backupPath}) }}
+                        </p>
+                    {% endif %}
                 </div>
 
                 {% if result.suggestCustomLayout is defined and result.suggestCustomLayout %}

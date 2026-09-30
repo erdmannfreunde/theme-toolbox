@@ -18,6 +18,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ThemeUpdateService
 {
+    /**
+     * Number of backup archives to keep per theme, including the one just created.
+     */
+    private const BACKUP_KEEP = 3;
+
     public function __construct(
         private readonly string $projectDir,
         private readonly Filesystem $filesystem,
@@ -45,8 +50,12 @@ class ThemeUpdateService
             return $this->errorResult('noThemeDetected');
         }
 
-        // Create layout directory if it doesn't exist yet
+        // Create layout directory if it doesn't exist yet. An empty or missing one means
+        // the theme is being installed rather than updated, which changes how files/ is
+        // treated. Empty counts as missing because a run that failed after the mkdir below
+        // would otherwise turn every later attempt into an update that installs nothing.
         $themeLayoutDir = $this->projectDir . '/' . $this->layoutDir . '/' . $themeName;
+        $isFirstRun = !is_dir($themeLayoutDir) || !(new Finder())->files()->in($themeLayoutDir)->hasResults();
 
         if (!is_dir($themeLayoutDir)) {
             $this->filesystem->mkdir($themeLayoutDir, 0755);
@@ -67,8 +76,13 @@ class ThemeUpdateService
         }
 
         try {
+            // Determine which sub-directories of files/ this update writes to, so that the
+            // backup covers exactly that and nothing more.
+            $sourceFilesDir = $extractedRoot . '/files';
+            $filesSubDirs = is_dir($sourceFilesDir) ? $this->resolveFilesSubDirs($sourceFilesDir, $isFirstRun) : [];
+
             // Create backup
-            $backupPath = $this->createBackup($themeName, $themeLayoutDir);
+            $backupPath = $this->createBackup($themeName, $themeLayoutDir, $filesSubDirs);
 
             $stats = [
                 'layoutCopied' => 0,
@@ -84,18 +98,23 @@ class ThemeUpdateService
                 $stats = array_merge($stats, $this->syncLayoutDirectory($sourceLayoutDir, $themeLayoutDir));
             }
 
-            // Copy files directory (no delete)
-            $sourceFilesDir = $extractedRoot . '/files';
-
-            if (is_dir($sourceFilesDir)) {
-                $stats['filesCopied'] = $this->copyDirectory($sourceFilesDir, $this->projectDir . '/files');
+            // Copy files directory (no delete). Dot files are included so that the
+            // .public marker ships with the folder it makes public.
+            foreach ($filesSubDirs as $subDir) {
+                $stats['filesCopied'] += $this->copyDirectory(
+                    $sourceFilesDir . '/' . $subDir,
+                    $this->projectDir . '/files/' . $subDir,
+                    includeDotFiles: true,
+                );
             }
 
-            // Copy templates directory (no delete, no overwrite)
+            // Copy templates directory (no delete, no overwrite). SQL dumps are skipped:
+            // the packages ship the demo dump here for Contao's theme import, which reads
+            // it from the archive itself, so copying it in would only pile up per release.
             $sourceTemplatesDir = $extractedRoot . '/templates';
 
             if (is_dir($sourceTemplatesDir)) {
-                $stats['templatesCopied'] = $this->copyDirectory($sourceTemplatesDir, $this->projectDir . '/templates', false);
+                $stats['templatesCopied'] = $this->copyDirectory($sourceTemplatesDir, $this->projectDir . '/templates', false, ['*.sql']);
             }
         } catch (\Exception $e) {
             $this->filesystem->remove($tempDir);
@@ -186,7 +205,9 @@ class ThemeUpdateService
             $parts = explode('/', $name);
 
             // Look for pattern: [ThemeName]/layout/[theme-name]/
-            if (\count($parts) >= 3 && $parts[1] === 'layout' && '' !== $parts[2]) {
+            // The name goes straight into file system paths, so anything that could
+            // escape the layout directory (".", "..", slashes) is not a candidate.
+            if (\count($parts) >= 3 && $parts[1] === 'layout' && preg_match('/^[A-Za-z0-9_-]+$/', $parts[2])) {
                 return $parts[2];
             }
         }
@@ -216,7 +237,10 @@ class ThemeUpdateService
         return null;
     }
 
-    private function createBackup(string $themeName, string $themeLayoutDir): string
+    /**
+     * @param list<string> $filesSubDirs Sub-directories of files/ this update writes to
+     */
+    private function createBackup(string $themeName, string $themeLayoutDir, array $filesSubDirs = []): string
     {
         $backupDir = $this->projectDir . '/var/backups/theme-updates';
 
@@ -244,30 +268,109 @@ class ThemeUpdateService
             $this->addDirectoryToZip($zip, $customLayoutDir, 'layout/custom');
         }
 
-        // Backup files directory
-        $filesDir = $this->projectDir . '/files';
+        // Backup files directory, limited to the sub-directories this update writes to.
+        // Everything else under files/ cannot be touched, so archiving it would only
+        // copy the whole media library on every run.
+        foreach ($filesSubDirs as $subDir) {
+            $subDirPath = $this->projectDir . '/files/' . $subDir;
 
-        if (is_dir($filesDir)) {
-            $this->addDirectoryToZip($zip, $filesDir, 'files');
+            if (is_dir($subDirPath)) {
+                $this->addDirectoryToZip($zip, $subDirPath, 'files/' . $subDir, includeDotFiles: true);
+            }
         }
 
-        // Backup templates directory
+        // Backup templates directory. SQL dumps are left out: the templates step never
+        // overwrites or deletes, so an existing dump cannot be lost by an update.
         $templatesDir = $this->projectDir . '/templates';
 
         if (is_dir($templatesDir)) {
-            $this->addDirectoryToZip($zip, $templatesDir, 'templates');
+            $this->addDirectoryToZip($zip, $templatesDir, 'templates', ['*.sql']);
         }
 
-        $zip->close();
+        // An empty archive is never written to disk, so there is nothing to report or prune
+        if (0 === $zip->count()) {
+            $zip->close();
+
+            return '';
+        }
+
+        if (!$zip->close() || !is_file($backupPath)) {
+            throw new \RuntimeException('Could not write backup archive.');
+        }
+
+        $this->pruneBackups($backupDir, $themeName, $backupPath);
 
         // Return path relative to project directory
         return 'var/backups/theme-updates/' . basename($backupPath);
     }
 
-    private function addDirectoryToZip(\ZipArchive $zip, string $directory, string $prefix): void
+    /**
+     * Sub-directories of files/ the update may write to.
+     *
+     * An update only refreshes what is already there, so a folder somebody removed on
+     * purpose (files/demo, typically) stays removed. A first run installs all of them.
+     *
+     * @return list<string>
+     */
+    private function resolveFilesSubDirs(string $sourceFilesDir, bool $isFirstRun): array
+    {
+        $subDirs = [];
+        $finder = new Finder();
+        $finder->directories()->in($sourceFilesDir)->depth(0);
+
+        foreach ($finder as $dir) {
+            $name = $dir->getFilename();
+
+            if ($isFirstRun || is_dir($this->projectDir . '/files/' . $name)) {
+                $subDirs[] = $name;
+            }
+        }
+
+        return $subDirs;
+    }
+
+    /**
+     * Keep the most recent backups of this theme and remove the rest.
+     *
+     * The archive just created is excluded explicitly rather than relying on it sorting
+     * last, so a clock that moved backwards cannot make the update delete its own backup.
+     */
+    private function pruneBackups(string $backupDir, string $themeName, string $currentBackupPath): void
+    {
+        $currentName = basename($currentBackupPath);
+
+        // Match the exact name createBackup() produces. A glob like "<theme>-*.zip"
+        // would also catch themes whose name starts with this one, plus hand-named
+        // archives somebody dropped in here.
+        $finder = new Finder();
+        $finder->files()->in($backupDir)->depth(0)->name(
+            '/^' . preg_quote($themeName, '/') . '-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.zip$/',
+        );
+
+        $backups = [];
+
+        foreach ($finder as $file) {
+            if ($file->getFilename() !== $currentName) {
+                $backups[] = $file->getFilename();
+            }
+        }
+
+        sort($backups, SORT_STRING);
+
+        $obsolete = \array_slice($backups, 0, max(0, \count($backups) - (self::BACKUP_KEEP - 1)));
+
+        foreach ($obsolete as $name) {
+            $this->filesystem->remove($backupDir . '/' . $name);
+        }
+    }
+
+    /**
+     * @param list<string> $exclude File name patterns to leave out
+     */
+    private function addDirectoryToZip(\ZipArchive $zip, string $directory, string $prefix, array $exclude = [], bool $includeDotFiles = false): void
     {
         $finder = new Finder();
-        $finder->files()->in($directory);
+        $finder->files()->in($directory)->notName($exclude)->ignoreDotFiles(!$includeDotFiles);
 
         foreach ($finder as $file) {
             $zip->addFile($file->getRealPath(), $prefix . '/' . $file->getRelativePathname());
@@ -326,11 +429,14 @@ class ThemeUpdateService
         return ['layoutCopied' => $copied, 'layoutDeleted' => $deleted];
     }
 
-    private function copyDirectory(string $sourceDir, string $targetDir, bool $overwrite = true): int
+    /**
+     * @param list<string> $exclude File name patterns to leave out
+     */
+    private function copyDirectory(string $sourceDir, string $targetDir, bool $overwrite = true, array $exclude = [], bool $includeDotFiles = false): int
     {
         $copied = 0;
         $finder = new Finder();
-        $finder->files()->in($sourceDir);
+        $finder->files()->in($sourceDir)->notName($exclude)->ignoreDotFiles(!$includeDotFiles);
 
         foreach ($finder as $file) {
             $targetPath = $targetDir . '/' . $file->getRelativePathname();
