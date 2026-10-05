@@ -136,6 +136,7 @@ services:
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\GoogleFontsService'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssCompiler'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry'
 
   ErdmannFreunde\ThemeToolboxBundle\Editor\EventListener\EditorOverlayListener:
     arguments:
@@ -156,6 +157,7 @@ services:
     arguments:
       - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge'
       - '@ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager'
+      - '@ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry'
       - '@translator'
       - '%theme_toolbox.editor.public_mode%'
     calls:

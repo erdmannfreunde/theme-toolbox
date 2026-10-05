@@ -77,6 +77,21 @@ Die Basis-Registry liegt im Bundle unter `src/Editor/Resources/tokens.json`. Ein
 
 Sind keine Presets vorhanden, bleibt der Vorlagen-Tab einfach leer — kein Fehler.
 
+#### `fontWeights` — welche Schnitte geladen werden
+
+Auf oberster Ebene der `tokens.json` legt der optionale Schlüssel `fontWeights` fest, welche Schriftschnitte beim Import einer Google-Schrift self-hosted geladen werden:
+
+```json
+{
+  "fontWeights": [400, 600, 700, 800],
+  "tokens": []
+}
+```
+
+Die Basis-Registry gibt `[400, 700]` vor. Eine Theme-`tokens.json` **ersetzt** die Liste, sie wird nicht ergänzt — ein Theme bestimmt also vollständig selbst, welche Schnitte es braucht. Erlaubt sind ganze Hunderter von 100 bis 900; die Liste wird dedupliziert und sortiert, ungültige Einträge werden verworfen. Bleibt nichts übrig, gilt wieder `[400, 700]`. Themes ohne `fontWeights` verhalten sich damit unverändert.
+
+Sinnvoll ist das für Themes, deren CSS über 400 und 700 hinausgeht: Nutzt ein Theme Überschriften in 800 und Beschriftungen in 600, fehlen diese Schnitte einer importierten Google-Schrift sonst, und der Browser weicht auf den nächstgelegenen aus.
+
 ### Speichern
 
 Beim „Übernehmen" ersetzt der Editor die geänderten Variablen **direkt an Ort und Stelle** in der custom `_variables.scss` — die jeweilige `--token: …;`-Zeile wird editiert, genau wie es ein Entwickler tun würde (eine noch nicht vorhandene Property wird in den ersten `:root{}`-Block eingefügt), danach wird das Theme neu kompiliert. Nur tatsächlich geänderte Werte werden geschrieben; unberührte `var()`-Token behalten ihren Ausdruck. Die Wahl ist damit Teil der Theme-Quelle — sichtbar, reviewbar und deploybar; rückgängig machen lässt sie sich im Backend über den **Theme Editor → Styles** (Diff/Revert auf das Original) bzw. die Theme-Versionierung. Eingehende Werte werden gegen die Registry geprüft (unbekannte Properties verworfen, Werte geklemmt) und auf ausreichenden Kontrast abgesichert.
@@ -86,6 +101,12 @@ Das Speichern gibt es **nur im eingeloggten Käufer-Modus**. Im öffentlichen De
 ### Schriften (DSGVO)
 
 Der Font-Picker nutzt dieselbe Google-Fonts-Download-Funktion wie der Theme-Editor: Die Schrift wird einmalig server-seitig heruntergeladen, self-hosted abgelegt und per `@font-face` registriert. Der Besucher-Browser lädt ausschließlich die self-hosted Datei — kein Google-Request im Frontend.
+
+Geladen werden die Schnitte aus [`fontWeights`](#fontweights--welche-schnitte-geladen-werden). **Zusätzlich** wird für die Schrift in `--headings-font-family` der gewählte Wert von `--headings-font-weight` geladen, falls er nicht ohnehin in der Liste steht. Das greift auf allen Wegen: im Font-Picker, beim Ändern des Schnitts in der Maske, beim Übernehmen einer Vorlage und über `theme-toolbox:editor:preload-demo-fonts`.
+
+Bereits vorhandene Schnitte werden nicht erneut geladen; einer schon importierten Schrift werden nur die fehlenden ergänzt. Bietet eine Familie einen Schnitt nicht an — Lora etwa kein 800 —, wird er still übersprungen; der Import scheitert nur, wenn sich kein einziger Schnitt laden ließ. Kursive Schnitte bleiben außen vor.
+
+Im öffentlichen Demo-Modus wird nichts heruntergeladen. Fehlt dort ein Schnitt, weicht der Browser aus wie bisher. Für eine Demo lädt `theme-toolbox:editor:preload-demo-fonts` die Schnitte des Themes samt der Überschriftenstärken der Vorlagen vorab.
 
 ### Öffentlicher Demo-Modus
 

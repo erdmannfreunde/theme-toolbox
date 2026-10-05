@@ -62,9 +62,11 @@ class PreloadDemoFontsCommand extends Command
         }
 
         $familiesOption = (string) $input->getOption('families');
+
+        // family => extra weights on top of the theme's list
         $families = '' !== $familiesOption
-            ? array_values(array_filter(array_map('trim', explode(',', $familiesOption))))
-            : $this->registry->getPresetFontFamilies($theme);
+            ? array_fill_keys(array_values(array_filter(array_map('trim', explode(',', $familiesOption)))), [])
+            : $this->registry->getPresetFontImports($theme);
 
         if ([] === $families) {
             $io->success(\sprintf('No preset of theme "%s" asks for a downloadable font. Nothing to preload.', $theme));
@@ -76,9 +78,9 @@ class PreloadDemoFontsCommand extends Command
 
         $failed = 0;
 
-        foreach ($families as $family) {
+        foreach ($families as $family => $extraWeights) {
             try {
-                $result = $this->fontBridge->import($theme, $family);
+                $result = $this->fontBridge->import($theme, (string) $family, $extraWeights);
                 $io->writeln(\sprintf(' <info>✓</info> %s (weights: %s)', $family, implode(', ', $result['weights'])));
             } catch (\RuntimeException $e) {
                 ++$failed;

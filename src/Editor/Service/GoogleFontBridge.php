@@ -25,17 +25,13 @@ use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
  */
 class GoogleFontBridge
 {
-    /**
-     * Weights pulled for a newly imported family (body + headings coverage).
-     */
-    private const IMPORT_WEIGHTS = ['400', '700'];
-
     private const SYSTEM_FONT_STACK = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
     public function __construct(
         private readonly GoogleFontsService $googleFontsService,
         private readonly ThemeScssFileManager $fileManager,
         private readonly ThemeScssCompiler $compiler,
+        private readonly TokenRegistry $registry,
     ) {
     }
 
@@ -58,11 +54,17 @@ class GoogleFontBridge
      * woff2 into the public assets/<theme>/fonts directory so it is servable
      * immediately (without waiting for the next page render).
      *
+     * The weights come from the theme (see TokenRegistry::getFontWeights());
+     * $extraWeights adds the ones a single request needs on top, typically the chosen
+     * heading weight.
+     *
+     * @param list<string> $extraWeights
+     *
      * @return array{family: string, value: string, weights: list<string>, faces: list<array{weight: string, path: string}>}
      *
      * @throws \RuntimeException if no weight could be downloaded
      */
-    public function import(string $theme, string $family): array
+    public function import(string $theme, string $family, array $extraWeights = []): array
     {
         $family = trim($family);
 
@@ -74,7 +76,7 @@ class GoogleFontBridge
         $faces = [];
         $lastError = null;
 
-        foreach (self::IMPORT_WEIGHTS as $weight) {
+        foreach ($this->resolveWeights($theme, $extraWeights) as $weight) {
             if ($this->fileManager->hasFontFaceDefinition($theme, $family, $weight, 'normal')) {
                 $imported[] = $weight;
                 continue;
@@ -112,5 +114,20 @@ class GoogleFontBridge
             'weights' => $imported,
             'faces' => $faces,
         ];
+    }
+
+    /**
+     * The theme's weights plus the extra ones, deduplicated and sorted.
+     *
+     * @param list<string> $extraWeights
+     *
+     * @return list<string>
+     */
+    private function resolveWeights(string $theme, array $extraWeights): array
+    {
+        $weights = array_unique([...$this->registry->getFontWeights($theme), ...$extraWeights]);
+        sort($weights, SORT_NUMERIC);
+
+        return array_values($weights);
     }
 }

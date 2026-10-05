@@ -28,6 +28,8 @@ class PresetApplier
 {
     private const VARIABLES_SCSS = '_variables.scss';
 
+    private const HEADINGS_WEIGHT = '--headings-font-weight';
+
     private const SYSTEM_FONT_STACK = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
     public function __construct(
@@ -94,7 +96,7 @@ class PresetApplier
             // and the new values would never reach the CSS.
             $this->writeVariables($content);
 
-            $fonts = $this->importFonts($theme, $sanitized['values']);
+            $fonts = $this->importFonts($theme, $sanitized['values'], $content);
 
             $this->compiler->compile($theme);
         }
@@ -113,17 +115,22 @@ class PresetApplier
      * already written at this point, and the caller gets told which ones are missing.
      *
      * @param array<string, string> $values
+     * @param string                $variables Content of the variables file being written
      *
      * @return array{imported: list<array{family: string, faces: list<array{weight: string, path: string}>}>, failed: list<string>}
      */
-    private function importFonts(string $theme, array $values): array
+    private function importFonts(string $theme, array $values, string $variables): array
     {
         $imported = [];
         $failed = [];
 
-        foreach ($this->registry->collectFontFamilies($theme, $values) as $family) {
+        // The preset may set the heading weight itself; otherwise the one already
+        // configured applies, and that weight has to be available too.
+        $headingsWeight = $this->readDeclaredValue($variables, self::HEADINGS_WEIGHT);
+
+        foreach ($this->registry->collectFontImports($theme, $values, $headingsWeight) as $family => $extraWeights) {
             try {
-                $result = $this->fontBridge->import($theme, $family);
+                $result = $this->fontBridge->import($theme, $family, $extraWeights);
                 $imported[] = ['family' => $result['family'], 'faces' => $result['faces']];
             } catch (\Exception) {
                 $failed[] = $family;
@@ -131,6 +138,20 @@ class PresetApplier
         }
 
         return ['imported' => $imported, 'failed' => $failed];
+    }
+
+    /**
+     * A property's value as currently declared in the variables file, or null.
+     */
+    private function readDeclaredValue(string $content, string $property): string|null
+    {
+        if (1 !== preg_match($this->declarationPattern($property), $content, $match)) {
+            return null;
+        }
+
+        $value = trim($match[2]);
+
+        return '' === $value ? null : $value;
     }
 
     /**

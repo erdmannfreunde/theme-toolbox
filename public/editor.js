@@ -38,6 +38,8 @@
     var PRESETS = REGISTRY.presets || [];
     var FONTS = (REGISTRY.fonts || []).slice();
     var ROOT = document.documentElement;
+    var HEADINGS_FAMILY = '--headings-font-family';
+    var HEADINGS_WEIGHT = '--headings-font-weight';
 
     // Mount the chrome in a Shadow DOM so the host theme cannot style the editor
     // (and vice versa). Live editing is unaffected: it writes CSS custom
@@ -338,7 +340,42 @@
 
         select.addEventListener('change', function (e) {
             applyLive(token.property, e.target.value);
+            if (token.property === HEADINGS_WEIGHT) {
+                ensureHeadingsWeight(e.target.value);
+            }
         });
+    }
+
+    /**
+     * The compiled CSS only carries the weights that were imported. When a heading
+     * weight is picked that the self-hosted family does not have yet, fetch it and
+     * register it, otherwise the browser silently substitutes a nearby weight.
+     *
+     * Only for families that were imported: the system stack needs nothing, and the
+     * weights of a theme's own font ship with the theme.
+     */
+    function ensureHeadingsWeight(weight) {
+        if (!DATA.canPersist || !weight) {
+            return;
+        }
+        var family = primaryFamily(computed(HEADINGS_FAMILY));
+        if (!family || !isImportedFamily(family)) {
+            return;
+        }
+        downloadFont(family, function (ok, result) {
+            if (ok) {
+                loadFontFaces(result.family, result.faces || [], function () {});
+            }
+        }, [String(weight)]);
+    }
+
+    function isImportedFamily(family) {
+        return FONTS.some(function (f) { return f.name === family && f.custom; });
+    }
+
+    function currentHeadingsWeight() {
+        var weight = computed(HEADINGS_WEIGHT);
+        return weight ? [String(weight)] : [];
     }
 
     function buildFont(row, token) {
@@ -491,7 +528,7 @@
                         load.disabled = false;
                     }, 1600);
                 }
-            });
+            }, prop === HEADINGS_FAMILY ? currentHeadingsWeight() : []);
         });
     }
 
@@ -537,7 +574,7 @@
         }).catch(function () {});
     }
 
-    function downloadFont(family, done) {
+    function downloadFont(family, done, weights) {
         if (!DATA.routes || !DATA.routes.fontDownload) {
             done(false);
             return;
@@ -545,6 +582,9 @@
         var body = new FormData();
         body.append('theme', DATA.theme);
         body.append('family', family);
+        if (weights && weights.length) {
+            body.append('weights', weights.join(','));
+        }
         body.append('REQUEST_TOKEN', DATA.token);
         fetch(DATA.routes.fontDownload, {
             method: 'POST',
@@ -561,7 +601,9 @@
 
     function addFont(name, value) {
         if (!FONTS.some(function (f) { return f.value === value; })) {
-            FONTS.push({ name: name, value: value });
+            // Anything added at runtime came from a download, so further weights
+            // can be fetched for it (see ensureHeadingsWeight).
+            FONTS.push({ name: name, value: value, custom: true });
         }
         shadow.querySelectorAll('[data-font-select]').forEach(function (select) {
             var current = select.value;
@@ -721,6 +763,36 @@
         buildMask();
         checkContrast();
         switchTab('edit');
+        preloadPresetFonts(values);
+    }
+
+    /**
+     * Fetch the fonts a preset asks for right when it is picked, so the preview shows
+     * them instead of a fallback. Persisting happens later on "Übernehmen"; the server
+     * skips what is already there, so this never downloads twice.
+     *
+     * Public mode downloads nothing — the route is gated and the demo relies on
+     * theme-toolbox:editor:preload-demo-fonts instead.
+     */
+    function preloadPresetFonts(values) {
+        if (!DATA.canPersist) {
+            return;
+        }
+        var missing = missingFontsIn(values);
+        if (!missing.length) {
+            return;
+        }
+        var headingsFamily = primaryFamily(computed(HEADINGS_FAMILY));
+        missing.forEach(function (family) {
+            downloadFont(family, function (ok, result) {
+                if (!ok) {
+                    return;
+                }
+                loadFontFaces(result.family, result.faces || [], function () {
+                    addFont(result.family, result.value);
+                });
+            }, family === headingsFamily ? currentHeadingsWeight() : []);
+        });
     }
 
     /* ---------- tabs / mode / dock ---------- */
@@ -803,7 +875,7 @@
         return FONTS.some(function (f) { return f.name === family; });
     }
 
-    function missingFontsInImport(values) {
+    function missingFontsIn(values) {
         var fontProps = {};
         TOKENS.forEach(function (t) { if (t.type === 'font') { fontProps[t.property] = true; } });
         var missing = [];
@@ -855,7 +927,7 @@
 
         // Offer to self-host any imported font that is not available yet
         // (only when the buyer can actually download — the route is gated).
-        importMissingFonts = DATA.canPersist ? missingFontsInImport(parsed) : [];
+        importMissingFonts = DATA.canPersist ? missingFontsIn(parsed) : [];
         if (importMissingFonts.length) {
             shadow.getElementById('tt-import-fonts-msg').textContent =
                 'Diese Schriften sind noch nicht vorhanden: ' + importMissingFonts.join(', ')
@@ -888,6 +960,7 @@
                 window.setTimeout(closeImport, 900);
             }
         };
+        var headingsFamily = primaryFamily(computed(HEADINGS_FAMILY));
         importMissingFonts.forEach(function (family) {
             downloadFont(family, function (ok, result) {
                 if (ok) {
@@ -899,7 +972,7 @@
                     failed++;
                     finish();
                 }
-            });
+            }, family === headingsFamily ? currentHeadingsWeight() : []);
         });
     }
 

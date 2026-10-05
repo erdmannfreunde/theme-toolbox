@@ -267,6 +267,61 @@ class PresetApplierTest extends TestCase
         $this->assertStringContainsString('--color-text: '.$result['values']['--color-text'].';', $this->customContent());
     }
 
+    public function testHeadingsWeightOfThePresetIsPassedToTheImport(): void
+    {
+        $seen = [];
+        $this->fontBridge
+            ->method('import')
+            ->willReturnCallback(
+                function (string $theme, string $family, array $extra = []) use (&$seen): array {
+                    $seen[$family] = $extra;
+
+                    return $this->importResult($family);
+                },
+            )
+        ;
+
+        $this->applier->apply('mytheme', [
+            '--base-font-family' => "'Merriweather', serif",
+            '--headings-font-family' => "'Playfair Display', Georgia, serif",
+            '--headings-font-weight' => '800',
+        ]);
+
+        $this->assertSame(['800'], $seen['Playfair Display'] ?? null);
+        $this->assertSame([], $seen['Merriweather'] ?? null);
+    }
+
+    /**
+     * Setzt die Vorlage den Schnitt nicht, gilt der, der in der Custom-Datei steht
+     * — sonst fehlt er für die neu geladene Schrift.
+     */
+    public function testHeadingsWeightFallsBackToTheVariablesFile(): void
+    {
+        $this->fs->mkdir(\dirname($this->customVariables));
+        file_put_contents(
+            $this->customVariables,
+            ":root {\n  --headings-font-weight: 600;\n}\n",
+        );
+
+        $seen = [];
+        $this->fontBridge
+            ->method('import')
+            ->willReturnCallback(
+                function (string $theme, string $family, array $extra = []) use (&$seen): array {
+                    $seen[$family] = $extra;
+
+                    return $this->importResult($family);
+                },
+            )
+        ;
+
+        $this->applier->apply('mytheme', [
+            '--headings-font-family' => "'Nunito', sans-serif",
+        ]);
+
+        $this->assertSame(['600'], $seen['Nunito'] ?? null);
+    }
+
     /**
      * @return array{family: string, value: string, weights: list<string>, faces: list<array{weight: string, path: string}>}
      */

@@ -126,6 +126,65 @@ class PreloadDemoFontsCommandTest extends TestCase
         $this->assertStringContainsString('Nunito', $this->display($tester));
     }
 
+    public function testLoadsTheThemeListPlusTheHeadingWeightsOfThePresets(): void
+    {
+        file_put_contents(
+            $this->tmp.'/layout/mytheme/tokens.json',
+            (string) json_encode(['fontWeights' => [400, 700]]),
+        );
+        $this->writePreset('bordeaux', [
+            '--base-font-family' => "'Inter', Arial, sans-serif",
+            '--headings-font-family' => "'Playfair Display', Georgia, serif",
+            '--headings-font-weight' => '800',
+        ]);
+
+        $seen = [];
+        $this->fontBridge
+            ->method('import')
+            ->willReturnCallback(
+                static function (string $theme, string $family, array $extra = []) use (&$seen): array {
+                    $seen[$family] = $extra;
+
+                    return ['family' => $family, 'value' => '', 'weights' => ['400', '700'], 'faces' => []];
+                },
+            )
+        ;
+
+        $tester = $this->run_();
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(['800'], $seen['Playfair Display'] ?? null);
+        $this->assertSame([], $seen['Inter'] ?? null, 'Der Schnitt gehört nur zur Überschriften-Schrift.');
+    }
+
+    public function testHeadingWeightsOfSeveralPresetsAreCollected(): void
+    {
+        $this->writePreset('eins', [
+            '--headings-font-family' => "'Nunito', sans-serif",
+            '--headings-font-weight' => '600',
+        ]);
+        $this->writePreset('zwei', [
+            '--headings-font-family' => "'nunito', sans-serif",
+            '--headings-font-weight' => '800',
+        ]);
+
+        $seen = [];
+        $this->fontBridge
+            ->method('import')
+            ->willReturnCallback(
+                static function (string $theme, string $family, array $extra = []) use (&$seen): array {
+                    $seen[$family] = $extra;
+
+                    return ['family' => $family, 'value' => '', 'weights' => ['400'], 'faces' => []];
+                },
+            )
+        ;
+
+        $this->run_();
+
+        $this->assertSame(['600', '800'], $seen['Nunito'] ?? null);
+    }
+
     /**
      * The console output with whitespace collapsed — SymfonyStyle wraps at the
      * terminal width and would otherwise split the text being asserted on.

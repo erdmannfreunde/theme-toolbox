@@ -138,6 +138,120 @@ class TokenRegistryTest extends TestCase
         $this->assertContains('--color-brand', $properties, 'falls back to the basis tokens');
         $this->assertNotContains('--hero-bg', $properties, 'broken theme tokens are ignored');
     }
+    // ----------------------------------------------- Schnitte (fontWeights)
+
+    public function testFontWeightsFallBackToTheBasisDefault(): void
+    {
+        $this->assertSame(['400', '700'], $this->registry->getFontWeights('mytheme'));
+    }
+
+    public function testThemeFontWeightsReplaceTheDefault(): void
+    {
+        $registry = $this->registryWithThemeTokens(['fontWeights' => [400, 600, 700, 800]]);
+
+        $this->assertSame(['400', '600', '700', '800'], $registry->getFontWeights('othertheme'));
+    }
+
+    /**
+     * @dataProvider invalidFontWeightLists
+     *
+     * @param list<mixed> $declared
+     */
+    public function testInvalidFontWeightsAreDropped(array $declared, array $expected): void
+    {
+        $registry = $this->registryWithThemeTokens(['fontWeights' => $declared]);
+
+        $this->assertSame($expected, $registry->getFontWeights('othertheme'));
+    }
+
+    /**
+     * @return iterable<string, array{list<mixed>, list<string>}>
+     */
+    public static function invalidFontWeightLists(): iterable
+    {
+        yield 'out of range' => [[0, 50, 1000, 100, 900], ['100', '900']];
+        yield 'not a hundred' => [[450, 701, 400], ['400']];
+        yield 'wrong types' => [['bold', null, true, [], 700], ['700']];
+        yield 'numeric strings pass' => [['300', '700'], ['300', '700']];
+        yield 'deduplicated and sorted' => [[700, 400, 700], ['400', '700']];
+        yield 'nothing left means default' => [['bold', 42], ['400', '700']];
+        yield 'empty means default' => [[], ['400', '700']];
+    }
+
+    public function testFontWeightsArePartOfTheRegistryPayload(): void
+    {
+        $this->assertSame(['400', '700'], $this->registry->toArray('mytheme')['fontWeights']);
+    }
+
+    // ------------------------------------- Zusatzschnitt der Überschriften
+
+    public function testHeadingsWeightIsAttachedToTheHeadingsFamily(): void
+    {
+        // The shared fixture hides --headings-font-family, so use a plain basis theme
+        $imports = $this->registryWithThemeTokens([])->collectFontImports('othertheme', [
+            '--base-font-family' => "'Merriweather', serif",
+            '--headings-font-family' => "'Playfair Display', Georgia, serif",
+            '--headings-font-weight' => '800',
+        ]);
+
+        $this->assertSame([], $imports['Merriweather']);
+        $this->assertSame(['800'], $imports['Playfair Display']);
+    }
+
+    /**
+     * Otherwise a weight change would make the toolbox look up a font the theme ships
+     * itself at Google.
+     */
+    public function testHeadingsWeightIsIgnoredWhenThatFamilyIsNotImported(): void
+    {
+        $imports = $this->registry->collectFontImports('mytheme', [
+            '--base-font-family' => "'Merriweather', serif",
+            '--headings-font-weight' => '800',
+        ]);
+
+        $this->assertSame(['Merriweather' => []], $imports);
+    }
+
+    public function testHeadingsWeightFallsBackToTheGivenValue(): void
+    {
+        $imports = $this->registryWithThemeTokens([])->collectFontImports(
+            'othertheme',
+            ['--headings-font-family' => "'Nunito', sans-serif"],
+            '600',
+        );
+
+        $this->assertSame(['600'], $imports['Nunito']);
+    }
+
+    public function testPresetValueWinsOverTheFallback(): void
+    {
+        $imports = $this->registryWithThemeTokens([])->collectFontImports(
+            'othertheme',
+            ['--headings-font-family' => "'Nunito', sans-serif", '--headings-font-weight' => '300'],
+            '600',
+        );
+
+        $this->assertSame(['300'], $imports['Nunito']);
+    }
+
+    public function testInvalidHeadingsWeightIsDropped(): void
+    {
+        $imports = $this->registryWithThemeTokens([])->collectFontImports('othertheme', [
+            '--headings-font-family' => "'Nunito', sans-serif",
+            '--headings-font-weight' => '750',
+        ]);
+
+        $this->assertSame([], $imports['Nunito']);
+    }
+
+    public function testHeadingsWeightOptionsComeFromTheToken(): void
+    {
+        $this->assertSame(
+            ['300', '400', '500', '600', '700', '800'],
+            $this->registry->getHeadingsWeightOptions('mytheme'),
+        );
+    }
+
     // ------------------------------------------- Schriften der Vorlagen (#43)
 
     public function testPresetFontFamiliesCollectsAcrossPresets(): void
@@ -194,6 +308,22 @@ class TokenRegistryTest extends TestCase
     public function testPresetFontFamiliesOfAThemeWithoutPresetsIsEmpty(): void
     {
         $this->assertSame([], $this->registryForPresets([])->getPresetFontFamilies('othertheme'));
+    }
+
+    /**
+     * A throwaway theme carrying the given tokens.json, so the shared fixture stays
+     * intact. Call once per test.
+     *
+     * @param array<string, mixed> $tokens
+     */
+    private function registryWithThemeTokens(array $tokens): TokenRegistry
+    {
+        $project = $this->tmp.'/other';
+        $this->fs->mkdir($project.'/layout/othertheme/scss');
+        file_put_contents($project.'/layout/othertheme/scss/default.scss', 'html{}');
+        file_put_contents($project.'/layout/othertheme/tokens.json', (string) json_encode($tokens));
+
+        return new TokenRegistry(new ThemeScssFileManager($project, $this->fs, 'layout', 'layout/custom'));
     }
 
     /**

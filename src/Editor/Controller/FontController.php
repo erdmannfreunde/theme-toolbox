@@ -14,6 +14,7 @@ namespace ErdmannFreunde\ThemeToolboxBundle\Editor\Controller;
 
 use Contao\CoreBundle\Controller\AbstractBackendController;
 use ErdmannFreunde\ThemeToolboxBundle\Editor\Service\GoogleFontBridge;
+use ErdmannFreunde\ThemeToolboxBundle\Editor\Service\TokenRegistry;
 use ErdmannFreunde\ThemeToolboxBundle\Service\ThemeScssFileManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +36,7 @@ class FontController extends AbstractBackendController
     public function __construct(
         private readonly GoogleFontBridge $fontBridge,
         private readonly ThemeScssFileManager $fileManager,
+        private readonly TokenRegistry $registry,
         private readonly TranslatorInterface $translator,
         private readonly bool $publicMode = false,
     ) {
@@ -71,7 +73,7 @@ class FontController extends AbstractBackendController
         }
 
         try {
-            $result = $this->fontBridge->import($theme, $family);
+            $result = $this->fontBridge->import($theme, $family, $this->requestedWeights($theme, $request));
         } catch (\RuntimeException $e) {
             return new JsonResponse(
                 [
@@ -104,6 +106,28 @@ class FontController extends AbstractBackendController
     private function isValidTheme(string $theme): bool
     {
         return '' !== $theme && isset($this->fileManager->getAvailableThemes()[$theme]);
+    }
+
+    /**
+     * Extra weights asked for on top of the theme's list, kept to what the editor
+     * actually offers for --headings-font-weight. Anything else is dropped silently.
+     *
+     * @return list<string>
+     */
+    private function requestedWeights(string $theme, Request $request): array
+    {
+        $raw = (string) $request->request->get('weights', '');
+
+        if ('' === $raw) {
+            return [];
+        }
+
+        $allowed = $this->registry->getHeadingsWeightOptions($theme);
+
+        return array_values(array_unique(array_filter(
+            array_map('trim', explode(',', $raw)),
+            static fn (string $weight): bool => \in_array($weight, $allowed, true),
+        )));
     }
 
     private function denyInPublicMode(): void
