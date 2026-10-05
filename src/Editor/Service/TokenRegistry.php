@@ -26,6 +26,15 @@ class TokenRegistry
 {
     private const FONTS_SCSS = 'base/_fonts.scss';
 
+    /**
+     * Keywords that never denote a downloadable family.
+     */
+    private const GENERIC_FAMILIES = [
+        'system-ui', '-apple-system', 'blinkmacsystemfont', 'sans-serif', 'serif',
+        'monospace', 'cursive', 'fantasy', 'ui-sans-serif', 'ui-serif', 'ui-monospace',
+        'ui-rounded', 'inherit', 'initial', 'unset', 'revert',
+    ];
+
     private const SYSTEM_FONT_VALUE = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
     /**
@@ -106,6 +115,61 @@ class TokenRegistry
         }
 
         return $map;
+    }
+
+    /**
+     * The font families every preset of a theme asks for, each one once.
+     *
+     * Used to preload the fonts for the public-mode editor, which never persists and
+     * therefore never downloads anything on its own.
+     *
+     * @return list<string>
+     */
+    public function getPresetFontFamilies(string $theme): array
+    {
+        $families = [];
+
+        foreach ($this->loadPresets($theme) as $preset) {
+            foreach ($this->collectFontFamilies($theme, $preset['values']) as $family) {
+                // First spelling wins, so the result does not depend on how many presets happen
+                // to repeat the family.
+                $families[strtolower($family)] ??= $family;
+            }
+        }
+
+        return array_values($families);
+    }
+
+    /**
+     * The leading family of every font stack in the given values, generics dropped.
+     *
+     * Only the first entry of a stack is a real choice; everything behind it is the
+     * fallback chain and must never trigger a download.
+     *
+     * @param array<string, mixed> $values
+     *
+     * @return list<string>
+     */
+    public function collectFontFamilies(string|null $theme, array $values): array
+    {
+        $map = $this->getTokenMap($theme);
+        $families = [];
+
+        foreach ($values as $property => $value) {
+            if (!\is_string($value) || 'font' !== ($map[$property]['type'] ?? null)) {
+                continue;
+            }
+
+            $first = trim(trim(explode(',', $value)[0]), '\'"');
+
+            if ('' === $first || \in_array(strtolower($first), self::GENERIC_FAMILIES, true)) {
+                continue;
+            }
+
+            $families[strtolower($first)] ??= $first;
+        }
+
+        return array_values($families);
     }
 
     /**

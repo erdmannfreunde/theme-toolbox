@@ -23,21 +23,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Pre-downloads a showcase set of self-hosted fonts so the public/demo editor can
- * offer them instantly without a per-visitor server write (§4.3). Run once as a
- * deploy step on the demo installation.
+ * Pre-downloads the fonts the theme's presets ask for, self-hosted, so the
+ * public/demo editor shows them instead of a fallback (§4.3). That editor never
+ * persists, so it never downloads anything on its own. Run once as a deploy step
+ * on the demo installation, and again whenever a preset changes its fonts.
  */
 #[AsCommand(
     name: 'theme-toolbox:editor:preload-demo-fonts',
-    description: 'Download the showcase font set (self-hosted) for the public/demo editor.',
+    description: 'Download the fonts used by the theme presets (self-hosted) for the public/demo editor.',
 )]
 class PreloadDemoFontsCommand extends Command
 {
-    /**
-     * Default showcase set — popular, distinct families covering the demo.
-     */
-    private const DEFAULT_FAMILIES = ['Inter', 'Source Sans 3', 'Space Grotesk', 'Merriweather', 'Roboto'];
-
     public function __construct(
         private readonly GoogleFontBridge $fontBridge,
         private readonly TokenRegistry $registry,
@@ -49,7 +45,7 @@ class PreloadDemoFontsCommand extends Command
     {
         $this
             ->addArgument('theme', InputArgument::OPTIONAL, 'Theme directory name (defaults to the active theme)')
-            ->addOption('families', null, InputOption::VALUE_REQUIRED, 'Comma-separated font families to preload')
+            ->addOption('families', null, InputOption::VALUE_REQUIRED, 'Comma-separated font families to preload instead of the ones the presets use')
         ;
     }
 
@@ -67,10 +63,16 @@ class PreloadDemoFontsCommand extends Command
 
         $familiesOption = (string) $input->getOption('families');
         $families = '' !== $familiesOption
-            ? array_filter(array_map('trim', explode(',', $familiesOption)))
-            : self::DEFAULT_FAMILIES;
+            ? array_values(array_filter(array_map('trim', explode(',', $familiesOption))))
+            : $this->registry->getPresetFontFamilies($theme);
 
-        $io->title(\sprintf('Preloading %d showcase fonts for theme "%s"', \count($families), $theme));
+        if ([] === $families) {
+            $io->success(\sprintf('No preset of theme "%s" asks for a downloadable font. Nothing to preload.', $theme));
+
+            return Command::SUCCESS;
+        }
+
+        $io->title(\sprintf('Preloading %d fonts for theme "%s"', \count($families), $theme));
 
         $failed = 0;
 
@@ -90,7 +92,7 @@ class PreloadDemoFontsCommand extends Command
             return Command::FAILURE;
         }
 
-        $io->success('Showcase fonts are self-hosted and ready for the public-mode editor.');
+        $io->success('Preset fonts are self-hosted and ready for the public-mode editor.');
 
         return Command::SUCCESS;
     }

@@ -138,4 +138,83 @@ class TokenRegistryTest extends TestCase
         $this->assertContains('--color-brand', $properties, 'falls back to the basis tokens');
         $this->assertNotContains('--hero-bg', $properties, 'broken theme tokens are ignored');
     }
+    // ------------------------------------------- Schriften der Vorlagen (#43)
+
+    public function testPresetFontFamiliesCollectsAcrossPresets(): void
+    {
+        $registry = $this->registryForPresets([
+            'eins' => ['--base-font-family' => "'Inter', Helvetica, Arial, sans-serif"],
+            'zwei' => ['--base-font-family' => "'Nunito', Helvetica, sans-serif"],
+        ]);
+
+        $this->assertSame(['Inter', 'Nunito'], $registry->getPresetFontFamilies('othertheme'));
+    }
+
+    /**
+     * Only the leading entry is a real choice — the fallback chain must never be
+     * mistaken for a family to download.
+     */
+    public function testPresetFontFamiliesTakesOnlyTheLeadingEntry(): void
+    {
+        $registry = $this->registryForPresets([
+            'sand' => ['--base-font-family' => "'Merriweather', 'Times New Roman', serif"],
+        ]);
+
+        $this->assertSame(['Merriweather'], $registry->getPresetFontFamilies('othertheme'));
+    }
+
+    public function testPresetFontFamiliesSkipsSystemStacks(): void
+    {
+        $registry = $this->registryForPresets([
+            'beere' => ['--base-font-family' => "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif"],
+        ]);
+
+        $this->assertSame([], $registry->getPresetFontFamilies('othertheme'));
+    }
+
+    public function testPresetFontFamiliesDeduplicates(): void
+    {
+        $registry = $this->registryForPresets([
+            'eins' => ['--base-font-family' => "'Inter', Arial, sans-serif"],
+            'zwei' => ['--base-font-family' => "'inter', Helvetica, sans-serif"],
+        ]);
+
+        $this->assertSame(['Inter'], $registry->getPresetFontFamilies('othertheme'));
+    }
+
+    public function testPresetFontFamiliesIgnoresTokensThatAreNotFonts(): void
+    {
+        $registry = $this->registryForPresets([
+            'eins' => ['--color-brand' => '#3a4a63', '--base-border-radius' => '4px'],
+        ]);
+
+        $this->assertSame([], $registry->getPresetFontFamilies('othertheme'));
+    }
+
+    public function testPresetFontFamiliesOfAThemeWithoutPresetsIsEmpty(): void
+    {
+        $this->assertSame([], $this->registryForPresets([])->getPresetFontFamilies('othertheme'));
+    }
+
+    /**
+     * A throwaway theme, so the shared fixture (and its preset count) stays intact.
+     * Call once per test.
+     *
+     * @param array<string, array<string, string>> $presets file name => values
+     */
+    private function registryForPresets(array $presets): TokenRegistry
+    {
+        $project = $this->tmp.'/other';
+        $this->fs->mkdir([$project.'/layout/othertheme/scss', $project.'/layout/othertheme/presets']);
+        file_put_contents($project.'/layout/othertheme/scss/default.scss', 'html{}');
+
+        foreach ($presets as $name => $values) {
+            file_put_contents(
+                $project.'/layout/othertheme/presets/'.$name.'.json',
+                (string) json_encode(['name' => $name, 'values' => $values]),
+            );
+        }
+
+        return new TokenRegistry(new ThemeScssFileManager($project, $this->fs, 'layout', 'layout/custom'));
+    }
 }

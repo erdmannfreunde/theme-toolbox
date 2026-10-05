@@ -30,15 +30,6 @@ class PresetApplier
 
     private const SYSTEM_FONT_STACK = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
-    /**
-     * Keywords that never denote a downloadable family.
-     */
-    private const GENERIC_FAMILIES = [
-        'system-ui', '-apple-system', 'blinkmacsystemfont', 'sans-serif', 'serif',
-        'monospace', 'cursive', 'fantasy', 'ui-sans-serif', 'ui-serif', 'ui-monospace',
-        'ui-rounded', 'inherit', 'initial', 'unset', 'revert',
-    ];
-
     public function __construct(
         private readonly TokenRegistry $registry,
         private readonly ContrastGuard $contrastGuard,
@@ -130,7 +121,7 @@ class PresetApplier
         $imported = [];
         $failed = [];
 
-        foreach ($this->collectFontFamilies($theme, $values) as $family) {
+        foreach ($this->registry->collectFontFamilies($theme, $values) as $family) {
             try {
                 $result = $this->fontBridge->import($theme, $family);
                 $imported[] = ['family' => $result['family'], 'faces' => $result['faces']];
@@ -140,38 +131,6 @@ class PresetApplier
         }
 
         return ['imported' => $imported, 'failed' => $failed];
-    }
-
-    /**
-     * The leading family of every font stack the preset sets, generics dropped.
-     *
-     * Only the first entry is a real choice; everything behind it is the fallback
-     * chain and must never trigger a download.
-     *
-     * @param array<string, string> $values
-     *
-     * @return list<string>
-     */
-    private function collectFontFamilies(string $theme, array $values): array
-    {
-        $map = $this->registry->getTokenMap($theme);
-        $families = [];
-
-        foreach ($values as $property => $value) {
-            if ('font' !== ($map[$property]['type'] ?? null)) {
-                continue;
-            }
-
-            $first = trim(trim(explode(',', $value)[0]), '\'"');
-
-            if ('' === $first || \in_array(strtolower($first), self::GENERIC_FAMILIES, true)) {
-                continue;
-            }
-
-            $families[strtolower($first)] = $first;
-        }
-
-        return array_values($families);
     }
 
     /**
